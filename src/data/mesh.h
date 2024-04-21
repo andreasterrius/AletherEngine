@@ -139,6 +139,8 @@ private:
         // weights
         glEnableVertexAttribArray(6);
         glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, m_Weights));
+//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // THIS IS NOT ALLOWED, THIS WILL UNBOUND EBO FROM VAO;
+        glBindBuffer(GL_ARRAY_BUFFER, 0); // THIS IS ALLOWED.
         glBindVertexArray(0);
     }
 };

@@ -24,7 +24,13 @@ class LineRenderer {
 private:
     unsigned int linesVAO, linesVBO;
     Shader shader;
-    vector<pair<vec3, vec3>> posAndColor;
+
+    struct Data {
+        vec3 startPos;
+        vec3 color;
+    };
+
+    vector<Data> data;
 
 public:
     LineRenderer();

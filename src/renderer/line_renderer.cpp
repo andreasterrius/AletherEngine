@@ -17,7 +17,7 @@ LineRenderer::LineRenderer() : shader(Shader(
     glGenVertexArrays(1, &linesVAO);
     glGenBuffers(1, &linesVBO);
     // fill buffer
-    glBindBuffer(GL_ARRAY_BUFFER, linesVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
     glBufferData(GL_ARRAY_BUFFER, 2048, nullptr, GL_DYNAMIC_DRAW);
     // link vertex attributes
     glBindVertexArray(linesVAO);
@@ -35,22 +35,24 @@ void LineRenderer::queue(Ray &ray, vec3 color) {
 }
 
 void LineRenderer::queue(vec3 start, vec3 end, vec3 color) {
-    this->posAndColor.emplace_back(start, color);
-    this->posAndColor.emplace_back(end, color);
+    this->data.emplace_back(Data{start, color});
+    this->data.emplace_back(Data{end, color});
 }
 
 void LineRenderer::render(mat4 projection, mat4 view) {
-    if(!posAndColor.empty()) {
+    if(!data.empty()) {
         this->shader.use();
         this->shader.setMat4("view", view);
         this->shader.setMat4("projection", projection);
         glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, posAndColor.size() * sizeof(posAndColor[0]), posAndColor.data());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, data.size() * sizeof(Data), this->data.data());
+
+//        cout << "sz:" << posAndColor.size() * sizeof(posAndColor[0]) << endl;
 
         glBindVertexArray(linesVAO);
-        glDrawArrays(GL_LINES, 0, posAndColor.size());
+        glDrawArrays(GL_LINES, 0, data.size());
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
-        this->posAndColor.clear();
+        this->data.clear();
     }
 }

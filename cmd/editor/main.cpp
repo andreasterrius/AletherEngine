@@ -29,6 +29,10 @@ struct WindowData {
     bool firstMouse;
     float lastX;
     float lastY;
+
+    int screenWidth;
+    int screenHeight;
+    bool isCursorDisabled;
 };
 
 Ray getMouseRay(float mouseX, float mouseY,
@@ -59,7 +63,7 @@ Ray getMouseRay(float mouseX, float mouseY,
     rayEndWorld /= rayEndWorld.w;
 
     Ray r(rayStartWorld, normalize(rayEndWorld - rayStartWorld));
-    cout << r.toString() << "\n";
+//    cout << r.toString() << "\n";
 
     return r;
 }
@@ -73,12 +77,36 @@ void renderBoundingBoxWireframe(LineRenderer &lr, BoundingBox bb);
 
 void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &shadows, bool &shadowsKeyPressed);
 
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    auto *wd = (WindowData *) glfwGetWindowUserPointer(window);
+    wd->screenWidth = width;
+    wd->screenHeight = height;
+
+    // make sure the viewport matches the new window dimensions; note that width and
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+}
+
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         double xpos, ypos;
         //getting cursor position
         glfwGetCursorPos(window, &xpos, &ypos);
-        cout << "Cursor Position at (" << xpos << " : " << ypos << endl;
+        cout << "Cursor Position at (" << xpos << "," << ypos << ")" << endl;
+    }
+
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+        auto *wd = (WindowData *) glfwGetWindowUserPointer(window);
+        if(wd->isCursorDisabled) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        } else {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
+        wd->isCursorDisabled = !wd->isCursorDisabled;
     }
 }
 
@@ -106,25 +134,27 @@ void mouseCallback(GLFWwindow *window, double xposIn, double yposIn) {
 
 int main() {
 
-    int screenWidth = 1024;
-    int screenHeight = 768;
     Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
+    WindowData wd{
+            .camera = &camera,
+            .firstMouse = true,
+            .screenWidth = 1024,
+            .screenHeight = 768,
+            .isCursorDisabled = false
+    };
+
     glfwInit();
-    auto window = createWindow(screenWidth, screenHeight);
+    auto window = createWindow(wd.screenWidth, wd.screenHeight);
     if (window == nullptr) {
         glfwTerminate();
         cerr << "window not found";
         return -1;
     }
-
-    WindowData wd{
-            .camera = &camera,
-            .firstMouse = true
-    };
     glfwSetMouseButtonCallback(window.get(), mouseButtonCallback);
     glfwSetCursorPosCallback(window.get(), mouseCallback);
     glfwSetWindowUserPointer(window.get(), &wd);
+    glfwSetFramebufferSizeCallback(window.get(), framebuffer_size_callback);
 
     Shader colorShader(afs::root("src/shaders/point_shadows.vs").c_str(),
                        afs::root("src/shaders/point_shadows.fs").c_str());
@@ -140,7 +170,7 @@ int main() {
     unsigned int woodTexture = woodTextureOpt.value();
 
     // load some random mesh
-    Model model(afs::root("resources/models/Barrel_A.obj"));
+    Model object(afs::root("resources/models/cyborg/cyborg.obj"));
 
     // configure depth map FBO
     const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -228,16 +258,14 @@ int main() {
             linearDepthShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
         linearDepthShader.setFloat("far_plane", far_plane);
         linearDepthShader.setVec3("lightPos", lightPos);
-        renderScene(linearDepthShader, model);
-
-        model.draw(linearDepthShader);
+        renderScene(linearDepthShader, object);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. render scene as normal
-        //         glViewport(0, 0, screenWidth, screenHeight);
+        glViewport(0, 0, wd.screenWidth, wd.screenHeight);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         colorShader.use();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float) screenWidth / (float) screenHeight,
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float) wd.screenWidth / (float) wd.screenHeight,
                                                 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
         colorShader.setMat4("projection", projection);
@@ -251,17 +279,18 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, woodTexture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-        renderScene(colorShader, model);
+        renderScene(colorShader, object);
 
         if (glfwGetMouseButton(window.get(), GLFW_MOUSE_BUTTON_LEFT)) {
             double mouseX, mouseY;
             glfwGetCursorPos(window.get(), &mouseX, &mouseY);
-            lastMouseRay = getMouseRay(mouseX, mouseY, screenWidth, screenHeight,
+            lastMouseRay = getMouseRay(mouseX, mouseY, wd.screenWidth, wd.screenHeight,
                                        projection, camera.GetViewMatrix());
         }
 
+        lineRenderer.queue(vec3(0), vec3(100));
         lineRenderer.queue(lastMouseRay);
-//        renderBoundingBoxWireframe(lineRenderer, model.meshes[0].boundingBox);
+        renderBoundingBoxWireframe(lineRenderer, object.meshes[0].boundingBox);
         lineRenderer.render(projection, view);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -313,10 +342,8 @@ void renderScene(Shader &shader, Model &object) {
     shader.setMat4("model", model);
     renderCube();
 
-    mat4 modelMat = glm::mat4(1.0f);
-    modelMat = glm::translate(modelMat, glm::vec3(4.0f, -3.5f, 0.0));
-    modelMat = glm::scale(modelMat, glm::vec3(1.0f));
-    shader.setMat4("model", modelMat);
+    model = glm::mat4(1.0f);
+    shader.setMat4("model", model);
     object.draw(shader);
 }
 
@@ -417,13 +444,32 @@ void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &sha
 }
 
 void renderBoundingBoxWireframe(LineRenderer &lr, BoundingBox bb) {
-    lr.queue(vec3(bb.min.x, bb.min.y, bb.min.z), vec3(bb.min.x, bb.min.z, bb.max.z));
-    lr.queue(vec3(bb.min.x, bb.min.y, bb.min.z), vec3(bb.min.x, bb.max.z, bb.min.z));
-    lr.queue(vec3(bb.min.x, bb.min.y, bb.min.z), vec3(bb.max.x, bb.min.z, bb.min.z));
+    // bottom point
+    vec3 a = vec3(bb.min.x, bb.min.y, bb.min.z);
+    vec3 b = vec3(bb.min.x, bb.min.y, bb.max.z);
+    vec3 c = vec3(bb.max.x, bb.min.y, bb.max.z);
+    vec3 d = vec3(bb.max.x, bb.min.y, bb.min.z);
 
-    lr.queue(vec3(bb.max.x, bb.max.y, bb.max.z), vec3(bb.min.x, bb.max.z, bb.max.z));
-    lr.queue(vec3(bb.max.x, bb.max.y, bb.max.z), vec3(bb.max.x, bb.min.z, bb.max.z));
-    lr.queue(vec3(bb.max.x, bb.max.y, bb.max.z), vec3(bb.max.x, bb.max.z, bb.min.z));
+    // top points
+    vec3 e = vec3(bb.min.x, bb.max.y, bb.min.z);
+    vec3 f = vec3(bb.min.x, bb.max.y, bb.max.z);
+    vec3 g = vec3(bb.max.x, bb.max.y, bb.max.z);
+    vec3 h = vec3(bb.max.x, bb.max.y, bb.min.z);
+
+    lr.queue(a, b);
+    lr.queue(b, c);
+    lr.queue(c, d);
+    lr.queue(d, a);
+
+    lr.queue(a, e);
+    lr.queue(b, f);
+    lr.queue(c, g);
+    lr.queue(d, h);
+
+    lr.queue(e, f);
+    lr.queue(f, g);
+    lr.queue(g, h);
+    lr.queue(h, e);
 }
 
 
