@@ -69,7 +69,7 @@ Ray getMouseRay(float mouseX, float mouseY,
 }
 
 
-void renderScene(Shader &shader, Model &object);
+void renderScene(Shader &shader, Model &object, Model &cube);
 
 void renderCube();
 
@@ -208,6 +208,8 @@ int main() {
     LineRenderer lineRenderer;
     Ray lastMouseRay(vec3(0.0), camera.Front);
 
+    Model cube = ModelFactory::createCubeModel();
+
     float deltaTime, lastFrame = glfwGetTime();
     while (!glfwWindowShouldClose(window.get())) {
         // per-frame time logic
@@ -258,7 +260,7 @@ int main() {
             linearDepthShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
         linearDepthShader.setFloat("far_plane", far_plane);
         linearDepthShader.setVec3("lightPos", lightPos);
-        renderScene(linearDepthShader, object);
+        renderScene(linearDepthShader, object, cube);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. render scene as normal
@@ -279,7 +281,7 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, woodTexture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-        renderScene(colorShader, object);
+        renderScene(colorShader, object, cube);
 
         if (glfwGetMouseButton(window.get(), GLFW_MOUSE_BUTTON_LEFT)) {
             double mouseX, mouseY;
@@ -302,7 +304,7 @@ int main() {
     return 0;
 }
 
-void renderScene(Shader &shader, Model &object) {
+void renderScene(Shader &shader, Model &object, Model &cube) {
     // room cube
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::scale(model, glm::vec3(5.0f));
@@ -315,36 +317,41 @@ void renderScene(Shader &shader, Model &object) {
     shader.setInt("reverse_normals", 0); // and of course disable it
     glEnable(GL_CULL_FACE);
     // cubes
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(4.0f, -3.5f, 0.0));
-    model = glm::scale(model, glm::vec3(0.5f));
-    shader.setMat4("model", model);
-    renderCube();
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(2.0f, 3.0f, 1.0));
-    model = glm::scale(model, glm::vec3(0.75f));
-    shader.setMat4("model", model);
-    renderCube();
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(-3.0f, -1.0f, 0.0));
-    model = glm::scale(model, glm::vec3(0.5f));
-    shader.setMat4("model", model);
-    renderCube();
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(-1.5f, 1.0f, 1.5));
-    model = glm::scale(model, glm::vec3(0.5f));
-    shader.setMat4("model", model);
-    renderCube();
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(-1.5f, 2.0f, -3.0));
-    model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-    model = glm::scale(model, glm::vec3(0.75f));
-    shader.setMat4("model", model);
-    renderCube();
+//    model = glm::mat4(1.0f);
+//    model = glm::translate(model, glm::vec3(4.0f, -3.5f, 0.0));
+//    model = glm::scale(model, glm::vec3(0.5f));
+//    shader.setMat4("model", model);
+//    renderCube();
+//    model = glm::mat4(1.0f);
+//    model = glm::translate(model, glm::vec3(2.0f, 3.0f, 1.0));
+//    model = glm::scale(model, glm::vec3(0.75f));
+//    shader.setMat4("model", model);
+//    renderCube();
+//    model = glm::mat4(1.0f);
+//    model = glm::translate(model, glm::vec3(-3.0f, -1.0f, 0.0));
+//    model = glm::scale(model, glm::vec3(0.5f));
+//    shader.setMat4("model", model);
+//    renderCube();
+//    model = glm::mat4(1.0f);
+//    model = glm::translate(model, glm::vec3(-1.5f, 1.0f, 1.5));
+//    model = glm::scale(model, glm::vec3(0.5f));
+//    shader.setMat4("model", model);
+//    renderCube();
+//    model = glm::mat4(1.0f);
+//    model = glm::translate(model, glm::vec3(-1.5f, 2.0f, -3.0));
+//    model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+//    model = glm::scale(model, glm::vec3(0.75f));
+//    shader.setMat4("model", model);
+//    renderCube();
 
     model = glm::mat4(1.0f);
     shader.setMat4("model", model);
     object.draw(shader);
+
+    model = glm:: mat4(1.0f);
+    model = glm::translate(model, glm::vec3(1.0f, 1.0f, 1.0));
+    shader.setMat4("model", model);
+    cube.draw(shader);
 }
 
 // renderCube() renders a 1x1 3D cube in NDC.

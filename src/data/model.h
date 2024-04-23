@@ -37,6 +37,8 @@ public:
     // constructor, expects a filepath to a 3D model.
     Model(string const &path, bool gamma = false);
 
+    Model(vector<Texture> textures, vector<Mesh> meshes);
+
     // draws the model, and thus all its meshes
     void draw(Shader &shader);
 
@@ -52,6 +54,11 @@ private:
     // checks all material textures of a given type and loads the textures if they're not loaded yet.
     // the required info is returned as a Texture struct.
     vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
+};
+
+class ModelFactory {
+public:
+    static Model createCubeModel();
 };
 
 }

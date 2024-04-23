@@ -2,9 +2,13 @@
 // Created by Alether on 4/17/2024.
 //
 #include "model.h"
+#include <vector>
 
 ale::Model::Model(const string &path, bool gamma) : gammaCorrection(gamma) {
     loadModel(path);
+}
+
+Model::Model(vector<Texture> textures, vector<Mesh> meshes) : textures_loaded(textures), meshes(meshes) {
 }
 
 void Model::draw(Shader &shader) {
@@ -191,4 +195,56 @@ unsigned int ale::TextureFromFile(const char *path, const string &directory, boo
     }
 
     return textureID;
+}
+
+Model ModelFactory::createCubeModel() {
+    vector<Vertex> vertices = vector{
+            // back face
+            Vertex{vec3(-1.0f, -1.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.0f, 0.0f)}, // bottom-left
+            Vertex{vec3(1.0f, 1.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(1.0f, 1.0f)}, // top-right
+            Vertex{vec3(1.0f, -1.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(1.0f, 0.0f)}, // bottom-right
+            Vertex{vec3(1.0f, 1.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(1.0f, 1.0f)}, // top-right
+            Vertex{vec3(-1.0f, -1.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.0f, 0.0f)}, // bottom-left
+            Vertex{vec3(-1.0f, 1.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f), vec2(0.0f, 1.0f)}, // top-left
+            // front face
+            Vertex{vec3(-1.0f, -1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)}, // bottom-left
+            Vertex{vec3(1.0f, -1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 0.0f)}, // bottom-right
+            Vertex{vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)}, // top-right
+            Vertex{vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)}, // top-right
+            Vertex{vec3(-1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f)}, // top-left
+            Vertex{vec3(-1.0f, -1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)}, // bottom-left
+            // left face
+            Vertex{vec3(-1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)}, // top-right
+            Vertex{vec3(-1.0f, 1.0f, -1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)}, // top-left
+            Vertex{vec3(-1.0f, -1.0f, -1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)}, // bottom-left
+            Vertex{vec3(-1.0f, -1.0f, -1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)}, // bottom-left
+            Vertex{vec3(-1.0f, -1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)}, // bottom-right
+            Vertex{vec3(-1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)}, // top-right
+            // right face
+            Vertex{vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)}, // top-left
+            Vertex{vec3(1.0f, -1.0f, -1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)}, // bottom-right
+            Vertex{vec3(1.0f, 1.0f, -1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)}, // top-right
+            Vertex{vec3(1.0f, -1.0f, -1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)}, // bottom-right
+            Vertex{vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)}, // top-left
+            Vertex{vec3(1.0f, -1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)}, // bottom-left
+            // bottom face
+            Vertex{vec3(-1.0f, -1.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.0f, 1.0f)}, // top-right
+            Vertex{vec3(1.0f, -1.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 1.0f)}, // top-left
+            Vertex{vec3(1.0f, -1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.0f)}, // bottom-left
+            Vertex{vec3(1.0f, -1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(1.0f, 0.0f)}, // bottom-left
+            Vertex{vec3(-1.0f, -1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.0f, 0.0f)}, // bottom-right
+            Vertex{vec3(-1.0f, -1.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f), vec2(0.0f, 1.0f)}, // top-right
+            // top face
+            Vertex{vec3(-1.0f, 1.0f, -1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f)}, // top-left
+            Vertex{vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)}, // bottom-right
+            Vertex{vec3(1.0f, 1.0f, -1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)}, // top-right
+            Vertex{vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)}, // bottom-right
+            Vertex{vec3(-1.0f, 1.0f, -1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f)}, // top-left
+            Vertex{vec3(-1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)}  // bottom-left
+    };
+
+    BoundingBox bb(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f));
+    Mesh mesh(vertices, vector<unsigned int>(), vector<Texture>(), bb);
+
+    return Model(vector<Texture>(), vector<Mesh>{mesh});
 }
