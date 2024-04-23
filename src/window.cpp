@@ -4,6 +4,8 @@
 
 #include "window.h"
 
+void ale::DestroyGLFWwindow::operator()(GLFWwindow *ptr) { glfwDestroyWindow(ptr); }
+
 unique_ptr<GLFWwindow, ale::DestroyGLFWwindow> ale::createWindow(int width, int height) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -27,3 +29,4 @@ unique_ptr<GLFWwindow, ale::DestroyGLFWwindow> ale::createWindow(int width, int 
 
     return unique_ptr<GLFWwindow, DestroyGLFWwindow>(window);
 }
+

@@ -15,7 +15,7 @@ class GLFWwindow;
 namespace ale {
 
 struct DestroyGLFWwindow {
-    void operator()(GLFWwindow *ptr) { glfwDestroyWindow(ptr); }
+    void operator()(GLFWwindow *ptr);
 };
 
 unique_ptr<GLFWwindow, DestroyGLFWwindow> createWindow(int width, int height);
