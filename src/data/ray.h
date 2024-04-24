@@ -23,9 +23,11 @@ public:
     vec3 dir;
     vec3 invDir;
 
-    Ray(vec3 origin, vec3 dir) : origin(origin), dir(normalize(dir)){}
+    Ray(vec3 origin, vec3 dir) : origin(origin), dir(normalize(dir)){
+        this->invDir = vec3(1.0f/dir.x, 1.0f/dir.y, 1.0f/dir.z);
+    }
 
-    optional<float> tryIntersect(const Ray &ray, const BoundingBox &box, float limitTMin, float limitTMax);
+    optional<float> tryIntersect(mat4 transform, const BoundingBox &box, float limitTMin = 0, float limitTMax = INFINITY);
 
     string toString() {
         return "o:(" + to_string(origin.x) + "." + to_string(origin.y) + "," + to_string(origin.z) + ")" +

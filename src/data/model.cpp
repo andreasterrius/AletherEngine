@@ -246,5 +246,5 @@ Model ModelFactory::createCubeModel() {
     BoundingBox bb(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f));
     Mesh mesh(vertices, vector<unsigned int>(), vector<Texture>(), bb);
 
-    return Model(vector<Texture>(), vector<Mesh>{mesh});
+    return Model(vector<Texture>(), vector<Mesh>{std::move(mesh)});
 }

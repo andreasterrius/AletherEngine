@@ -94,6 +94,12 @@ public:
         }
         glBindVertexArray(0);
 
+        // unbind textures
+        for (unsigned int i = 0; i < textures.size(); i++) {
+            glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+
         // always good practice to set everything back to defaults once configured.
         glActiveTexture(GL_TEXTURE0);
     }

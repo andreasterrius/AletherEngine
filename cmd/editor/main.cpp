@@ -13,6 +13,7 @@
 #include <src/data/ray.h>
 #include <src/data/boundingbox.h>
 #include "src/data/model.h"
+#include "src/data/object.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -69,7 +70,7 @@ Ray getMouseRay(float mouseX, float mouseY,
 }
 
 
-void renderScene(Shader &shader, Model &object, Model &cube);
+void renderScene(Shader &shader, Model &robot, Object &cube);
 
 void renderCube();
 
@@ -208,7 +209,12 @@ int main() {
     LineRenderer lineRenderer;
     Ray lastMouseRay(vec3(0.0), camera.Front);
 
-    Model cube = ModelFactory::createCubeModel();
+    mat4 transform = mat4(1.0f);
+    transform = glm::translate(transform, vec3(1.0F));
+    Object cube = {
+            .transform = transform,
+            .model = make_shared<Model>(std::move(ModelFactory::createCubeModel()))
+    };
 
     float deltaTime, lastFrame = glfwGetTime();
     while (!glfwWindowShouldClose(window.get())) {
@@ -283,16 +289,28 @@ int main() {
         glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
         renderScene(colorShader, object, cube);
 
+
+        auto b = cube.model->meshes[0].boundingBox;
+        BoundingBox box(transform * vec4(b.min, 1.0), transform * vec4(b.max, 1.0));
+
         if (glfwGetMouseButton(window.get(), GLFW_MOUSE_BUTTON_LEFT)) {
             double mouseX, mouseY;
             glfwGetCursorPos(window.get(), &mouseX, &mouseY);
             lastMouseRay = getMouseRay(mouseX, mouseY, wd.screenWidth, wd.screenHeight,
                                        projection, camera.GetViewMatrix());
+
+            auto result = lastMouseRay.tryIntersect(cube.transform, box);
+            if(result.has_value()) {
+                cout << "intersected" << endl;
+            }
         }
+
+        renderBoundingBoxWireframe(lineRenderer, box);
+
 
         lineRenderer.queue(vec3(0), vec3(100));
         lineRenderer.queue(lastMouseRay);
-        renderBoundingBoxWireframe(lineRenderer, object.meshes[0].boundingBox);
+//        renderBoundingBoxWireframe(lineRenderer, object.meshes[0].boundingBox);
         lineRenderer.render(projection, view);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -304,7 +322,7 @@ int main() {
     return 0;
 }
 
-void renderScene(Shader &shader, Model &object, Model &cube) {
+void renderScene(Shader &shader, Model &robot, Object &cube) {
     // room cube
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::scale(model, glm::vec3(5.0f));
@@ -317,11 +335,11 @@ void renderScene(Shader &shader, Model &object, Model &cube) {
     shader.setInt("reverse_normals", 0); // and of course disable it
     glEnable(GL_CULL_FACE);
     // cubes
-//    model = glm::mat4(1.0f);
-//    model = glm::translate(model, glm::vec3(4.0f, -3.5f, 0.0));
-//    model = glm::scale(model, glm::vec3(0.5f));
-//    shader.setMat4("model", model);
-//    renderCube();
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, vec3(1.0F));
+    shader.setMat4("model", model);
+    renderCube();
+
 //    model = glm::mat4(1.0f);
 //    model = glm::translate(model, glm::vec3(2.0f, 3.0f, 1.0));
 //    model = glm::scale(model, glm::vec3(0.75f));
@@ -346,12 +364,11 @@ void renderScene(Shader &shader, Model &object, Model &cube) {
 
     model = glm::mat4(1.0f);
     shader.setMat4("model", model);
-    object.draw(shader);
+    robot.draw(shader);
 
-    model = glm:: mat4(1.0f);
-    model = glm::translate(model, glm::vec3(1.0f, 1.0f, 1.0));
-    shader.setMat4("model", model);
-    cube.draw(shader);
+//    model = glm:: mat4(1.0f);
+    shader.setMat4("model", cube.transform);
+    cube.model->draw(shader);
 }
 
 // renderCube() renders a 1x1 3D cube in NDC.
