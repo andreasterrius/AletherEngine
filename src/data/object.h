@@ -7,6 +7,7 @@
 
 #include<glm/glm.hpp>
 #include<memory>
+#include"transform.h"
 
 using namespace glm;
 using namespace std;
@@ -17,7 +18,7 @@ class Model;
 
 class Object {
 public:
-    mat4 transform;
+    Transform transform;
     shared_ptr<Model> model;
 };
 }

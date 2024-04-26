@@ -29,6 +29,8 @@ public:
 
     optional<float> tryIntersect(mat4 transform, const BoundingBox &box, float limitTMin = 0, float limitTMax = INFINITY);
 
+    vec3 resolveT(float t);
+
     string toString() {
         return "o:(" + to_string(origin.x) + "." + to_string(origin.y) + "," + to_string(origin.z) + ")" +
                 " | d:(" + to_string(dir.x) + "." + to_string(dir.y) + "," + to_string(dir.z) + ")";

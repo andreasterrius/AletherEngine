@@ -12,10 +12,13 @@
 #include <src/camera.h>
 #include <src/data/ray.h>
 #include <src/data/boundingbox.h>
-#include "src/data/model.h"
-#include "src/data/object.h"
+#include <src/data/model.h>
+#include <src/data/object.h>
+#include <src/gizmo/gizmo.h>
+#include <src/data/transform.h>
 
 #define STB_IMAGE_IMPLEMENTATION
+
 #include <stb_image.h>
 
 using namespace std;
@@ -80,8 +83,7 @@ void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &sha
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     auto *wd = (WindowData *) glfwGetWindowUserPointer(window);
     wd->screenWidth = width;
     wd->screenHeight = height;
@@ -102,7 +104,7 @@ void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
         auto *wd = (WindowData *) glfwGetWindowUserPointer(window);
-        if(wd->isCursorDisabled) {
+        if (wd->isCursorDisabled) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         } else {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -206,13 +208,17 @@ int main() {
     bool shadows = true;
     bool shadowKeyPressed = false;
 
+    Gizmo gizmo;
+
     LineRenderer lineRenderer;
     Ray lastMouseRay(vec3(0.0), camera.Front);
 
-    mat4 transform = mat4(1.0f);
-    transform = glm::translate(transform, vec3(1.0F));
     Object cube = {
-            .transform = transform,
+            .transform = Transform{
+                    .translation = vec3(1.0f),
+                    .scale = vec3(1.0f),
+                    .rotation = vec4(1.0f),
+            },
             .model = make_shared<Model>(std::move(ModelFactory::createCubeModel()))
     };
 
@@ -227,6 +233,18 @@ int main() {
         // input
         // -----
         processInput(window.get(), deltaTime, camera, shadows, shadowKeyPressed);
+
+        if (glfwGetMouseButton(window.get(), GLFW_MOUSE_BUTTON_LEFT)) {
+            double mouseX, mouseY;
+            glfwGetCursorPos(window.get(), &mouseX, &mouseY);
+            Ray mouseRay = getMouseRay(mouseX, mouseY, wd.screenWidth, wd.screenHeight,
+                                       camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight), camera.GetViewMatrix());
+            lastMouseRay = mouseRay;
+            auto res = gizmo.tryHold(&cube.transform, mouseRay, camera);
+            if(res) {
+                std::cout << "Holding" << endl;
+            }
+        }
 
         // move light position over time
         lightPos.z = static_cast<float>(sin(glfwGetTime() * 0.5) * 3.0);
@@ -273,8 +291,7 @@ int main() {
         glViewport(0, 0, wd.screenWidth, wd.screenHeight);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         colorShader.use();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float) wd.screenWidth / (float) wd.screenHeight,
-                                                0.1f, 100.0f);
+        glm::mat4 projection = camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight);
         glm::mat4 view = camera.GetViewMatrix();
         colorShader.setMat4("projection", projection);
         colorShader.setMat4("view", view);
@@ -289,27 +306,28 @@ int main() {
         glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
         renderScene(colorShader, object, cube);
 
-
-        auto b = cube.model->meshes[0].boundingBox;
-        BoundingBox box(transform * vec4(b.min, 1.0), transform * vec4(b.max, 1.0));
-
-        if (glfwGetMouseButton(window.get(), GLFW_MOUSE_BUTTON_LEFT)) {
-            double mouseX, mouseY;
-            glfwGetCursorPos(window.get(), &mouseX, &mouseY);
-            lastMouseRay = getMouseRay(mouseX, mouseY, wd.screenWidth, wd.screenHeight,
-                                       projection, camera.GetViewMatrix());
-
-            auto result = lastMouseRay.tryIntersect(cube.transform, box);
-            if(result.has_value()) {
-                cout << "intersected" << endl;
-            }
-        }
-
-        renderBoundingBoxWireframe(lineRenderer, box);
+        gizmo.render(camera, lightPos, vec2(wd.screenWidth, wd.screenHeight));
 
 
-        lineRenderer.queue(vec3(0), vec3(100));
+//        auto b = cube.model->meshes[0].boundingBox;
+//        BoundingBox box(transform * vec4(b.min, 1.0), transform * vec4(b.max, 1.0));
+//
+//        if (glfwGetMouseButton(window.get(), GLFW_MOUSE_BUTTON_LEFT)) {
+//            double mouseX, mouseY;
+//            glfwGetCursorPos(window.get(), &mouseX, &mouseY);
+//            lastMouseRay = getMouseRay(mouseX, mouseY, wd.screenWidth, wd.screenHeight,
+//                                       projection, camera.GetViewMatrix());
+//
+//            auto result = lastMouseRay.tryIntersect(cube.transform, box);
+//            if(result.has_value()) {
+//                cout << "intersected" << endl;
+//            }
+//        }
+//
+//        renderBoundingBoxWireframe(lineRenderer, box);
+
         lineRenderer.queue(lastMouseRay);
+        lineRenderer.queue(vec3(0), vec3(100));
 //        renderBoundingBoxWireframe(lineRenderer, object.meshes[0].boundingBox);
         lineRenderer.render(projection, view);
 
@@ -367,7 +385,7 @@ void renderScene(Shader &shader, Model &robot, Object &cube) {
     robot.draw(shader);
 
 //    model = glm:: mat4(1.0f);
-    shader.setMat4("model", cube.transform);
+    shader.setMat4("model", cube.transform.getModelMatrix());
     cube.model->draw(shader);
 }
 

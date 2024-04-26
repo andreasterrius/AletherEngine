@@ -1,0 +1,76 @@
+{
+    "objectDescriptors": [
+        {
+            "resourcePath": "/home/alether/Code/hello-world-zig/gizmo/resources/translate_gizmo/Plane_XZ.glb",
+            "position": {
+                "x": -0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "resourcePath": "/home/alether/Code/hello-world-zig/gizmo/resources/translate_gizmo/Arrow_Y+.glb",
+            "position": {
+                "x": -0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "resourcePath": "/home/alether/Code/hello-world-zig/gizmo/resources/translate_gizmo/Arrow_Z+.glb",
+            "position": {
+                "x": -0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "resourcePath": "/home/alether/Code/hello-world-zig/gizmo/resources/translate_gizmo/Arrow_X+.glb",
+            "position": {
+                "x": -0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "resourcePath": "/home/alether/Code/hello-world-zig/gizmo/resources/translate_gizmo/Plane_YZ.glb",
+            "position": {
+                "x": -0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "resourcePath": "/home/alether/Code/hello-world-zig/gizmo/resources/translate_gizmo/Plane_XY.glb",
+            "position": {
+                "x": -0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "resourcePath": "/home/alether/Code/hello-world-zig/gizmo/resources/translate_gizmo/Ring_XZ.glb",
+            "position": {
+                "x": -0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "resourcePath": "/home/alether/Code/hello-world-zig/gizmo/resources/translate_gizmo/Ring_XY.glb",
+            "position": {
+                "x": -0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "resourcePath": "/home/alether/Code/hello-world-zig/gizmo/resources/translate_gizmo/Ring_YZ.glb",
+            "position": {
+                "x": -0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        }
+    ]
+}

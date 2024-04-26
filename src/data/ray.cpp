@@ -38,3 +38,7 @@ optional<float> Ray::tryIntersect(mat4 transform,
     }
     return nullopt;
 }
+
+vec3 Ray::resolveT(float t) {
+    return this->origin + t * this->dir;
+}
