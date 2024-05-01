@@ -17,8 +17,10 @@ ale::Gizmo::Gizmo() : basicColorShader(afs::root("src/gizmo/basic_color_shader.v
 	// load a flat shader here ?
 	// the default raylib shader is flat though
 	this->initialClickInfo = Gizmo_InitialClickInfo{ 0 };
-	this->scale = 1.0f;
-	this->position = vec3();
+	this->transform = Transform {
+        .translation = vec3(),
+        .scale = vec3(1.0),
+    };
 	this->gizmoType = Translate;
 	this->isHidden = true;
     
@@ -34,9 +36,9 @@ ale::Gizmo::Gizmo() : basicColorShader(afs::root("src/gizmo/basic_color_shader.v
 	this->models.emplace_back(afs::root("resources/gizmo/Ring_YZ.glb")); //Ring_YZ
 }
 
-bool Gizmo::tryHold(Transform* transform, Ray ray, Camera camera) {
+bool Gizmo::tryHold(Transform* objTransform, Ray ray, Camera camera) {
 	// There's no currently active selected object
-	if (transform == NULL) {
+	if (objTransform == NULL) {
 		this->isHidden = true;
 		return false;
 	}
@@ -44,13 +46,13 @@ bool Gizmo::tryHold(Transform* transform, Ray ray, Camera camera) {
 	// There's an active selected object
 	// Show & set gizmo position properly
 	this->isHidden = false;
-	this->position = transform->translation;
+	this->transform.translation = objTransform->translation;
 
 	// TODO: This should not be here, this should be in tick(), but dependentPosition will be weakly owned.
 	// Scale the size depending on the size
-	float scale = glm::distance(camera.Position, transform->translation) / Gizmo_MaximumDistanceScale;
+	float scale = glm::distance(camera.Position, objTransform->translation) / Gizmo_MaximumDistanceScale;
 	scale = glm::clamp(scale, 0.25f, 1.0f);
-	this->scale = scale;
+	this->transform.scale = vec3(scale);
 	this->scaleAll();
 
 	// Try to check which arrow we're hitting
@@ -65,7 +67,7 @@ bool Gizmo::tryHold(Transform* transform, Ray ray, Camera camera) {
         auto grabAxis = grabAxisOpt.value();
 
 		// Get a ray to plane intersection.
-		optional<vec3> rayPlaneHit = this->rayPlaneIntersection(ray, grabAxis.activeAxis, this->position);
+		optional<vec3> rayPlaneHit = this->rayPlaneIntersection(ray, grabAxis.activeAxis, this->transform.translation);
 		if (!rayPlaneHit.has_value()) {
 			return false;
 		}
@@ -75,26 +77,26 @@ bool Gizmo::tryHold(Transform* transform, Ray ray, Camera camera) {
 				.activeAxis = grabAxis.activeAxis,
 				.position = grabAxis.rayCollisionPosition,
 				.firstRayPlaneHitPos = rayPlaneHit.value(),
-				.initialSelfPos = this->position,
+				.initialSelfPos = this->transform.translation,
 				.lastFrameRayPlaneHitPos = rayPlaneHit.value(),
 		};
 		return true;
 	}
 
 	// This is no longer initial hit, but is a dragging movement
-	optional<vec3> rayPlaneHit = this->rayPlaneIntersection(ray, this->initialClickInfo.activeAxis, this->position);
+	optional<vec3> rayPlaneHit = this->rayPlaneIntersection(ray, this->initialClickInfo.activeAxis, this->transform.translation);
 
 	// Ignore ray-plane parallel cases
 	if (rayPlaneHit.has_value()) {
 		if (this->gizmoType == Translate) {
 			vec3 newPos = this->handleTranslate(this->initialClickInfo.activeAxis, rayPlaneHit.value());
-			this->position = newPos;
-			transform->translation = newPos;
+			this->transform.translation = newPos;
+            objTransform->translation = newPos;
 		}
 		else if (this->gizmoType == Scale) {
 			// unlike translate, we just return delta here
 			vec3 delta = rayPlaneHit.value() - this->initialClickInfo.lastFrameRayPlaneHitPos;
-			transform->scale = transform->scale + delta;
+            objTransform->scale = objTransform->scale + delta;
 		}
 		else if (this->gizmoType == Rotate) {
 //			vec3 unitVecA = rayPlaneHit.value() - this->position;
@@ -129,8 +131,6 @@ void Gizmo::scaleAll() {
 }
 
 optional<Gizmo_GrabAxis> Gizmo::grabAxis(Ray ray) {
-    mat4 transform = mat4(1.0);
-    transform = glm::translate(transform, this->position);
 
 	if (this->gizmoType == Translate || this->gizmoType == Scale) {
 		auto coll = ray.tryIntersect(transform, this->models[ArrowX].meshes[0].boundingBox);
@@ -259,11 +259,8 @@ void Gizmo::render(Camera camera, vec3 lightPos, vec2 screenSize) {
 		return;
 	}
 
-    mat4 model = mat4(1.0);
-    model = translate(model, this->position);
-
     basicColorShader.use();
-    basicColorShader.setMat4("model", model);
+    basicColorShader.setMat4("model", transform.getModelMatrix());
     basicColorShader.setMat4("view", camera.GetViewMatrix());
     basicColorShader.setMat4("projection", camera.GetProjectionMatrix(screenSize.x, screenSize.y));
     basicColorShader.setVec3("lightPos", lightPos);

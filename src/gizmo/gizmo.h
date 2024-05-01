@@ -6,6 +6,7 @@
 #include<vector>
 #include<optional>
 #include"../data/shader.h"
+#include"../data/transform.h"
 
 using namespace std;
 using namespace glm;
@@ -15,7 +16,6 @@ namespace ale {
 class Model;
 class Camera;
 class Ray;
-class Transform;
 
 typedef enum Gizmo_ModelType {
     ArrowX, ArrowY, ArrowZ,
@@ -56,8 +56,9 @@ class Gizmo {
 
     // State
     bool isHidden;
-    vec3 position;
-    float scale;
+//    vec3 position;
+//    float scale;
+    Transform transform;
 
     // if not null, then user has selected one of the axis
     Gizmo_InitialClickInfo initialClickInfo;

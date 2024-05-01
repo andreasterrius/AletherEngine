@@ -77,9 +77,12 @@ void renderScene(Shader &shader, Model &robot, Object &cube);
 
 void renderCube();
 
-void renderBoundingBoxWireframe(LineRenderer &lr, BoundingBox bb);
+void renderBoundingBoxWireframe(LineRenderer &lr, Transform transform, BoundingBox bbT);
 
 void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &shadows, bool &shadowsKeyPressed);
+
+void pickupObject(GLFWwindow *window, WindowData wd, vector<Object> &objectsToSelect, Object*& selectedObject,
+                  Camera &camera, Gizmo &gizmo, Ray &lastRay);
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
@@ -213,13 +216,16 @@ int main() {
     LineRenderer lineRenderer;
     Ray lastMouseRay(vec3(0.0), camera.Front);
 
-    Object cube = {
-            .transform = Transform{
-                    .translation = vec3(1.0f),
-                    .scale = vec3(1.0f),
-                    .rotation = vec4(1.0f),
-            },
-            .model = make_shared<Model>(std::move(ModelFactory::createCubeModel()))
+    Object* selectedObject = nullptr;
+    vector<Object> objects{
+        Object {
+                .transform = Transform{
+                        .translation = vec3(1.0f),
+                        .scale = vec3(1.0f),
+                        .rotation = vec4(1.0f),
+                },
+                .model = make_shared<Model>(std::move(ModelFactory::createCubeModel()))
+        }
     };
 
     float deltaTime, lastFrame = glfwGetTime();
@@ -234,17 +240,9 @@ int main() {
         // -----
         processInput(window.get(), deltaTime, camera, shadows, shadowKeyPressed);
 
-        if (glfwGetMouseButton(window.get(), GLFW_MOUSE_BUTTON_LEFT)) {
-            double mouseX, mouseY;
-            glfwGetCursorPos(window.get(), &mouseX, &mouseY);
-            Ray mouseRay = getMouseRay(mouseX, mouseY, wd.screenWidth, wd.screenHeight,
-                                       camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight), camera.GetViewMatrix());
-            lastMouseRay = mouseRay;
-            auto res = gizmo.tryHold(&cube.transform, mouseRay, camera);
-            if(res) {
-                std::cout << "Holding" << endl;
-            }
-        }
+        // pick up object
+        // ------
+        pickupObject(window.get(), wd, objects, selectedObject, camera, gizmo, lastMouseRay);
 
         // move light position over time
         lightPos.z = static_cast<float>(sin(glfwGetTime() * 0.5) * 3.0);
@@ -284,7 +282,7 @@ int main() {
             linearDepthShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
         linearDepthShader.setFloat("far_plane", far_plane);
         linearDepthShader.setVec3("lightPos", lightPos);
-        renderScene(linearDepthShader, object, cube);
+        renderScene(linearDepthShader, object, objects[0]);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. render scene as normal
@@ -304,31 +302,14 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, woodTexture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-        renderScene(colorShader, object, cube);
+        renderScene(colorShader, object, objects[0]);
 
         gizmo.render(camera, lightPos, vec2(wd.screenWidth, wd.screenHeight));
 
-
-//        auto b = cube.model->meshes[0].boundingBox;
-//        BoundingBox box(transform * vec4(b.min, 1.0), transform * vec4(b.max, 1.0));
-//
-//        if (glfwGetMouseButton(window.get(), GLFW_MOUSE_BUTTON_LEFT)) {
-//            double mouseX, mouseY;
-//            glfwGetCursorPos(window.get(), &mouseX, &mouseY);
-//            lastMouseRay = getMouseRay(mouseX, mouseY, wd.screenWidth, wd.screenHeight,
-//                                       projection, camera.GetViewMatrix());
-//
-//            auto result = lastMouseRay.tryIntersect(cube.transform, box);
-//            if(result.has_value()) {
-//                cout << "intersected" << endl;
-//            }
-//        }
-//
-//        renderBoundingBoxWireframe(lineRenderer, box);
-
         lineRenderer.queue(lastMouseRay);
         lineRenderer.queue(vec3(0), vec3(100));
-//        renderBoundingBoxWireframe(lineRenderer, object.meshes[0].boundingBox);
+        renderBoundingBoxWireframe(lineRenderer, Transform{}, object.meshes[0].boundingBox);
+        renderBoundingBoxWireframe(lineRenderer, objects[0].transform, objects[0].model->meshes[0].boundingBox);
         lineRenderer.render(projection, view);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -353,10 +334,10 @@ void renderScene(Shader &shader, Model &robot, Object &cube) {
     shader.setInt("reverse_normals", 0); // and of course disable it
     glEnable(GL_CULL_FACE);
     // cubes
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, vec3(1.0F));
-    shader.setMat4("model", model);
-    renderCube();
+//    model = glm::mat4(1.0f);
+//    model = glm::translate(model, vec3(1.0F));
+//    shader.setMat4("model", model);
+//    renderCube();
 
 //    model = glm::mat4(1.0f);
 //    model = glm::translate(model, glm::vec3(2.0f, 3.0f, 1.0));
@@ -485,18 +466,22 @@ void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &sha
     }
 }
 
-void renderBoundingBoxWireframe(LineRenderer &lr, BoundingBox bb) {
+void renderBoundingBoxWireframe(LineRenderer &lr, Transform transform, BoundingBox bb) {
+    BoundingBox bbT = bb;
+    bbT.min = transform.getModelMatrix() * vec4(bb.min, 1.0);
+    bbT.max = transform.getModelMatrix() * vec4(bb.max, 1.0);
+
     // bottom point
-    vec3 a = vec3(bb.min.x, bb.min.y, bb.min.z);
-    vec3 b = vec3(bb.min.x, bb.min.y, bb.max.z);
-    vec3 c = vec3(bb.max.x, bb.min.y, bb.max.z);
-    vec3 d = vec3(bb.max.x, bb.min.y, bb.min.z);
+    vec3 a = vec3(bbT.min.x, bbT.min.y, bbT.min.z);
+    vec3 b = vec3(bbT.min.x, bbT.min.y, bbT.max.z);
+    vec3 c = vec3(bbT.max.x, bbT.min.y, bbT.max.z);
+    vec3 d = vec3(bbT.max.x, bbT.min.y, bbT.min.z);
 
     // top points
-    vec3 e = vec3(bb.min.x, bb.max.y, bb.min.z);
-    vec3 f = vec3(bb.min.x, bb.max.y, bb.max.z);
-    vec3 g = vec3(bb.max.x, bb.max.y, bb.max.z);
-    vec3 h = vec3(bb.max.x, bb.max.y, bb.min.z);
+    vec3 e = vec3(bbT.min.x, bbT.max.y, bbT.min.z);
+    vec3 f = vec3(bbT.min.x, bbT.max.y, bbT.max.z);
+    vec3 g = vec3(bbT.max.x, bbT.max.y, bbT.max.z);
+    vec3 h = vec3(bbT.max.x, bbT.max.y, bbT.min.z);
 
     lr.queue(a, b);
     lr.queue(b, c);
@@ -512,6 +497,58 @@ void renderBoundingBoxWireframe(LineRenderer &lr, BoundingBox bb) {
     lr.queue(f, g);
     lr.queue(g, h);
     lr.queue(h, e);
+}
+
+void pickupObject(GLFWwindow *window,
+                  WindowData wd,
+                  vector<Object> &objectsToSelect,
+                  Object*& selectedObject,
+                  Camera &camera,
+                  Gizmo &gizmo,
+                  Ray &lastRay) {
+
+    bool clickedSomething = false;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
+        if (selectedObject != nullptr) {
+            double mouseX, mouseY;
+            glfwGetCursorPos(window, &mouseX, &mouseY);
+            Ray mouseRay = getMouseRay(mouseX, mouseY, wd.screenWidth, wd.screenHeight,
+                                       camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight),
+                                       camera.GetViewMatrix());
+            clickedSomething = gizmo.tryHold(&selectedObject->transform, mouseRay, camera);
+            lastRay = mouseRay;
+        }
+
+        if (!clickedSomething) {
+            double mouseX, mouseY;
+            glfwGetCursorPos(window, &mouseX, &mouseY);
+            Ray mouseRay = getMouseRay(mouseX, mouseY, wd.screenWidth, wd.screenHeight,
+                                       camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight),
+                                       camera.GetViewMatrix());
+
+            float furthestT = INFINITY;
+            for (int i = 0; i < objectsToSelect.size(); ++i) {
+                // check if we are clicking anything
+                auto isectT = mouseRay.tryIntersect(objectsToSelect[i].transform,
+                                                    objectsToSelect[i].model->meshes[0].boundingBox);
+                if (isectT.has_value() && isectT < furthestT) {
+                    selectedObject = &objectsToSelect[i];
+                    furthestT = *isectT;
+                    clickedSomething = true;
+                    lastRay = mouseRay;
+                }
+            }
+        }
+
+        if (!clickedSomething) {
+            selectedObject = nullptr;
+            gizmo.hide();
+        }
+    }
+
+    if (!clickedSomething && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
+        gizmo.release();
+    }
 }
 
 

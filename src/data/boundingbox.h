@@ -10,10 +10,15 @@
 using namespace glm;
 
 namespace ale {
+
+class Transform;
+
 class BoundingBox {
 public:
     vec3 min, max;
     BoundingBox(vec3 min, vec3 max);
+
+    BoundingBox applyTransform(Transform t) const;
 };
 }
 

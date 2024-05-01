@@ -16,6 +16,7 @@ using namespace std;
 namespace ale {
 
 class BoundingBox;
+class Transform;
 
 class Ray {
 public:
@@ -27,7 +28,7 @@ public:
         this->invDir = vec3(1.0f/dir.x, 1.0f/dir.y, 1.0f/dir.z);
     }
 
-    optional<float> tryIntersect(mat4 transform, const BoundingBox &box, float limitTMin = 0, float limitTMax = INFINITY);
+    optional<float> tryIntersect(Transform transform, const BoundingBox &box, float limitTMin = 0, float limitTMax = INFINITY);
 
     vec3 resolveT(float t);
 

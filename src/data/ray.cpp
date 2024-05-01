@@ -4,16 +4,17 @@
 
 #include "ray.h"
 #include "boundingbox.h"
+#include "transform.h"
 
 using namespace std;
 using namespace ale;
 
-
 //https://tavianator.com/2022/ray_box_boundary.html
-optional<float> Ray::tryIntersect(mat4 transform,
-                                  const BoundingBox &box,
+optional<float> Ray::tryIntersect(Transform transform,
+                                  const BoundingBox &boxR,
                                   float limitTMin,
                                   float limitTMax) {
+    BoundingBox box = boxR.applyTransform(transform);
     double tx1 = (box.min.x - origin.x) * invDir.x;
     double tx2 = (box.max.x - origin.x) * invDir.x;
     double tmin = std::min(tx1, tx2);
