@@ -27,6 +27,11 @@ using namespace ale;
 
 using afs = ale::FileSystem;
 
+// TODO:
+// 1. Create an arcball camera control (DONE)
+// 2. Insert a triangle the scene
+// 3. Generate a debug view from this triangle in CPU side (no GPU yet atm)
+
 // should hold non owning datas
 struct WindowData {
     Camera *camera;
@@ -140,7 +145,7 @@ void mouseCallback(GLFWwindow *window, double xposIn, double yposIn) {
 
 int main() {
 
-    Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+    Camera camera(ARCBALL, glm::vec3(0.0f, 0.0f, 5.0f));
 
     WindowData wd{
             .camera = &camera,
@@ -227,6 +232,10 @@ int main() {
                 .model = make_shared<Model>(std::move(ModelFactory::createCubeModel()))
         }
     };
+    objects[0].model->meshes[0].textures.push_back(Texture {
+        .id=woodTexture,
+        .type="texture_diffuse",
+    });
 
     float deltaTime, lastFrame = glfwGetTime();
     while (!glfwWindowShouldClose(window.get())) {
@@ -331,41 +340,13 @@ void renderScene(Shader &shader, Model &robot, Object &cube) {
 //    shader.setInt("reverse_normals",
 //                  1); // A small little hack to invert normals when drawing cube from the inside so lighting still works.
 //    renderCube();
-    shader.setInt("reverse_normals", 0); // and of course disable it
+//    shader.setInt("reverse_normals", 0); // and of course disable it
     glEnable(GL_CULL_FACE);
-    // cubes
-//    model = glm::mat4(1.0f);
-//    model = glm::translate(model, vec3(1.0F));
-//    shader.setMat4("model", model);
-//    renderCube();
-
-//    model = glm::mat4(1.0f);
-//    model = glm::translate(model, glm::vec3(2.0f, 3.0f, 1.0));
-//    model = glm::scale(model, glm::vec3(0.75f));
-//    shader.setMat4("model", model);
-//    renderCube();
-//    model = glm::mat4(1.0f);
-//    model = glm::translate(model, glm::vec3(-3.0f, -1.0f, 0.0));
-//    model = glm::scale(model, glm::vec3(0.5f));
-//    shader.setMat4("model", model);
-//    renderCube();
-//    model = glm::mat4(1.0f);
-//    model = glm::translate(model, glm::vec3(-1.5f, 1.0f, 1.5));
-//    model = glm::scale(model, glm::vec3(0.5f));
-//    shader.setMat4("model", model);
-//    renderCube();
-//    model = glm::mat4(1.0f);
-//    model = glm::translate(model, glm::vec3(-1.5f, 2.0f, -3.0));
-//    model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-//    model = glm::scale(model, glm::vec3(0.75f));
-//    shader.setMat4("model", model);
-//    renderCube();
 
     model = glm::mat4(1.0f);
     shader.setMat4("model", model);
     robot.draw(shader);
 
-//    model = glm:: mat4(1.0f);
     shader.setMat4("model", cube.transform.getModelMatrix());
     cube.model->draw(shader);
 }
@@ -449,13 +430,19 @@ void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &sha
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
+        camera.ProcessKeyboardFPS(FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
+        camera.ProcessKeyboardFPS(BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
+        camera.ProcessKeyboardFPS(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+        camera.ProcessKeyboardFPS(RIGHT, deltaTime);
+
+    if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+        camera.ProcessKeyboardArcball(true);
+    else if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_RELEASE)
+        camera.ProcessKeyboardArcball(false);
+
 
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !shadowsKeyPressed) {
         shadows = !shadows;
