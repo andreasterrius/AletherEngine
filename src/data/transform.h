@@ -13,9 +13,9 @@ using namespace glm;
 namespace ale {
 class Transform {
 public:
-    vec3 translation;
-    vec3 scale;
-    vec4 rotation; //quaternion
+    vec3 translation = vec3(0.0f);
+    vec3 scale = vec3(1.0f);
+    vec4 rotation = vec4(0.0f); //quaternion
 
     mat4 getModelMatrix();
 };

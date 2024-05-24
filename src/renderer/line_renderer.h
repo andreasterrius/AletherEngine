@@ -19,25 +19,32 @@ static vec3 WHITE = vec3(1.0, 1.0, 1.0);
 namespace ale {
 
 class Ray;
+class Transform;
+class BoundingBox;
 
 class LineRenderer {
 private:
-    unsigned int linesVAO, linesVBO;
-    Shader shader;
-
     struct Data {
         vec3 startPos;
         vec3 color;
     };
+    Shader shader;
 
-    vector<Data> data;
+    unsigned int linesVAO, linesVBO;
+    vector<Data> lineData;
+
+    unsigned int boxVAO, boxVBO;
+    vector<Data> boxData;
+
 
 public:
     LineRenderer();
 
-    void queue(Ray &ray, vec3 color = WHITE);
+    void queueLine(Ray &ray, vec3 color = WHITE);
 
-    void queue(vec3 start, vec3 end, vec3 color = WHITE);
+    void queueLine(vec3 start, vec3 end, vec3 color = WHITE);
+
+    void queueBox(Transform transform, BoundingBox bb);
 
     void render(mat4 projection, mat4 view);
 };

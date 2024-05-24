@@ -16,6 +16,7 @@
 #include <src/data/object.h>
 #include <src/gizmo/gizmo.h>
 #include <src/data/transform.h>
+#include <src/sdf_model.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -29,8 +30,12 @@ using afs = ale::FileSystem;
 
 // TODO:
 // 1. Create an arcball camera control (DONE)
-// 2. Insert a triangle the scene
-// 3. Generate a debug view from this triangle in CPU side (no GPU yet atm)
+// 2. Insert a triangle the scene (DONE)
+// 3. Generate the SDF cube view for a sphere
+    //3.1 generate the points first and visualize them in the viewport
+    //3.2 loop over all the triangles that exist in the scene
+    //3.3 make the loop parallel for every n triangle (where n is number of thread/spread algorithm)
+    //3.4 calculate the distance with barycentry coordinage from each of the triangle to specific points in the 3d array.
 
 // should hold non owning datas
 struct WindowData {
@@ -78,11 +83,11 @@ Ray getMouseRay(float mouseX, float mouseY,
 }
 
 
-void renderScene(Shader &shader, Model &robot, Object &cube);
+void renderScene(Shader &shader, Model &robot, vector<Object> &objects);
 
 void renderCube();
 
-void renderBoundingBoxWireframe(LineRenderer &lr, Transform transform, BoundingBox bbT);
+//void renderBoundingBoxWireframe(LineRenderer &lr, Transform transform, BoundingBox bbT);
 
 void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &shadows, bool &shadowsKeyPressed);
 
@@ -181,7 +186,8 @@ int main() {
     unsigned int woodTexture = woodTextureOpt.value();
 
     // load some random mesh
-    Model object(afs::root("resources/models/cyborg/cyborg.obj"));
+    Model robot(afs::root("resources/models/cyborg/cyborg.obj"));
+    Model randomCubes(afs::root("resources/models/sphere_random.obj"));
 
     // configure depth map FBO
     const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -212,7 +218,7 @@ int main() {
     colorShader.setInt("diffuseTexture", 0);
     colorShader.setInt("depthMap", 1);
 
-    vec3 lightPos(0.0f, 0.0f, 0.0f);
+    vec3 lightPos(10.0f, 10.0f, 0.0f);
     bool shadows = true;
     bool shadowKeyPressed = false;
 
@@ -230,12 +236,19 @@ int main() {
                         .rotation = vec4(1.0f),
                 },
                 .model = make_shared<Model>(std::move(ModelFactory::createCubeModel()))
+        },
+        Object {
+            .transform = Transform {},
+            .model = make_shared<Model>(std::move(randomCubes))
         }
     };
     objects[0].model->meshes[0].textures.push_back(Texture {
         .id=woodTexture,
         .type="texture_diffuse",
     });
+
+    //SdfModel robotSdf(robot, 4);
+    SdfModel randomCubesSdf(*objects[1].model.get(), 4);
 
     float deltaTime, lastFrame = glfwGetTime();
     while (!glfwWindowShouldClose(window.get())) {
@@ -291,7 +304,7 @@ int main() {
             linearDepthShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
         linearDepthShader.setFloat("far_plane", far_plane);
         linearDepthShader.setVec3("lightPos", lightPos);
-        renderScene(linearDepthShader, object, objects[0]);
+        renderScene(linearDepthShader, robot, objects);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. render scene as normal
@@ -311,14 +324,18 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, woodTexture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-        renderScene(colorShader, object, objects[0]);
+        renderScene(colorShader, robot, objects);
 
         gizmo.render(camera, lightPos, vec2(wd.screenWidth, wd.screenHeight));
 
-        lineRenderer.queue(lastMouseRay);
-        lineRenderer.queue(vec3(0), vec3(100));
-        renderBoundingBoxWireframe(lineRenderer, Transform{}, object.meshes[0].boundingBox);
-        renderBoundingBoxWireframe(lineRenderer, objects[0].transform, objects[0].model->meshes[0].boundingBox);
+        lineRenderer.queueLine(lastMouseRay);
+        lineRenderer.queueLine(vec3(0), vec3(100));
+//        lineRenderer.queueBB(Transform{}, robot.meshes[0].boundingBox);
+//        lineRenderer.queueBB(objects[0].transform, objects[0].model->meshes[0].boundingBox);
+        lineRenderer.queueBox(Transform{}, randomCubesSdf.boundingBox);
+        randomCubesSdf.loopOverCubes([&](Transform transform, BoundingBox bb){
+            lineRenderer.queueBox(transform, bb);
+        });
         lineRenderer.render(projection, view);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -330,7 +347,7 @@ int main() {
     return 0;
 }
 
-void renderScene(Shader &shader, Model &robot, Object &cube) {
+void renderScene(Shader &shader, Model &robot, vector<Object> &objects) {
     // room cube
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::scale(model, glm::vec3(5.0f));
@@ -347,8 +364,13 @@ void renderScene(Shader &shader, Model &robot, Object &cube) {
     shader.setMat4("model", model);
     robot.draw(shader);
 
-    shader.setMat4("model", cube.transform.getModelMatrix());
-    cube.model->draw(shader);
+//    shader.setMat4("model", cube.transform.getModelMatrix());
+//    cube.model->draw(shader);
+
+    for(auto &object : objects) {
+        shader.setMat4("model", object.transform.getModelMatrix());
+        object.model->draw(shader);
+    }
 }
 
 // renderCube() renders a 1x1 3D cube in NDC.
@@ -451,39 +473,6 @@ void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &sha
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
         shadowsKeyPressed = false;
     }
-}
-
-void renderBoundingBoxWireframe(LineRenderer &lr, Transform transform, BoundingBox bb) {
-    BoundingBox bbT = bb;
-    bbT.min = transform.getModelMatrix() * vec4(bb.min, 1.0);
-    bbT.max = transform.getModelMatrix() * vec4(bb.max, 1.0);
-
-    // bottom point
-    vec3 a = vec3(bbT.min.x, bbT.min.y, bbT.min.z);
-    vec3 b = vec3(bbT.min.x, bbT.min.y, bbT.max.z);
-    vec3 c = vec3(bbT.max.x, bbT.min.y, bbT.max.z);
-    vec3 d = vec3(bbT.max.x, bbT.min.y, bbT.min.z);
-
-    // top points
-    vec3 e = vec3(bbT.min.x, bbT.max.y, bbT.min.z);
-    vec3 f = vec3(bbT.min.x, bbT.max.y, bbT.max.z);
-    vec3 g = vec3(bbT.max.x, bbT.max.y, bbT.max.z);
-    vec3 h = vec3(bbT.max.x, bbT.max.y, bbT.min.z);
-
-    lr.queue(a, b);
-    lr.queue(b, c);
-    lr.queue(c, d);
-    lr.queue(d, a);
-
-    lr.queue(a, e);
-    lr.queue(b, f);
-    lr.queue(c, g);
-    lr.queue(d, h);
-
-    lr.queue(e, f);
-    lr.queue(f, g);
-    lr.queue(g, h);
-    lr.queue(h, e);
 }
 
 void pickupObject(GLFWwindow *window,
