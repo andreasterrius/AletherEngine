@@ -1,1 +1,1 @@
-#define ALE_ROOT_PATH "D:/code/AletherEngine"
+#define ALE_ROOT_PATH "D:/Codes/AletherEngine"

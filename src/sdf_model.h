@@ -31,7 +31,7 @@ public:
     SdfModel(Model &model, int cubeCount = 16);
 
     // returns small cubes that creates the sdf
-    void loopOverCubes(function<void(Transform, BoundingBox)> func);
+    void loopOverCubes(function<void(BoundingBox)> func);
 };
 
 }

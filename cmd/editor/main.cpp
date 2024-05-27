@@ -32,10 +32,10 @@ using afs = ale::FileSystem;
 // 1. Create an arcball camera control (DONE)
 // 2. Insert a triangle the scene (DONE)
 // 3. Generate the SDF cube view for a sphere
-    //3.1 generate the points first and visualize them in the viewport
-    //3.2 loop over all the triangles that exist in the scene
-    //3.3 make the loop parallel for every n triangle (where n is number of thread/spread algorithm)
-    //3.4 calculate the distance with barycentry coordinage from each of the triangle to specific points in the 3d array.
+//3.1 generate the points first and visualize them in the viewport
+//3.2 loop over all the triangles that exist in the scene
+//3.3 make the loop parallel for every n triangle (where n is number of thread/spread algorithm)
+//3.4 calculate the distance with barycentry coordinage from each of the triangle to specific points in the 3d array.
 
 // should hold non owning datas
 struct WindowData {
@@ -53,16 +53,16 @@ Ray getMouseRay(float mouseX, float mouseY,
                 float screenWidth, float screenHeight,
                 mat4 projMat, mat4 viewMat) {
     vec4 rayStartNdc = vec4(
-            ((mouseX / screenWidth) * 2) - 1,
-            ((mouseY / screenHeight) * 2) - 1,
-            -1.0f,
-            1.0f
+        ((mouseX / screenWidth) * 2) - 1,
+        ((mouseY / screenHeight) * 2) - 1,
+        -1.0f,
+        1.0f
     );
     vec4 rayEndNdc = vec4(
-            ((mouseX / screenWidth) * 2) - 1,
-            ((mouseY / screenHeight) * 2) - 1,
-            0.0f,
-            1.0f
+        ((mouseX / screenWidth) * 2) - 1,
+        ((mouseY / screenHeight) * 2) - 1,
+        0.0f,
+        1.0f
     );
 
     // not sure why this has to be inverted.
@@ -77,13 +77,13 @@ Ray getMouseRay(float mouseX, float mouseY,
     rayEndWorld /= rayEndWorld.w;
 
     Ray r(rayStartWorld, normalize(rayEndWorld - rayStartWorld));
-//    cout << r.toString() << "\n";
+    //    cout << r.toString() << "\n";
 
     return r;
 }
 
 
-void renderScene(Shader &shader, Model &robot, vector<Object> &objects);
+void renderScene(Shader &shader, vector<Object> &objects);
 
 void renderCube();
 
@@ -91,7 +91,7 @@ void renderCube();
 
 void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &shadows, bool &shadowsKeyPressed);
 
-void pickupObject(GLFWwindow *window, WindowData wd, vector<Object> &objectsToSelect, Object*& selectedObject,
+void pickupObject(GLFWwindow *window, WindowData wd, vector<Object> &objectsToSelect, Object *&selectedObject,
                   Camera &camera, Gizmo &gizmo, Ray &lastRay);
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -104,6 +104,11 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+
+void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
+    auto *wd = (WindowData *) glfwGetWindowUserPointer(window);
+    wd->camera->ProcessMouseScroll(yOffset);
 }
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
@@ -149,15 +154,14 @@ void mouseCallback(GLFWwindow *window, double xposIn, double yposIn) {
 }
 
 int main() {
-
     Camera camera(ARCBALL, glm::vec3(0.0f, 0.0f, 5.0f));
 
     WindowData wd{
-            .camera = &camera,
-            .firstMouse = true,
-            .screenWidth = 1024,
-            .screenHeight = 768,
-            .isCursorDisabled = false
+        .camera = &camera,
+        .firstMouse = true,
+        .screenWidth = 1024,
+        .screenHeight = 768,
+        .isCursorDisabled = false
     };
 
     glfwInit();
@@ -171,6 +175,7 @@ int main() {
     glfwSetCursorPosCallback(window.get(), mouseCallback);
     glfwSetWindowUserPointer(window.get(), &wd);
     glfwSetFramebufferSizeCallback(window.get(), framebuffer_size_callback);
+    glfwSetScrollCallback(window.get(), scrollCallback);
 
     Shader colorShader(afs::root("src/shaders/point_shadows.vs").c_str(),
                        afs::root("src/shaders/point_shadows.fs").c_str());
@@ -227,24 +232,30 @@ int main() {
     LineRenderer lineRenderer;
     Ray lastMouseRay(vec3(0.0), camera.Front);
 
-    Object* selectedObject = nullptr;
+    Object *selectedObject = nullptr;
     vector<Object> objects{
-        Object {
-                .transform = Transform{
-                        .translation = vec3(1.0f),
-                        .scale = vec3(1.0f),
-                        .rotation = vec4(1.0f),
-                },
-                .model = make_shared<Model>(std::move(ModelFactory::createCubeModel()))
+        Object{
+            .transform = Transform{
+                .translation = vec3(10.0f)
+            },
+            .model = make_shared<Model>(std::move(ModelFactory::createCubeModel()))
         },
-        Object {
-            .transform = Transform {},
+        Object{
+            .transform = Transform{
+                .translation = vec3(0.0f),
+            },
             .model = make_shared<Model>(std::move(randomCubes))
+        },
+        Object{
+            .transform = Transform{
+                .translation = vec3(10.0f),
+            },
+            .model = make_shared<Model>(std::move(robot))
         }
     };
-    objects[0].model->meshes[0].textures.push_back(Texture {
-        .id=woodTexture,
-        .type="texture_diffuse",
+    objects[0].model->meshes[0].textures.push_back(Texture{
+        .id = woodTexture,
+        .type = "texture_diffuse",
     });
 
     //SdfModel robotSdf(robot, 4);
@@ -304,7 +315,7 @@ int main() {
             linearDepthShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
         linearDepthShader.setFloat("far_plane", far_plane);
         linearDepthShader.setVec3("lightPos", lightPos);
-        renderScene(linearDepthShader, robot, objects);
+        renderScene(linearDepthShader, objects);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. render scene as normal
@@ -324,17 +335,15 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, woodTexture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-        renderScene(colorShader, robot, objects);
+        renderScene(colorShader, objects);
 
         gizmo.render(camera, lightPos, vec2(wd.screenWidth, wd.screenHeight));
 
-        lineRenderer.queueLine(lastMouseRay);
-        lineRenderer.queueLine(vec3(0), vec3(100));
-//        lineRenderer.queueBB(Transform{}, robot.meshes[0].boundingBox);
-//        lineRenderer.queueBB(objects[0].transform, objects[0].model->meshes[0].boundingBox);
-        lineRenderer.queueBox(Transform{}, randomCubesSdf.boundingBox);
-        randomCubesSdf.loopOverCubes([&](Transform transform, BoundingBox bb){
-            lineRenderer.queueBox(transform, bb);
+        lineRenderer.queueBox(objects[1].transform, objects[1].model->meshes[0].boundingBox);
+        //         lineRenderer.queueLine(lastMouseRay);
+        //         lineRenderer.queueLine(vec3(0), vec3(100));
+        randomCubesSdf.loopOverCubes([&](BoundingBox bb) {
+            lineRenderer.queueBox(Transform{}, bb);
         });
         lineRenderer.render(projection, view);
 
@@ -347,27 +356,27 @@ int main() {
     return 0;
 }
 
-void renderScene(Shader &shader, Model &robot, vector<Object> &objects) {
+void renderScene(Shader &shader, vector<Object> &objects) {
     // room cube
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::scale(model, glm::vec3(5.0f));
     shader.setMat4("model", model);
-//    glDisable(
-//            GL_CULL_FACE); // note that we disable culling here since we render 'inside' the cube instead of the usual 'outside' which throws off the normal culling methods.
-//    shader.setInt("reverse_normals",
-//                  1); // A small little hack to invert normals when drawing cube from the inside so lighting still works.
-//    renderCube();
-//    shader.setInt("reverse_normals", 0); // and of course disable it
+    //    glDisable(
+    //            GL_CULL_FACE); // note that we disable culling here since we render 'inside' the cube instead of the usual 'outside' which throws off the normal culling methods.
+    //    shader.setInt("reverse_normals",
+    //                  1); // A small little hack to invert normals when drawing cube from the inside so lighting still works.
+    //    renderCube();
+    //    shader.setInt("reverse_normals", 0); // and of course disable it
     glEnable(GL_CULL_FACE);
 
-    model = glm::mat4(1.0f);
-    shader.setMat4("model", model);
-    robot.draw(shader);
+    // model = glm::mat4(1.0f);
+    // shader.setMat4("model", model);
+    // robot.draw(shader);
 
-//    shader.setMat4("model", cube.transform.getModelMatrix());
-//    cube.model->draw(shader);
+    //    shader.setMat4("model", cube.transform.getModelMatrix());
+    //    cube.model->draw(shader);
 
-    for(auto &object : objects) {
+    for (auto &object: objects) {
         shader.setMat4("model", object.transform.getModelMatrix());
         object.model->draw(shader);
     }
@@ -382,48 +391,48 @@ void renderCube() {
     // initialize (if necessary)
     if (cubeVAO == 0) {
         float vertices[] = {
-                // back face
-                -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-                1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, // top-right
-                1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, // bottom-right
-                1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, // top-right
-                -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-                -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, // top-left
-                // front face
-                -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
-                1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // bottom-right
-                1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top-right
-                1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top-right
-                -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // top-left
-                -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
-                // left face
-                -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-right
-                -1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top-left
-                -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
-                -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
-                -1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom-right
-                -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-right
-                // right face
-                1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-left
-                1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-right
-                1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top-right
-                1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-right
-                1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-left
-                1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom-left
-                // bottom face
-                -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // top-right
-                1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top-left
-                1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
-                1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
-                -1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, // bottom-right
-                -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // top-right
-                // top face
-                -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top-left
-                1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
-                1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // top-right
-                1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
-                -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top-left
-                -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f  // bottom-left
+            // back face
+            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+            1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, // top-right
+            1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, // bottom-right
+            1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, // top-right
+            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+            -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, // top-left
+            // front face
+            -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
+            1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // bottom-right
+            1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top-right
+            1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top-right
+            -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // top-left
+            -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
+            // left face
+            -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-right
+            -1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top-left
+            -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-right
+            // right face
+            1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-left
+            1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-right
+            1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top-right
+            1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-right
+            1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-left
+            1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom-left
+            // bottom face
+            -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // top-right
+            1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top-left
+            1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
+            1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
+            -1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // top-right
+            // top face
+            -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top-left
+            1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
+            1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // top-right
+            1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
+            -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top-left
+            -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f // bottom-left
         };
         glGenVertexArrays(1, &cubeVAO);
         glGenBuffers(1, &cubeVBO);
@@ -478,11 +487,10 @@ void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &sha
 void pickupObject(GLFWwindow *window,
                   WindowData wd,
                   vector<Object> &objectsToSelect,
-                  Object*& selectedObject,
+                  Object *&selectedObject,
                   Camera &camera,
                   Gizmo &gizmo,
                   Ray &lastRay) {
-
     bool clickedSomething = false;
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
         if (selectedObject != nullptr) {
@@ -526,5 +534,3 @@ void pickupObject(GLFWwindow *window,
         gizmo.release();
     }
 }
-
-

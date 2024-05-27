@@ -14,6 +14,12 @@ SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), bounding
     // explode the bounding box a little bit
     Transform scaleBB{.scale=vec3(1.1, 1.1, 1.1),}; // make it a bit bigger
     this->boundingBox = this->boundingBox.applyTransform(scaleBB);
+
+    cubeSize = vec3(
+        (boundingBox.max.x - boundingBox.min.x) / cubeCount,
+        (boundingBox.max.y - boundingBox.min.y) / cubeCount,
+        (boundingBox.max.z - boundingBox.min.z) / cubeCount
+    );
 //
 //    distances = vector<vector<vector<float>>>(
 //            cubeCount, vector<vector<float>>(
@@ -54,33 +60,37 @@ SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), bounding
 //    }
 }
 
-void SdfModel::loopOverCubes(function<void(Transform, BoundingBox)> func) {
+void SdfModel::loopOverCubes(function<void(BoundingBox)> func) {
 
     // 1. Generate the coordinates for each point that we have inside the bounding box
-    cubeSize = vec3(
-            (boundingBox.max.x - boundingBox.min.x) / cubeCount,
-            (boundingBox.max.y - boundingBox.min.y) / cubeCount,
-            (boundingBox.max.z - boundingBox.min.z) / cubeCount
-    );
-    // find the starting point of the sdf volume
-    vec3 cubeHalfExtent = cubeSize / 2.0f;
-    vec3 cubeStartPos = this->boundingBox.min + cubeHalfExtent;
+
 
     // 2. Loop over all the triangles in the mesh (with/without EBO)
-    for(int i = 0; i < cubeCount; ++i){
+    // for(int i = 0; i < cubeCount; ++i){
+    //     float xOffset = cubeSize.x * i;
+    //     for(int j = 0; j < cubeCount; ++j) {
+    //         float yOffset = cubeSize.y * j;
+    //         for(int k = 0; k < cubeCount; ++k) {
+    //             float zOffset = cubeSize.z * k;
+    //             vec3 currentPos = cubeStartPos + vec3(xOffset, yOffset, zOffset);
+    //             BoundingBox bb = BoundingBox(
+    //                 currentPos,
+    //                 currentPos + cubeSize
+    //             );
+    //             func(Transform{.translation = currentPos}, bb);
+    //         }
+    //     }
+    // }
+    vec3 startPos = this->boundingBox.min;
+    for(int i = 0; i < cubeCount; ++i) {
         float xOffset = cubeSize.x * i;
         for(int j = 0; j < cubeCount; ++j) {
             float yOffset = cubeSize.y * j;
-            for(int k = 0; k < cubeCount; ++k) {
+            for(int k = 0; k < cubeCount; ++k){
                 float zOffset = cubeSize.z * k;
-                vec3 currentPos = cubeStartPos + vec3(xOffset, yOffset, zOffset);
-                BoundingBox bb = BoundingBox(
-                    currentPos - cubeHalfExtent,
-                    currentPos + cubeHalfExtent
-                );
-                func(Transform{.translation = currentPos}, bb);
+                vec3 pos = startPos + vec3(xOffset, yOffset, zOffset);
+                func(BoundingBox(pos, pos + cubeSize));
             }
         }
     }
 }
-

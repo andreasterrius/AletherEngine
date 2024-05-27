@@ -28,13 +28,13 @@ private:
         vec3 startPos;
         vec3 color;
     };
-    Shader shader;
-
+    Shader lineShader;
     unsigned int linesVAO, linesVBO;
     vector<Data> lineData;
 
-    unsigned int boxVAO, boxVBO;
-    vector<Data> boxData;
+    Shader boxShader;
+    unsigned int boxVAO, boxVBO, boxInstanceVBO;
+    vector<vec3> boxData;
 
 
 public:
