@@ -8,11 +8,14 @@
 #include "src/data/boundingbox.h"
 #include <functional>
 
+#include "util.h"
+
 using namespace ale;
 
-SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), boundingBox(model.meshes[0].boundingBox){
+
+SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), boundingBox(model.meshes[0].boundingBox) {
     // explode the bounding box a little bit
-    Transform scaleBB{.scale=vec3(1.1, 1.1, 1.1),}; // make it a bit bigger
+    Transform scaleBB{.scale = vec3(1.1, 1.1, 1.1),}; // make it a bit bigger
     this->boundingBox = this->boundingBox.applyTransform(scaleBB);
 
     cubeSize = vec3(
@@ -20,51 +23,27 @@ SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), bounding
         (boundingBox.max.y - boundingBox.min.y) / cubeCount,
         (boundingBox.max.z - boundingBox.min.z) / cubeCount
     );
-//
-//    distances = vector<vector<vector<float>>>(
-//            cubeCount, vector<vector<float>>(
-//                    cubeCount, vector<float>(
-//                            cubeCount, 0.0f)));
-//
-//    // 1. Generate the coordinates for each point that we have inside the bounding box
-//    cubeSize = vec3(
-//            (model.meshes[0].boundingBox.max.x - model.meshes[0].boundingBox.min.x) / cubeCount,
-//            (model.meshes[0].boundingBox.max.y - model.meshes[0].boundingBox.min.y) / cubeCount,
-//            (model.meshes[0].boundingBox.max.z - model.meshes[0].boundingBox.min.z) / cubeCount
-//    );
-//    // find the starting point of the sdf volume
-//    vec3 cubeHalfExtent = cubeSize / 2.0f;
-//    vec3 cubeStartPos = this->boundingBox.min + cubeHalfExtent;
-//
-//    // 2. Loop over all the triangles in the mesh (with/without EBO)
-//    for(int i = 0; i < cubeCount; ++i){
-//        float xOffset = cubeSize.x * i;
-//        for(int j = 0; j < cubeCount; ++j) {
-//            float yOffset = cubeSize.y * j;
-//            for(int k = 0; k < cubeCount; ++k) {
-//                float zOffset = cubeSize.z * k;
-//                vec3 currentPos = cubeStartPos + vec3(xOffset, yOffset, zOffset);
-//                distances[i][j][k] = INFINITY;
-//
-//                // loop over all triangles
-//                // 3. From the triangles, calculate the distance to the coordinate of (1.)
-//                for(int tri = 0; tri+2 < model.meshes[0].indices.size(); tri += 3) {
-//                    Vertex a = model.meshes[0].vertices[model.meshes[0].indices[tri]];
-//                    Vertex b = model.meshes[0].vertices[model.meshes[0].indices[tri+1]];
-//                    Vertex c = model.meshes[0].vertices[model.meshes[0].indices[tri+2]];
-//
-//                    // find the distance between the triangle and point
-//                }
-//            }
-//        }
-//    }
+    distances = vector(cubeCount, vector(cubeCount, vector(cubeCount, INFINITY)));
+    positions = vector(cubeCount, vector(cubeCount, vector(cubeCount, vec3())));
+
+    this->loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
+        for (int tri = 0; tri + 2 < model.meshes[0].indices.size(); tri += 3) {
+            Vertex a = model.meshes[0].vertices[model.meshes[0].indices[tri]];
+            Vertex b = model.meshes[0].vertices[model.meshes[0].indices[tri + 1]];
+            Vertex c = model.meshes[0].vertices[model.meshes[0].indices[tri + 2]];
+
+
+            float distance = Util::udTriangle(bb.center, a.Position, b.Position, c.Position);
+            if(distance < distances[i][j][k]) {
+                distances[i][j][k] = distance;
+                positions[i][j][k] = bb.center;
+            }
+        }
+    });
 }
 
-void SdfModel::loopOverCubes(function<void(BoundingBox)> func) {
-
+void SdfModel::loopOverCubes(function<void(int, int, int, BoundingBox)> func) {
     // 1. Generate the coordinates for each point that we have inside the bounding box
-
-
     // 2. Loop over all the triangles in the mesh (with/without EBO)
     // for(int i = 0; i < cubeCount; ++i){
     //     float xOffset = cubeSize.x * i;
@@ -82,15 +61,37 @@ void SdfModel::loopOverCubes(function<void(BoundingBox)> func) {
     //     }
     // }
     vec3 startPos = this->boundingBox.min;
-    for(int i = 0; i < cubeCount; ++i) {
+    for (int i = 0; i < cubeCount; ++i) {
         float xOffset = cubeSize.x * i;
-        for(int j = 0; j < cubeCount; ++j) {
+        for (int j = 0; j < cubeCount; ++j) {
             float yOffset = cubeSize.y * j;
-            for(int k = 0; k < cubeCount; ++k){
+            for (int k = 0; k < cubeCount; ++k) {
                 float zOffset = cubeSize.z * k;
                 vec3 pos = startPos + vec3(xOffset, yOffset, zOffset);
-                func(BoundingBox(pos, pos + cubeSize));
+                func(i, j, k, BoundingBox(pos, pos + cubeSize));
             }
         }
     }
+}
+
+Texture3D::Texture3D(vector<vector<vector<float>>> distances) {
+    glGenTextures(1, &this->id);
+
+    if(distances.empty() || distances[0].empty() || distances[0][0].empty()) {
+        return;
+    }
+
+    int width = distances.size();
+    int height = distances[0].size();
+    int depth = distances[0][0].size();
+    GLenum format = GL_RGB;
+
+    glBindTexture(GL_TEXTURE_3D, this->id);
+    glTexImage3D(GL_TEXTURE_3D, 0, format, width, height, depth, 0, format, GL_FLOAT, distances.data());
+    glGenerateMipmap(GL_TEXTURE_3D);
+
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT); // for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }

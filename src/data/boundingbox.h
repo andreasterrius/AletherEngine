@@ -15,10 +15,12 @@ class Transform;
 
 class BoundingBox {
 public:
-    vec3 min, max;
+    vec3 min, max, center;
     BoundingBox(vec3 min, vec3 max);
 
     BoundingBox applyTransform(Transform t) const;
+
+    vec3 getCenter() const;
 };
 }
 

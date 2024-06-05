@@ -61,7 +61,7 @@ public:
     static Model createCubeModel();
 
     //https://www.songho.ca/opengl/gl_sphere.html#sphere
-    static Model createSphereModel();
+    static Model createSphereModel(float radius);
 };
 
 }

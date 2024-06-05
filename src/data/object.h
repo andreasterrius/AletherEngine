@@ -20,6 +20,9 @@ class Object {
 public:
     Transform transform;
     shared_ptr<Model> model;
+    bool shouldRender = true;
+
+    vec4 color;
 };
 }
 

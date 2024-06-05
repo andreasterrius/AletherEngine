@@ -32,8 +32,8 @@ using afs = ale::FileSystem;
 // 1. Create an arcball camera control (DONE)
 // 2. Insert a triangle the scene (DONE)
 // 3. Generate the SDF cube view for a sphere
-//3.1 generate the points first and visualize them in the viewport
-//3.2 loop over all the triangles that exist in the scene
+//3.1 generate the points first and visualize them in the viewport (DONE)
+//3.2 loop over all the triangles that exist in the scene (DONE)
 //3.3 make the loop parallel for every n triangle (where n is number of thread/spread algorithm)
 //3.4 calculate the distance with barycentry coordinage from each of the triangle to specific points in the 3d array.
 
@@ -238,7 +238,8 @@ int main() {
             .transform = Transform{
                 .translation = vec3(10.0f)
             },
-            .model = make_shared<Model>(std::move(ModelFactory::createCubeModel()))
+            .model = make_shared<Model>(std::move(ModelFactory::createCubeModel())),
+            .shouldRender = false
         },
         Object{
             .transform = Transform{
@@ -250,8 +251,9 @@ int main() {
             .transform = Transform{
                 .translation = vec3(10.0f),
             },
-            .model = make_shared<Model>(std::move(robot))
-        }
+            .model = make_shared<Model>(std::move(robot)),
+            .shouldRender = false
+        },
     };
     objects[0].model->meshes[0].textures.push_back(Texture{
         .id = woodTexture,
@@ -259,7 +261,15 @@ int main() {
     });
 
     //SdfModel robotSdf(robot, 4);
-    SdfModel randomCubesSdf(*objects[1].model.get(), 4);
+    SdfModel randomCubesSdf(*objects[1].model.get(), 8);
+
+    objects.push_back(Object{
+        .transform = Transform {
+            .translation = randomCubesSdf.positions[0][0][0],
+        },
+        .model = make_shared<Model>(std::move(ModelFactory::createSphereModel(randomCubesSdf.distances[0][0][0]))),
+        .color = vec4(1.0, 1.0, 1.0, 0.5),
+    });
 
     float deltaTime, lastFrame = glfwGetTime();
     while (!glfwWindowShouldClose(window.get())) {
@@ -342,7 +352,7 @@ int main() {
         lineRenderer.queueBox(objects[1].transform, objects[1].model->meshes[0].boundingBox);
         //         lineRenderer.queueLine(lastMouseRay);
         //         lineRenderer.queueLine(vec3(0), vec3(100));
-        randomCubesSdf.loopOverCubes([&](BoundingBox bb) {
+        randomCubesSdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
             lineRenderer.queueBox(Transform{}, bb);
         });
         lineRenderer.render(projection, view);
@@ -377,8 +387,11 @@ void renderScene(Shader &shader, vector<Object> &objects) {
     //    cube.model->draw(shader);
 
     for (auto &object: objects) {
-        shader.setMat4("model", object.transform.getModelMatrix());
-        object.model->draw(shader);
+        if(object.shouldRender) {
+            shader.setMat4("model", object.transform.getModelMatrix());
+            shader.setVec4("diffuseColor", object.color);
+            object.model->draw(shader);
+        }
     }
 }
 

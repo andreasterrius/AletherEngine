@@ -20,6 +20,7 @@ file(GLOB_RECURSE ENGINE_HEADER ./src/*.h)
 ## stb needs to be added manualy to executable
 #file(GLOB_RECURSE STB_SOURCE_HEADER ./external/stb/stb_image.h)
 
+## Register AletherEngine exe
 add_executable(AletherEngine
         cmd/editor/main.cpp
         ${ENGINE_HEADER}
@@ -33,3 +34,18 @@ target_include_directories(AletherEngine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_BINARY_DIR}/external/assimp/include
 )
 target_link_libraries(AletherEngine glfw glm::glm assimp::assimp)
+
+## Register RaymarchSdf exe
+add_executable(RaymarchSdf
+        cmd/raymarch_sdf/main.cpp
+        ${ENGINE_HEADER}
+        ${ENGINE_SOURCE}
+)
+target_include_directories(RaymarchSdf PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+        external/glm
+        external/stb
+        external/glad/include
+        external/assimp/include
+        ${CMAKE_BINARY_DIR}/external/assimp/include
+)
+target_link_libraries(RaymarchSdf glfw glm::glm assimp::assimp)
