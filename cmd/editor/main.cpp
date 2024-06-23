@@ -82,6 +82,27 @@ Ray getMouseRay(float mouseX, float mouseY,
     return r;
 }
 
+vector<Ray> shootRaymarchRay(float screenWidth, float screenHeight, Camera &cam) {
+
+    vector<Ray> rays;
+    mat4 invViewProj = inverse(cam.GetProjectionMatrix(screenWidth, screenHeight) * cam.GetViewMatrix());
+    for(float i = 0; i < screenWidth; ++i) {
+        for(float j = 0; j < screenHeight; ++j) {
+
+            vec2 uv = vec2(i/screenWidth*2.0-1.0,j/screenHeight*2.0-1.0);
+
+            vec4 rayStartWorld = vec4(cam.Position, 1.0);
+            vec4 rayEndWorld = invViewProj * vec4(uv, 0.0, 1.0);
+            rayEndWorld /= rayEndWorld.w;
+
+            vec4 rayDir = normalize(rayEndWorld - rayStartWorld);
+
+            rays.push_back(Ray(rayStartWorld, rayDir));
+        }
+    }
+
+    return rays;
+}
 
 void renderScene(Shader &shader, vector<Object> &objects);
 
@@ -159,8 +180,8 @@ int main() {
     WindowData wd{
         .camera = &camera,
         .firstMouse = true,
-        .screenWidth = 1024,
-        .screenHeight = 768,
+        .screenWidth = 300,
+        .screenHeight = 300,
         .isCursorDisabled = false
     };
 
@@ -271,6 +292,8 @@ int main() {
         .color = vec4(1.0, 1.0, 1.0, 0.5),
     });
 
+    vector<Ray> rays;
+
     float deltaTime, lastFrame = glfwGetTime();
     while (!glfwWindowShouldClose(window.get())) {
         // per-frame time logic
@@ -282,6 +305,10 @@ int main() {
         // input
         // -----
         processInput(window.get(), deltaTime, camera, shadows, shadowKeyPressed);
+
+
+        if (glfwGetKey(window.get(), GLFW_KEY_SPACE) == GLFW_PRESS)
+            rays = shootRaymarchRay(wd.screenWidth, wd.screenHeight, camera);
 
         // pick up object
         // ------
@@ -350,12 +377,17 @@ int main() {
         gizmo.render(camera, lightPos, vec2(wd.screenWidth, wd.screenHeight));
 
         lineRenderer.queueBox(objects[1].transform, objects[1].model->meshes[0].boundingBox);
-        //         lineRenderer.queueLine(lastMouseRay);
-        //         lineRenderer.queueLine(vec3(0), vec3(100));
+
         randomCubesSdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
             lineRenderer.queueBox(Transform{}, bb);
         });
+
+        for(auto &r: rays) {
+            lineRenderer.queueLine(r, WHITE);
+        }
+
         lineRenderer.render(projection, view);
+
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(window.get());

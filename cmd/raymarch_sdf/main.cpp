@@ -42,9 +42,53 @@ using afs = ale::FileSystem;
     3. Pass 3d texture to shader
     4. Plug in the texture distance function
  */
+class Raymarcher {
+    unsigned int vao, vbo;
+    Shader shader;
+
+public:
+    int screenWidth;
+    int screenHeight;
+
+    Raymarcher(int screenWidth, int screenHeight) : screenWidth(screenWidth), screenHeight(screenHeight),
+                                                    shader(afs::root("src/shaders/raymarch.vs").c_str(),
+                                                           afs::root("src/shaders/raymarch.fs").c_str()) {
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        const static GLfloat vertices[] = {
+            -1.0f, 1.0f, 1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f, 1.0f
+        };
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+    }
+
+    void draw(Camera &camera) {
+        glDisable(GL_CULL_FACE);
+        shader.use();
+        shader.setFloat("iTime", glfwGetTime());
+        shader.setVec2("iResolution", vec2(screenWidth, screenHeight));
+        shader.setVec3("cameraPos", camera.Position);
+        mat4 invViewProj = inverse(camera.GetProjectionMatrix(screenWidth, screenHeight) * camera.GetViewMatrix());
+        shader.setMat4("invViewProj", invViewProj);
+
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+        glEnable(GL_CULL_FACE);
+    }
+};
 
 // should hold non owning datas
 struct WindowData {
+    Raymarcher *raymarcher;
     Camera *camera;
     bool firstMouse;
     float lastX;
@@ -54,7 +98,6 @@ struct WindowData {
     int screenHeight;
     bool isCursorDisabled;
 };
-
 
 void renderScene(Shader &shader, vector<Object> &objects);
 
@@ -70,6 +113,11 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+
+    if (wd->raymarcher != nullptr) {
+        wd->raymarcher->screenWidth = width;
+        wd->raymarcher->screenHeight = height;
+    }
 }
 
 void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
@@ -121,13 +169,13 @@ void mouseCallback(GLFWwindow *window, double xposIn, double yposIn) {
 
 int main() {
     Camera camera(ARCBALL, glm::vec3(0.0f, 0.0f, 5.0f));
-
     WindowData wd{
         .camera = &camera,
         .firstMouse = true,
         .screenWidth = 1024,
         .screenHeight = 768,
-        .isCursorDisabled = false
+        .isCursorDisabled = false,
+        // .raymarcher = nullptr, error when uncommented?   
     };
 
     glfwInit();
@@ -146,8 +194,10 @@ int main() {
     Shader colorShader(afs::root("src/shaders/point_shadows.vs").c_str(),
                        afs::root("src/shaders/point_shadows.fs").c_str());
 
+    Raymarcher raymarcher(wd.screenWidth, wd.screenHeight);
+    wd.raymarcher = &raymarcher;
+
     // load some random mesh
-    Model robot(afs::root("resources/models/cyborg/cyborg.obj"));
     Model randomCubes(afs::root("resources/models/sphere_random.obj"));
 
     // shader configuration
@@ -168,27 +218,13 @@ int main() {
     vector<Object> objects{
         Object{
             .transform = Transform{
-                .translation = vec3(10.0f)
-            },
-            .model = make_shared<Model>(std::move(ModelFactory::createCubeModel())),
-            .shouldRender = false
-        },
-        Object{
-            .transform = Transform{
                 .translation = vec3(0.0f),
             },
             .model = make_shared<Model>(std::move(randomCubes))
         },
-        Object{
-            .transform = Transform{
-                .translation = vec3(10.0f),
-            },
-            .model = make_shared<Model>(std::move(robot)),
-            .shouldRender = false
-        },
     };
     //SdfModel robotSdf(robot, 4);
-    SdfModel randomCubesSdf(*objects[1].model.get(), 8);
+    SdfModel randomCubesSdf(*objects[0].model.get(), 8);
 
     // Debug sphere
     // objects.push_back(Object{
@@ -227,23 +263,25 @@ int main() {
         // 2. render scene as normal
         glViewport(0, 0, wd.screenWidth, wd.screenHeight);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        colorShader.use();
-        glm::mat4 projection = camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight);
-        glm::mat4 view = camera.GetViewMatrix();
-        colorShader.setMat4("projection", projection);
-        colorShader.setMat4("view", view);
-        // set lighting uniforms
-        colorShader.setVec3("lightPos", lightPos);
-        colorShader.setVec3("viewPos", camera.Position);
-        colorShader.setInt("shadows", shadows ? 1 : 0); // enable/disable shadows by pressing 'SPACE'
-        colorShader.setFloat("far_plane", far_plane);
-        renderScene(colorShader, objects);
+        // colorShader.use();
+        // glm::mat4 projection = camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight);
+        // glm::mat4 view = camera.GetViewMatrix();
+        // colorShader.setMat4("projection", projection);
+        // colorShader.setMat4("view", view);
+        // // set lighting uniforms
+        // colorShader.setVec3("lightPos", lightPos);
+        // colorShader.setVec3("viewPos", camera.Position);
+        // colorShader.setInt("shadows", shadows ? 1 : 0); // enable/disable shadows by pressing 'SPACE'
+        // colorShader.setFloat("far_plane", far_plane);
+        // renderScene(colorShader, objects);
+        //
+        // lineRenderer.queueBox(objects[0].transform, objects[0].model->meshes[0].boundingBox);
+        // randomCubesSdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
+        //     lineRenderer.queueBox(Transform{}, bb);
+        // });
+        // lineRenderer.render(projection, view);
 
-        lineRenderer.queueBox(objects[1].transform, objects[1].model->meshes[0].boundingBox);
-        randomCubesSdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
-            lineRenderer.queueBox(Transform{}, bb);
-        });
-        lineRenderer.render(projection, view);
+        raymarcher.draw(camera);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(window.get());
@@ -259,10 +297,10 @@ void renderScene(Shader &shader, vector<Object> &objects) {
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::scale(model, glm::vec3(5.0f));
     shader.setMat4("model", model);
-    glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
 
     for (auto &object: objects) {
-        if(object.shouldRender) {
+        if (object.shouldRender) {
             shader.setMat4("model", object.transform.getModelMatrix());
             shader.setVec4("diffuseColor", object.color);
             object.model->draw(shader);
@@ -297,4 +335,3 @@ void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &sha
         shadowsKeyPressed = false;
     }
 }
-

@@ -10,6 +10,8 @@
 #include "../file_system.h"
 #include "../data/model.h"
 
+#define LINE_BUFFER_SIZE 100000
+
 using namespace ale;
 using afs = ale::FileSystem;
 
@@ -19,11 +21,12 @@ LineRenderer::LineRenderer() : lineShader(Shader(
                                boxShader(Shader(
                                    afs::root("src/renderer/box.vs").c_str(),
                                    afs::root("src/renderer/box.fs").c_str())) {
+
     glGenVertexArrays(1, &linesVAO);
     glGenBuffers(1, &linesVBO);
     // fill buffer
     glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
-    glBufferData(GL_ARRAY_BUFFER, 200000, nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, LINE_BUFFER_SIZE * sizeof(Data), nullptr, GL_DYNAMIC_DRAW); //just blit it multiple times bro
     // link vertex attributes
     glBindVertexArray(linesVAO);
     glEnableVertexAttribArray(0); // position
@@ -95,14 +98,18 @@ void LineRenderer::queueLine(vec3 start, vec3 end, vec3 color) {
 
 void LineRenderer::render(mat4 projection, mat4 view) {
     if (!lineData.empty()) {
+        glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
         this->lineShader.use();
         this->lineShader.setMat4("view", view);
         this->lineShader.setMat4("projection", projection);
-        glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, lineData.size() * sizeof(Data), this->lineData.data());
+        for(int i = 0; i < this->lineData.size(); i += LINE_BUFFER_SIZE) {
+            int size = std::min(LINE_BUFFER_SIZE, (int)this->lineData.size() - i);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, size * sizeof(Data), &this->lineData[i]);
 
-        glBindVertexArray(linesVAO);
-        glDrawArrays(GL_LINES, 0, lineData.size());
+            glBindVertexArray(linesVAO);
+            glDrawArrays(GL_LINES, 0, size);
+        }
+
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
         this->lineData.clear();
