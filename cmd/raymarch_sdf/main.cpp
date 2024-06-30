@@ -68,14 +68,17 @@ public:
         glEnableVertexAttribArray(0);
     }
 
-    void draw(Camera &camera) {
+    void draw(Camera &camera, SdfModel &sdfModel) {
         glDisable(GL_CULL_FACE);
+
         shader.use();
         shader.setFloat("iTime", glfwGetTime());
         shader.setVec2("iResolution", vec2(screenWidth, screenHeight));
         shader.setVec3("cameraPos", camera.Position);
         mat4 invViewProj = inverse(camera.GetProjectionMatrix(screenWidth, screenHeight) * camera.GetViewMatrix());
         shader.setMat4("invViewProj", invViewProj);
+
+        sdfModel.bindToShader(shader);
 
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -168,7 +171,7 @@ void mouseCallback(GLFWwindow *window, double xposIn, double yposIn) {
 }
 
 int main() {
-    Camera camera(ARCBALL, glm::vec3(0.0f, 0.0f, 5.0f));
+    Camera camera(ARCBALL, glm::vec3(0.0f, 0.0f, 10.0f));
     WindowData wd{
         .camera = &camera,
         .firstMouse = true,
@@ -198,7 +201,7 @@ int main() {
     wd.raymarcher = &raymarcher;
 
     // load some random mesh
-    Model randomCubes(afs::root("resources/models/sphere_random.obj"));
+    Model trophy(afs::root("resources/models/sample.obj"));
 
     // shader configuration
     // --------------------
@@ -210,30 +213,19 @@ int main() {
     bool shadows = true;
     bool shadowKeyPressed = false;
 
-    Gizmo gizmo;
-
     LineRenderer lineRenderer;
 
-    Object *selectedObject = nullptr;
     vector<Object> objects{
         Object{
             .transform = Transform{
                 .translation = vec3(0.0f),
             },
-            .model = make_shared<Model>(std::move(randomCubes))
+            .model = make_shared<Model>(std::move(trophy))
         },
     };
-    //SdfModel robotSdf(robot, 4);
-    SdfModel randomCubesSdf(*objects[0].model.get(), 8);
 
-    // Debug sphere
-    // objects.push_back(Object{
-    //     .transform = Transform {
-    //         .translation = randomCubesSdf.positions[0][0][0],
-    //     },
-    //     .model = make_shared<Model>(std::move(ModelFactory::createSphereModel(randomCubesSdf.distances[0][0][0]))),
-    //     .color = vec4(1.0, 1.0, 1.0, 0.5),
-    // });
+    SdfModel trophySdf(*objects[0].model.get(), 16);
+    trophySdf.writeToFile("resources/trophySdf.txt");
 
     float deltaTime, lastFrame = glfwGetTime();
     while (!glfwWindowShouldClose(window.get())) {
@@ -281,7 +273,12 @@ int main() {
         // });
         // lineRenderer.render(projection, view);
 
-        raymarcher.draw(camera);
+        //raymarcher.draw(camera);
+        trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
+            lineRenderer.queueBox(Transform{}, bb);
+        });
+
+        raymarcher.draw(camera, trophySdf);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(window.get());

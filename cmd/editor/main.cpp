@@ -83,13 +83,11 @@ Ray getMouseRay(float mouseX, float mouseY,
 }
 
 vector<Ray> shootRaymarchRay(float screenWidth, float screenHeight, Camera &cam) {
-
     vector<Ray> rays;
     mat4 invViewProj = inverse(cam.GetProjectionMatrix(screenWidth, screenHeight) * cam.GetViewMatrix());
-    for(float i = 0; i < screenWidth; ++i) {
-        for(float j = 0; j < screenHeight; ++j) {
-
-            vec2 uv = vec2(i/screenWidth*2.0-1.0,j/screenHeight*2.0-1.0);
+    for (float i = 0; i < screenWidth; ++i) {
+        for (float j = 0; j < screenHeight; ++j) {
+            vec2 uv = vec2(i / screenWidth * 2.0 - 1.0, j / screenHeight * 2.0 - 1.0);
 
             vec4 rayStartWorld = vec4(cam.Position, 1.0);
             vec4 rayEndWorld = invViewProj * vec4(uv, 0.0, 1.0);
@@ -102,6 +100,19 @@ vector<Ray> shootRaymarchRay(float screenWidth, float screenHeight, Camera &cam)
     }
 
     return rays;
+}
+
+Ray shootRaymarchRaySingular(float i, float j, float screenWidth, float screenHeight, Camera &cam) {
+    mat4 invViewProj = inverse(cam.GetProjectionMatrix(screenWidth, screenHeight) * cam.GetViewMatrix());
+    vec2 uv = vec2(i / screenWidth * 2.0 - 1.0, j / screenHeight * 2.0 - 1.0);
+
+    vec4 rayStartWorld = vec4(cam.Position, 1.0);
+    vec4 rayEndWorld = invViewProj * vec4(uv, 0.0, 1.0);
+    rayEndWorld /= rayEndWorld.w;
+
+    vec4 rayDir = normalize(rayEndWorld - rayStartWorld);
+
+    return Ray(rayStartWorld, rayDir);
 }
 
 void renderScene(Shader &shader, vector<Object> &objects);
@@ -175,13 +186,13 @@ void mouseCallback(GLFWwindow *window, double xposIn, double yposIn) {
 }
 
 int main() {
-    Camera camera(ARCBALL, glm::vec3(0.0f, 0.0f, 5.0f));
+    Camera camera(ARCBALL, glm::vec3(0.0f, 0.0f, 10.0f));
 
     WindowData wd{
         .camera = &camera,
         .firstMouse = true,
-        .screenWidth = 300,
-        .screenHeight = 300,
+        .screenWidth = 1024,
+        .screenHeight = 768,
         .isCursorDisabled = false
     };
 
@@ -213,7 +224,8 @@ int main() {
 
     // load some random mesh
     Model robot(afs::root("resources/models/cyborg/cyborg.obj"));
-    Model randomCubes(afs::root("resources/models/sphere_random.obj"));
+    Model trophy(afs::root("resources/models/sample.obj"));
+    Model unitCube(afs::root("resources/models/unit_cube.obj"));
 
     // configure depth map FBO
     const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -266,7 +278,7 @@ int main() {
             .transform = Transform{
                 .translation = vec3(0.0f),
             },
-            .model = make_shared<Model>(std::move(randomCubes))
+            .model = make_shared<Model>(std::move(trophy))
         },
         Object{
             .transform = Transform{
@@ -274,7 +286,7 @@ int main() {
             },
             .model = make_shared<Model>(std::move(robot)),
             .shouldRender = false
-        },
+        }
     };
     objects[0].model->meshes[0].textures.push_back(Texture{
         .id = woodTexture,
@@ -282,17 +294,21 @@ int main() {
     });
 
     //SdfModel robotSdf(robot, 4);
-    SdfModel randomCubesSdf(*objects[1].model.get(), 8);
+    SdfModel trophySdf(*objects[1].model.get(), 16);
+    auto size = trophySdf.boundingBox.getSize();
+    cout << size.x << " " << size.y << " " << size.z << endl;
 
     objects.push_back(Object{
-        .transform = Transform {
-            .translation = randomCubesSdf.positions[0][0][0],
+        .transform = Transform{
+            .translation = vec3(),
         },
-        .model = make_shared<Model>(std::move(ModelFactory::createSphereModel(randomCubesSdf.distances[0][0][0]))),
+        .model = make_shared<Model>(std::move(ModelFactory::createSphereModel(trophySdf.distances[0][0][0]))),
         .color = vec4(1.0, 1.0, 1.0, 0.5),
     });
 
     vector<Ray> rays;
+    Ray raymarchDebugRay(vec3(), camera.Front);
+    vector<vec3> raymarchDebugHitPos;
 
     float deltaTime, lastFrame = glfwGetTime();
     while (!glfwWindowShouldClose(window.get())) {
@@ -307,8 +323,16 @@ int main() {
         processInput(window.get(), deltaTime, camera, shadows, shadowKeyPressed);
 
 
-        if (glfwGetKey(window.get(), GLFW_KEY_SPACE) == GLFW_PRESS)
-            rays = shootRaymarchRay(wd.screenWidth, wd.screenHeight, camera);
+        // if (glfwGetKey(window.get(), GLFW_KEY_SPACE) == GLFW_PRESS)
+        //     rays = shootRaymarchRay(wd.screenWidth, wd.screenHeight, camera);
+        if (glfwGetKey(window.get(), GLFW_KEY_SPACE) == GLFW_PRESS) {
+            double xpos, ypos;
+            glfwGetCursorPos(window.get(), &xpos, &ypos);
+            raymarchDebugHitPos.clear();
+            raymarchDebugRay = getMouseRay(xpos, ypos, wd.screenWidth, wd.screenHeight,
+                camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight), camera.GetViewMatrix());
+            trophySdf.findHitPositions(ray);
+        }
 
         // pick up object
         // ------
@@ -377,14 +401,13 @@ int main() {
         gizmo.render(camera, lightPos, vec2(wd.screenWidth, wd.screenHeight));
 
         lineRenderer.queueBox(objects[1].transform, objects[1].model->meshes[0].boundingBox);
-
-        randomCubesSdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
+        trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
             lineRenderer.queueBox(Transform{}, bb);
         });
-
-        for(auto &r: rays) {
+        for (auto &r: rays) {
             lineRenderer.queueLine(r, WHITE);
         }
+        lineRenderer.queueLine(raymarchDebugRay, WHITE);
 
         lineRenderer.render(projection, view);
 
@@ -399,27 +422,10 @@ int main() {
 }
 
 void renderScene(Shader &shader, vector<Object> &objects) {
-    // room cube
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::scale(model, glm::vec3(5.0f));
-    shader.setMat4("model", model);
-    //    glDisable(
-    //            GL_CULL_FACE); // note that we disable culling here since we render 'inside' the cube instead of the usual 'outside' which throws off the normal culling methods.
-    //    shader.setInt("reverse_normals",
-    //                  1); // A small little hack to invert normals when drawing cube from the inside so lighting still works.
-    //    renderCube();
-    //    shader.setInt("reverse_normals", 0); // and of course disable it
     glEnable(GL_CULL_FACE);
 
-    // model = glm::mat4(1.0f);
-    // shader.setMat4("model", model);
-    // robot.draw(shader);
-
-    //    shader.setMat4("model", cube.transform.getModelMatrix());
-    //    cube.model->draw(shader);
-
     for (auto &object: objects) {
-        if(object.shouldRender) {
+        if (object.shouldRender) {
             shader.setMat4("model", object.transform.getModelMatrix());
             shader.setVec4("diffuseColor", object.color);
             object.model->draw(shader);

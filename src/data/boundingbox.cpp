@@ -23,3 +23,8 @@ ale::BoundingBox ale::BoundingBox::applyTransform(ale::Transform t) const {
 vec3 ale::BoundingBox::getCenter() const {
     return this->center;
 }
+
+vec3 ale::BoundingBox::getSize() const {
+    return this->max - this->min;
+}
+

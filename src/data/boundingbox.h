@@ -6,6 +6,7 @@
 #define ALETHERENGINE_BOUNDINGBOX_H
 
 #include<glm/glm.hpp>
+#include"src/data/transform.h"
 
 using namespace glm;
 
@@ -21,6 +22,8 @@ public:
     BoundingBox applyTransform(Transform t) const;
 
     vec3 getCenter() const;
+
+    vec3 getSize() const;
 };
 }
 

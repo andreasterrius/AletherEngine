@@ -6,11 +6,16 @@
 #include "data/model.h"
 #include "src/data/transform.h"
 #include "src/data/boundingbox.h"
+#include "src/data/shader.h"
+#include "src/file_system.h"
 #include <functional>
+#include <iostream>
+#include <fstream>
 
 #include "util.h"
 
 using namespace ale;
+using afs = ale::FileSystem;
 
 
 SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), boundingBox(model.meshes[0].boundingBox) {
@@ -40,6 +45,8 @@ SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), bounding
             }
         }
     });
+
+    this->texture3D = Texture3D(distances);
 }
 
 void SdfModel::loopOverCubes(function<void(int, int, int, BoundingBox)> func) {
@@ -74,8 +81,52 @@ void SdfModel::loopOverCubes(function<void(int, int, int, BoundingBox)> func) {
     }
 }
 
+void SdfModel::bindToShader(Shader shader) {
+    if(texture3D.has_value()) {
+
+        vec3 size = this->boundingBox.max - this->boundingBox.min;
+        shader.setVec3("bbMin", this->boundingBox.min);
+        shader.setVec3("bbSize", size);
+        shader.setVec3("textureSize", this->cubeSize);
+
+        glActiveTexture(GL_TEXTURE0);
+        glUniform1i(glGetUniformLocation(shader.ID, "texture3D"), 0);
+        glBindTexture(GL_TEXTURE_2D, this->texture3D->id);
+    }
+}
+
+void SdfModel::writeToFile(string path) {
+    ofstream outFile;
+    outFile.open(afs::root(path));
+
+    if(outFile.is_open()) {
+        for (int i = 0; i < cubeCount; ++i) {
+            outFile << "i: " << i << endl;
+            for (int j = 0; j < cubeCount; ++j) {
+                for (int k = 0; k < cubeCount; ++k) {
+                    outFile << distances[i][j][k] << " ";
+                }
+                outFile << endl;
+            }
+            outFile << endl;
+        }
+    } else {
+        cout << "unable to write to " << path << endl;
+        return;
+    }
+
+    outFile.close();
+    cout << "data written to " << path << endl;
+}
+
+vector<vec3> SdfModel::findHitPositions(Ray debugRay) {
+    vector<vec3> hitPos;
+    //TODO: complete this
+    return hitPos;
+}
+
+
 Texture3D::Texture3D(vector<vector<vector<float>>> distances) {
-    glGenTextures(1, &this->id);
 
     if(distances.empty() || distances[0].empty() || distances[0][0].empty()) {
         return;
@@ -84,14 +135,26 @@ Texture3D::Texture3D(vector<vector<vector<float>>> distances) {
     int width = distances.size();
     int height = distances[0].size();
     int depth = distances[0][0].size();
-    GLenum format = GL_RGB;
 
+    // it seems that when we pass to shader, they can only receive 1d array?
+    vector<float> distances1D;
+    for (int i = 0; i < width; ++i) {
+        for (int j = 0; j < height; ++j) {
+            for (int k = 0; k < depth; ++k) {
+                distances1D.push_back(distances[i][j][k]);
+            }
+        }
+    }
+
+    glGenTextures(1, &this->id);
     glBindTexture(GL_TEXTURE_3D, this->id);
-    glTexImage3D(GL_TEXTURE_3D, 0, format, width, height, depth, 0, format, GL_FLOAT, distances.data());
-    glGenerateMipmap(GL_TEXTURE_3D);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, width, height, depth, 0, GL_RED, GL_FLOAT, distances1D.data());
 
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT); // for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glBindTexture(GL_TEXTURE_3D, 0);
 }

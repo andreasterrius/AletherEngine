@@ -10,6 +10,8 @@
 #include"data/boundingbox.h"
 #include<functional>
 #include<optional>
+#include"data/shader.h"
+#include"data/ray.h"
 
 using namespace glm;
 using namespace std;
@@ -32,7 +34,7 @@ private:
     vec3 cubeSize;
     int cubeCount; // for 1 dimension
 
-    optional<Texture3D> texure3D;
+    optional<Texture3D> texture3D;
 
 public:
     //TODO: move to private, public is for debugging
@@ -45,6 +47,12 @@ public:
 
     // returns small cubes that creates the sdf
     void loopOverCubes(function<void(int, int, int, BoundingBox)> func);
+
+    void bindToShader(Shader shader);
+
+    void writeToFile(string path);
+
+    vector<vec3> findHitPositions(Ray debugRay);
 };
 
 }
