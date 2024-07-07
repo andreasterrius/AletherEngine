@@ -35,6 +35,21 @@ target_include_directories(AletherEngine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 target_link_libraries(AletherEngine glfw glm::glm assimp::assimp)
 
+## Register RaymarchSdfCpu exe
+add_executable(RaymarcherSdfCpu
+        cmd/raymarch_sdf_cpu/main.cpp
+        ${ENGINE_HEADER}
+        ${ENGINE_SOURCE}
+)
+target_include_directories(RaymarcherSdfCpu PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+        external/glm
+        external/stb
+        external/glad/include
+        external/assimp/include
+        ${CMAKE_BINARY_DIR}/external/assimp/include
+)
+target_link_libraries(RaymarcherSdfCpu glfw glm::glm assimp::assimp)
+
 ## Register RaymarchSdf exe
 add_executable(RaymarchSdf
         cmd/raymarch_sdf/main.cpp

@@ -44,6 +44,18 @@ float Util::dot2(vec2 v) { return dot(v,v); }
 
 float Util::dot2(vec3 v) { return dot(v,v); }
 
+float Util::distanceFromBox(vec3 p, vec3 min, vec3 max) {
+    // Calculate the center and half-size of the box
+    vec3 center = (min + max) * 0.5f;
+    vec3 halfSize = (max - min) * 0.5f;
+
+    // Calculate the distance from the point to the center of the box
+    vec3 d = abs(p - center) - halfSize;
+
+    // Calculate the distance to the box
+    return length(glm::max(d, 0.0f)) + glm::min(glm::max(d.x, glm::max(d.y, d.z)), 0.0f);
+}
+
 float Util::udTriangle( vec3 p, vec3 a, vec3 b, vec3 c )
 {
     vec3 ba = b - a; vec3 pa = p - a;

@@ -21,6 +21,8 @@ public:
     static float dot2( vec2 v );
 
     static float dot2( vec3 v );
+
+    static float distanceFromBox(vec3 p, vec3 min, vec3 max);
 };
 
 

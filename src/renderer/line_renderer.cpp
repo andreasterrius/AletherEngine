@@ -139,3 +139,13 @@ void LineRenderer::queueBox(Transform transform, BoundingBox bb) {
     this->boxData.push_back(bbT.min);
     this->boxData.push_back(bbT.max);
 }
+
+void LineRenderer::queueUnitCube(Transform transform) {
+    BoundingBox bb(vec3(-0.5f), vec3(0.5f));
+    bb.min = transform.getModelMatrix() * vec4(bb.min, 1.0);
+    bb.max = transform.getModelMatrix() * vec4(bb.max, 1.0);
+    this->boxData.push_back(bb.min);
+    this->boxData.push_back(bb.max);
+}
+
+

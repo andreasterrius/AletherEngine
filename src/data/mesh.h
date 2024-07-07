@@ -33,7 +33,7 @@ struct Vertex {
     float m_Weights[MAX_BONE_INFLUENCE];
 };
 
-struct Texture {
+struct LoadedTexture {
     unsigned int id;
     string type;
     string path;
@@ -44,12 +44,12 @@ public:
     // mesh Data
     vector<Vertex> vertices;
     vector<unsigned int> indices;
-    vector<Texture> textures;
+    vector<LoadedTexture> textures;
     BoundingBox boundingBox;
     unsigned int VAO;
 
     // constructor
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, BoundingBox boundingBox) : boundingBox(boundingBox) {
+    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<LoadedTexture> textures, BoundingBox boundingBox) : boundingBox(boundingBox) {
         this->vertices = vertices;
         this->indices = indices;
         this->textures = textures;

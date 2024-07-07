@@ -8,6 +8,7 @@ uniform mat4    invViewProj;
 uniform vec3    cameraPos;
 
 uniform vec3 bbMin;
+uniform vec3 bbMax;
 uniform vec3 bbSize;
 uniform vec3 textureSize;
 uniform sampler3D texture3D;
@@ -34,6 +35,20 @@ float distance_from_box(vec3 p, vec3 size) {
     return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
 }
 
+float distance_from_box_minmax(vec3 p, vec3 bbMin, vec3 bbMax) {
+    // Calculate the half-size of the box
+    vec3 halfSize = (bbMax - bbMin) * 0.5;
+
+    // Calculate the center of the box
+    vec3 center = (bbMin + bbMax) * 0.5;
+
+    // Calculate the distance from the point to the center of the box
+    vec3 d = abs(p - center) - halfSize;
+
+    // Calculate the distance to the box
+    return length(max(d, 0.0)) + min(max(d.x, max(d.y, d.z)), 0.0);
+}
+
 vec3 raymarch(vec3 ro, vec3 rd){
     float total_distance_traveled = 0.0;
     const int NUMBER_OF_STEPS = 32;
@@ -46,7 +61,9 @@ vec3 raymarch(vec3 ro, vec3 rd){
 
         //float distance_to_closest = distance_from_sphere(current_position, vec3(0.0), 1.0);
         //float distance_to_closest = distance_from_texture3D(current_position);
-        float distance_to_closest = distance_from_box(current_position, bbSize);
+//         float distance_to_closest = distance_from_box(current_position, bbSize);
+        float distance_to_closest = distance_from_box_minmax(current_position, bbMin, bbMax);
+
         if (distance_to_closest < MINIMUM_HIT_DISTANCE)
         {
             distance_to_closest = distance_from_texture3D(current_position);

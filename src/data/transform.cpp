@@ -8,7 +8,7 @@ using namespace glm;
 mat4 ale::Transform::getModelMatrix() {
     //TODO: scale and rotation
     mat4 transform = mat4(1.0);
-    transform = glm::scale(transform, scale);
     transform = translate(transform, translation);
+    transform = glm::scale(transform, scale);
     return transform;
 }

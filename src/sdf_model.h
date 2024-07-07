@@ -41,7 +41,8 @@ public:
     vector<vector<vector<float>>> distances;
     vector<vector<vector<vec3>>> positions; // Only used for debugging
 
-    BoundingBox boundingBox; //for debug purposes
+    BoundingBox outerBB; //bb for sdf
+    BoundingBox bb; //mesh bb
 
     SdfModel(Model &model, int cubeCount = 16);
 
@@ -52,7 +53,7 @@ public:
 
     void writeToFile(string path);
 
-    vector<vec3> findHitPositions(Ray debugRay);
+    bool findHitPositions(Ray debugRay, vector<vec3> *debugHitPos);
 };
 
 }

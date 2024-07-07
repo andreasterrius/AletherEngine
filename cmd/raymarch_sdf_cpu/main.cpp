@@ -22,20 +22,13 @@
 
 #include <stb_image.h>
 
+#include "src/texture.h"
+
 using namespace std;
 using namespace glm;
 using namespace ale;
 
 using afs = ale::FileSystem;
-
-// TODO:
-// 1. Create an arcball camera control (DONE)
-// 2. Insert a triangle the scene (DONE)
-// 3. Generate the SDF cube view for a sphere
-//3.1 generate the points first and visualize them in the viewport (DONE)
-//3.2 loop over all the triangles that exist in the scene (DONE)
-//3.3 make the loop parallel for every n triangle (where n is number of thread/spread algorithm)
-//3.4 calculate the distance with barycentry coordinage from each of the triangle to specific points in the 3d array.
 
 // should hold non owning datas
 struct WindowData {
@@ -115,6 +108,8 @@ Ray shootRaymarchRaySingular(float i, float j, float screenWidth, float screenHe
     return Ray(rayStartWorld, rayDir);
 }
 
+vector<vec4> raymarch(vector<Ray> &rays, SdfModel &sdf);
+
 void renderScene(Shader &shader, vector<Object> &objects);
 
 void renderCube();
@@ -123,8 +118,6 @@ void renderCube();
 
 void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &shadows, bool &shadowsKeyPressed);
 
-void pickupObject(GLFWwindow *window, WindowData wd, vector<Object> &objectsToSelect, Object *&selectedObject,
-                  Camera &camera, Gizmo &gizmo, Ray &lastRay);
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
@@ -310,6 +303,10 @@ int main() {
     Ray raymarchDebugRay(vec3(), camera.Front);
     vector<vec3> raymarchDebugHitPos;
 
+    TextureRenderer textureRenderer;
+    Texture raymarchResult(wd.screenWidth, wd.screenHeight);
+    bool showRaymarchResult = false;
+
     float deltaTime, lastFrame = glfwGetTime();
     while (!glfwWindowShouldClose(window.get())) {
         // per-frame time logic
@@ -323,20 +320,25 @@ int main() {
         processInput(window.get(), deltaTime, camera, shadows, shadowKeyPressed);
 
 
-        // if (glfwGetKey(window.get(), GLFW_KEY_SPACE) == GLFW_PRESS)
-        //     rays = shootRaymarchRay(wd.screenWidth, wd.screenHeight, camera);
         if (glfwGetKey(window.get(), GLFW_KEY_SPACE) == GLFW_PRESS) {
             double xpos, ypos;
             glfwGetCursorPos(window.get(), &xpos, &ypos);
             raymarchDebugHitPos.clear();
             raymarchDebugRay = getMouseRay(xpos, ypos, wd.screenWidth, wd.screenHeight,
-                camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight), camera.GetViewMatrix());
+                                           camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight),
+                                           camera.GetViewMatrix());
             trophySdf.findHitPositions(raymarchDebugRay, &raymarchDebugHitPos);
         }
-
-        // pick up object
-        // ------
-        pickupObject(window.get(), wd, objects, selectedObject, camera, gizmo, lastMouseRay);
+        if (glfwGetKey(window.get(), GLFW_KEY_ENTER) == GLFW_PRESS) {
+            std::cout << "Shooting raymarching rays..." << endl;
+            vector<Ray> initialRays = shootRaymarchRay(wd.screenWidth, wd.screenHeight, camera);
+            vector<vec4> color = raymarch(initialRays, trophySdf);
+            raymarchResult.replaceData(color);
+            std::cout << "Shooting raymarching rays done." << endl;
+        }
+        if (glfwGetKey(window.get(), GLFW_KEY_M) == GLFW_PRESS) {
+            showRaymarchResult = !showRaymarchResult;
+        }
 
         // move light position over time
         lightPos.z = static_cast<float>(sin(glfwGetTime() * 0.5) * 3.0);
@@ -409,14 +411,18 @@ int main() {
         }
         lineRenderer.queueLine(raymarchDebugRay, WHITE);
 
-        for(auto &hitPos : raymarchDebugHitPos) {
-            lineRenderer.queueUnitCube(Transform {
+        for (auto &hitPos: raymarchDebugHitPos) {
+            lineRenderer.queueUnitCube(Transform{
                 .translation = hitPos,
                 // .scale = vec3(0.3f)
             });
         }
 
         lineRenderer.render(projection, view);
+
+        if(showRaymarchResult) {
+            textureRenderer.render(raymarchResult);
+        }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(window.get());
@@ -425,6 +431,16 @@ int main() {
 
     glfwTerminate();
     return 0;
+}
+
+vector<vec4> raymarch(vector<Ray> &rays, SdfModel &sdf) {
+    vector<vec4> color(rays.size(), vec4());
+    for(int i = 0; i < rays.size(); ++i) {
+        if(sdf.findHitPositions(rays[i], nullptr)) {
+            color[i]=(vec4(1.0, 1.0, 1.0, 0.0));
+        }
+    }
+    return color;
 }
 
 void renderScene(Shader &shader, vector<Object> &objects) {
@@ -437,80 +453,6 @@ void renderScene(Shader &shader, vector<Object> &objects) {
             object.model->draw(shader);
         }
     }
-}
-
-// renderCube() renders a 1x1 3D cube in NDC.
-// -------------------------------------------------
-unsigned int cubeVAO = 0;
-unsigned int cubeVBO = 0;
-
-void renderCube() {
-    // initialize (if necessary)
-    if (cubeVAO == 0) {
-        float vertices[] = {
-            // back face
-            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-            1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, // top-right
-            1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, // bottom-right
-            1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, // top-right
-            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-            -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, // top-left
-            // front face
-            -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
-            1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // bottom-right
-            1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top-right
-            1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top-right
-            -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // top-left
-            -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
-            // left face
-            -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-right
-            -1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top-left
-            -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
-            -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
-            -1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom-right
-            -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-right
-            // right face
-            1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-left
-            1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-right
-            1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top-right
-            1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-right
-            1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-left
-            1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom-left
-            // bottom face
-            -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // top-right
-            1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top-left
-            1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
-            1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
-            -1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, // bottom-right
-            -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // top-right
-            // top face
-            -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top-left
-            1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
-            1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // top-right
-            1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
-            -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top-left
-            -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f // bottom-left
-        };
-        glGenVertexArrays(1, &cubeVAO);
-        glGenBuffers(1, &cubeVBO);
-        // fill buffer
-        glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        // link vertex attributes
-        glBindVertexArray(cubeVAO);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
-    // render Cube
-    glBindVertexArray(cubeVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
 }
 
 void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &shadows, bool &shadowsKeyPressed) {
@@ -538,56 +480,5 @@ void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &sha
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
         shadowsKeyPressed = false;
-    }
-}
-
-void pickupObject(GLFWwindow *window,
-                  WindowData wd,
-                  vector<Object> &objectsToSelect,
-                  Object *&selectedObject,
-                  Camera &camera,
-                  Gizmo &gizmo,
-                  Ray &lastRay) {
-    bool clickedSomething = false;
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-        if (selectedObject != nullptr) {
-            double mouseX, mouseY;
-            glfwGetCursorPos(window, &mouseX, &mouseY);
-            Ray mouseRay = getMouseRay(mouseX, mouseY, wd.screenWidth, wd.screenHeight,
-                                       camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight),
-                                       camera.GetViewMatrix());
-            clickedSomething = gizmo.tryHold(&selectedObject->transform, mouseRay, camera);
-            lastRay = mouseRay;
-        }
-
-        if (!clickedSomething) {
-            double mouseX, mouseY;
-            glfwGetCursorPos(window, &mouseX, &mouseY);
-            Ray mouseRay = getMouseRay(mouseX, mouseY, wd.screenWidth, wd.screenHeight,
-                                       camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight),
-                                       camera.GetViewMatrix());
-
-            float furthestT = INFINITY;
-            for (int i = 0; i < objectsToSelect.size(); ++i) {
-                // check if we are clicking anything
-                auto isectT = mouseRay.tryIntersect(objectsToSelect[i].transform,
-                                                    objectsToSelect[i].model->meshes[0].boundingBox);
-                if (isectT.has_value() && isectT < furthestT) {
-                    selectedObject = &objectsToSelect[i];
-                    furthestT = *isectT;
-                    clickedSomething = true;
-                    lastRay = mouseRay;
-                }
-            }
-        }
-
-        if (!clickedSomething) {
-            selectedObject = nullptr;
-            gizmo.hide();
-        }
-    }
-
-    if (!clickedSomething && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-        gizmo.release();
     }
 }

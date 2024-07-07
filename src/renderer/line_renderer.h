@@ -46,6 +46,8 @@ public:
 
     void queueBox(Transform transform, BoundingBox bb);
 
+    void queueUnitCube(Transform transform);
+
     void render(mat4 projection, mat4 view);
 };
 }

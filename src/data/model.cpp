@@ -8,7 +8,7 @@ ale::Model::Model(const string &path, bool gamma) : gammaCorrection(gamma) {
     loadModel(path);
 }
 
-Model::Model(vector<Texture> textures, vector<Mesh> meshes) : textures_loaded(textures), meshes(meshes) {
+Model::Model(vector<LoadedTexture> textures, vector<Mesh> meshes) : textures_loaded(textures), meshes(meshes) {
 }
 
 void Model::draw(Shader &shader) {
@@ -53,7 +53,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     // data to fill
     vector<Vertex> vertices;
     vector<unsigned int> indices;
-    vector<Texture> textures;
+    vector<LoadedTexture> textures;
 
     // walk through each of the mesh's vertices
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
@@ -113,16 +113,16 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     // normal: texture_normalN
 
     // 1. diffuse maps
-    vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+    vector<LoadedTexture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
     textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
     // 2. specular maps
-    vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+    vector<LoadedTexture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     // 3. normal maps
-    std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+    std::vector<LoadedTexture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
     // 4. height maps
-    std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+    std::vector<LoadedTexture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     BoundingBox boundingBox = BoundingBox(
@@ -133,8 +133,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     return Mesh(vertices, indices, textures, boundingBox);
 }
 
-vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName) {
-    vector<Texture> textures;
+vector<LoadedTexture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName) {
+    vector<LoadedTexture> textures;
     for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
         aiString str;
         mat->GetTexture(type, i, &str);
@@ -150,7 +150,7 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
         }
         if (!skip) {
             // if texture hasn't been loaded already, load it
-            Texture texture;
+            LoadedTexture texture;
             texture.id = TextureFromFile(str.C_Str(), this->directory);
             texture.type = typeName;
             texture.path = str.C_Str();
@@ -247,9 +247,9 @@ Model ModelFactory::createCubeModel() {
     };
 
     BoundingBox bb(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f));
-    Mesh mesh(vertices, vector<unsigned int>(), vector<Texture>(), bb);
+    Mesh mesh(vertices, vector<unsigned int>(), vector<LoadedTexture>(), bb);
 
-    return Model(vector<Texture>(), vector<Mesh>{std::move(mesh)});
+    return Model(vector<LoadedTexture>(), vector<Mesh>{std::move(mesh)});
 }
 
 Model ModelFactory::createSphereModel(float radius) {
@@ -345,7 +345,7 @@ Model ModelFactory::createSphereModel(float radius) {
     BoundingBox bb(
         vec3(-radius / 2.0, -radius / 2.0, -radius / 2.0),
         vec3(radius / 2.0, radius / 2.0, radius / 2.0));
-    Mesh mesh(vertices, indices, vector<Texture>(), bb);
+    Mesh mesh(vertices, indices, vector<LoadedTexture>(), bb);
 
-    return Model(vector<Texture>(), vector<Mesh>{std::move(mesh)});
+    return Model(vector<LoadedTexture>(), vector<Mesh>{std::move(mesh)});
 }

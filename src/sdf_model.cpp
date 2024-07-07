@@ -18,15 +18,16 @@ using namespace ale;
 using afs = ale::FileSystem;
 
 
-SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), boundingBox(model.meshes[0].boundingBox) {
+SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), outerBB(model.meshes[0].boundingBox),
+    bb(model.meshes[0].boundingBox){
     // explode the bounding box a little bit
     Transform scaleBB{.scale = vec3(1.1, 1.1, 1.1),}; // make it a bit bigger
-    this->boundingBox = this->boundingBox.applyTransform(scaleBB);
+    this->outerBB = this->outerBB.applyTransform(scaleBB);
 
     cubeSize = vec3(
-        (boundingBox.max.x - boundingBox.min.x) / cubeCount,
-        (boundingBox.max.y - boundingBox.min.y) / cubeCount,
-        (boundingBox.max.z - boundingBox.min.z) / cubeCount
+        (outerBB.max.x - outerBB.min.x) / cubeCount,
+        (outerBB.max.y - outerBB.min.y) / cubeCount,
+        (outerBB.max.z - outerBB.min.z) / cubeCount
     );
     distances = vector(cubeCount, vector(cubeCount, vector(cubeCount, INFINITY)));
     positions = vector(cubeCount, vector(cubeCount, vector(cubeCount, vec3())));
@@ -67,7 +68,7 @@ void SdfModel::loopOverCubes(function<void(int, int, int, BoundingBox)> func) {
     //         }
     //     }
     // }
-    vec3 startPos = this->boundingBox.min;
+    vec3 startPos = this->outerBB.min;
     for (int i = 0; i < cubeCount; ++i) {
         float xOffset = cubeSize.x * i;
         for (int j = 0; j < cubeCount; ++j) {
@@ -84,8 +85,9 @@ void SdfModel::loopOverCubes(function<void(int, int, int, BoundingBox)> func) {
 void SdfModel::bindToShader(Shader shader) {
     if(texture3D.has_value()) {
 
-        vec3 size = this->boundingBox.max - this->boundingBox.min;
-        shader.setVec3("bbMin", this->boundingBox.min);
+        vec3 size = this->outerBB.max - this->outerBB.min;
+        shader.setVec3("bbMin", this->outerBB.min);
+        shader.setVec3("bbMax", this->outerBB.max);
         shader.setVec3("bbSize", size);
         shader.setVec3("textureSize", this->cubeSize);
 
@@ -119,10 +121,54 @@ void SdfModel::writeToFile(string path) {
     cout << "data written to " << path << endl;
 }
 
-vector<vec3> SdfModel::findHitPositions(Ray debugRay) {
-    vector<vec3> hitPos;
-    //TODO: complete this
-    return hitPos;
+bool SdfModel::findHitPositions(Ray debugRay, vector<vec3> *debugHitPos){
+
+    float kEps = 0.1;
+    // to box only
+    // cout << "hit T" << endl;
+    // for(int i = 0; i < 20; ++i) {
+    //     // first check the box.
+    //     float dist = Util::distanceFromBox(debugRay.origin, this->outerBB.min, this->outerBB.max);
+    //     debugRay.origin = debugRay.resolveT(dist);
+    //     hitPos.push_back(debugRay.origin);
+    //     cout << debugRay.origin.x << " " << debugRay.origin.y << " " << debugRay.origin.z << endl;
+    // }
+
+    // to box with sdf
+    //cout << "hit T" << endl;
+    for(int i = 0; i < 20; ++i) {
+        if (this->bb.isInside(debugRay.origin)) {
+            vec3 localCoord = debugRay.origin - this->outerBB.min;
+            vec3 boxArrSize = this->outerBB.getSize() / vec3(this->cubeCount);
+            int x = localCoord.x / boxArrSize.x;
+            int y = localCoord.y / boxArrSize.y;
+            int z = localCoord.z / boxArrSize.z;
+            float dist = this->distances[x][y][z];
+            debugRay.origin = debugRay.resolveT(dist);
+
+            if(dist < kEps) {
+                if(debugHitPos != nullptr) {
+                    debugHitPos->push_back(debugRay.origin);
+                    cout << "isect found: " << debugRay.origin.x << " " << debugRay.origin.y << " " << debugRay.origin.z << endl;
+                }
+                return true;
+            }
+
+        } else {
+            float dist = Util::distanceFromBox(debugRay.origin, this->bb.min, this->bb.max);
+            debugRay.origin = debugRay.resolveT(dist);
+        }
+
+        // first check the box.
+        if(debugHitPos != nullptr) {
+            debugHitPos->push_back(debugRay.origin);
+            //cout << debugRay.origin.x << " " << debugRay.origin.y << " " << debugRay.origin.z << endl;
+        }
+    }
+    if(debugHitPos != nullptr) {
+        cout << "isect not found" << endl;
+    }
+    return false;
 }
 
 

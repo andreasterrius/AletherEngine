@@ -24,6 +24,8 @@ public:
     vec3 getCenter() const;
 
     vec3 getSize() const;
+
+    bool isInside(vec3 p);
 };
 }
 
