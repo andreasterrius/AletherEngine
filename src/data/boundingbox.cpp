@@ -14,10 +14,10 @@ ale::BoundingBox::BoundingBox(vec3 min, vec3 max) : min(min), max(max) {
 }
 
 ale::BoundingBox ale::BoundingBox::applyTransform(ale::Transform t) const {
-    return BoundingBox(
-        t.getModelMatrix() * vec4(this->min, 1.0),
-        t.getModelMatrix() * vec4(this->max, 1.0)
-    );
+    vec3 newSize = t.getModelMatrix() * vec4(this->getSize(), 1.0);
+    vec3 newMin = this->getCenter() - newSize / 2.0f;
+    vec3 newMax = this->getCenter() + newSize / 2.0f;
+    return BoundingBox(newMin, newMax);
 }
 
 vec3 ale::BoundingBox::getCenter() const {

@@ -44,7 +44,7 @@ public:
 
     void queueLine(vec3 start, vec3 end, vec3 color = WHITE);
 
-    void queueBox(Transform transform, BoundingBox bb);
+    void queueBox(Transform transform, BoundingBox bb, vec3 color = WHITE);
 
     void queueUnitCube(Transform transform);
 

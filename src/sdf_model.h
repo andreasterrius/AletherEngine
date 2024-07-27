@@ -12,6 +12,7 @@
 #include<optional>
 #include"data/shader.h"
 #include"data/ray.h"
+#include<utility>
 
 using namespace glm;
 using namespace std;
@@ -40,6 +41,10 @@ public:
     //TODO: move to private, public is for debugging
     vector<vector<vector<float>>> distances;
     vector<vector<vector<vec3>>> positions; // Only used for debugging
+    vector<pair<vec3, vec3>> faceNormals; // Only used for debugging
+
+    vec3 facePoint;
+    vector<tuple<vec3,vec3, vec3>> isectPoints; //debugs
 
     BoundingBox outerBB; //bb for sdf
     BoundingBox bb; //mesh bb

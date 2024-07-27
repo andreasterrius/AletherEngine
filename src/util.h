@@ -23,6 +23,12 @@ public:
     static float dot2( vec3 v );
 
     static float distanceFromBox(vec3 p, vec3 min, vec3 max);
+
+    static vec3 getFaceNormal(const vec3 v0, const vec3 v1, const vec3 v2);
+
+    static vec3 getFaceCenter(const vec3 v0, const vec3 v1, const vec3 v2);
+
+    static bool rayTriangleIntersect(vec3 orig, vec3 dir, vec3 v0, vec3 v1, vec3 v2, float &t);
 };
 
 

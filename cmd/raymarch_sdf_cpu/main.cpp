@@ -78,8 +78,8 @@ Ray getMouseRay(float mouseX, float mouseY,
 vector<Ray> shootRaymarchRay(float screenWidth, float screenHeight, Camera &cam) {
     vector<Ray> rays;
     mat4 invViewProj = inverse(cam.GetProjectionMatrix(screenWidth, screenHeight) * cam.GetViewMatrix());
-    for (float i = 0; i < screenWidth; ++i) {
-        for (float j = 0; j < screenHeight; ++j) {
+    for (float j = 0; j < screenHeight; ++j) {
+        for (float i = 0; i < screenWidth; ++i) {
             vec2 uv = vec2(i / screenWidth * 2.0 - 1.0, j / screenHeight * 2.0 - 1.0);
 
             vec4 rayStartWorld = vec4(cam.Position, 1.0);
@@ -179,7 +179,7 @@ void mouseCallback(GLFWwindow *window, double xposIn, double yposIn) {
 }
 
 int main() {
-    Camera camera(ARCBALL, glm::vec3(0.0f, 0.0f, 10.0f));
+    Camera camera(ARCBALL, glm::vec3(3.0f, 3.0f, 10.0f));
 
     WindowData wd{
         .camera = &camera,
@@ -217,7 +217,7 @@ int main() {
 
     // load some random mesh
     Model robot(afs::root("resources/models/cyborg/cyborg.obj"));
-    Model trophy(afs::root("resources/models/sample.obj"));
+    Model trophy(afs::root("resources/models/sample2.obj"));
     Model unitCube(afs::root("resources/models/unit_cube.obj"));
 
     // configure depth map FBO
@@ -291,13 +291,13 @@ int main() {
     auto size = trophySdf.outerBB.getSize();
     cout << size.x << " " << size.y << " " << size.z << endl;
 
-    objects.push_back(Object{
-        .transform = Transform{
-            .translation = vec3(),
-        },
-        .model = make_shared<Model>(std::move(ModelFactory::createSphereModel(trophySdf.distances[0][0][0]))),
-        .color = vec4(1.0, 1.0, 1.0, 0.5),
-    });
+    // objects.push_back(Object{
+    //     .transform = Transform{
+    //         .translation = vec3(),
+    //     },
+    //     .model = make_shared<Model>(std::move(ModelFactory::createSphereModel(trophySdf.distances[0][0][0]))),
+    //     .color = vec4(1.0, 1.0, 1.0, 0.5),
+    // });
 
     vector<Ray> rays;
     Ray raymarchDebugRay(vec3(), camera.Front);
@@ -337,7 +337,10 @@ int main() {
             std::cout << "Shooting raymarching rays done." << endl;
         }
         if (glfwGetKey(window.get(), GLFW_KEY_M) == GLFW_PRESS) {
-            showRaymarchResult = !showRaymarchResult;
+            showRaymarchResult = true;
+        }
+        if (glfwGetKey(window.get(), GLFW_KEY_M) == GLFW_RELEASE) {
+            showRaymarchResult = false;
         }
 
         // move light position over time
@@ -378,7 +381,7 @@ int main() {
             linearDepthShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
         linearDepthShader.setFloat("far_plane", far_plane);
         linearDepthShader.setVec3("lightPos", lightPos);
-        renderScene(linearDepthShader, objects);
+        // renderScene(linearDepthShader, objects);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. render scene as normal
@@ -398,18 +401,41 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, woodTexture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-        renderScene(colorShader, objects);
+        // renderScene(colorShader, objects);
 
         gizmo.render(camera, lightPos, vec2(wd.screenWidth, wd.screenHeight));
 
-        lineRenderer.queueBox(objects[1].transform, objects[1].model->meshes[0].boundingBox);
-        // trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
-        //     lineRenderer.queueBox(Transform{}, bb);
-        // });
+        // lineRenderer.queueBox(objects[1].transform, objects[1].model->meshes[0].boundingBox);
+        // lineRenderer.queueBox(Transform{}, trophySdf.bb, vec3(0.0, 1.0, 0.0));
+        // lineRenderer.queueBox(Transform{}, trophySdf.outerBB, vec3(1.0, 0.0, 0.0));
+        trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
+            vec3 color;
+            if(trophySdf.distances[i][j][k] < 0) {
+                lineRenderer.queueBox(Transform{}, bb, vec3(0.0, 1.0, 0.0));
+                // color = vec3(1.0, 0.0, 0.0); // RED
+            } else {
+            }
+        });
         for (auto &r: rays) {
             lineRenderer.queueLine(r, WHITE);
         }
-        lineRenderer.queueLine(raymarchDebugRay, WHITE);
+        // // lineRenderer.queueLine(raymarchDebugRay, WHITE);
+        // int i = 0;
+        // vec3 colors[3] = {vec3(1.0,0.0,0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0)};
+        // for (auto &p : trophySdf.isectPoints) {
+        //     auto [a,b,c] = p;
+        //     lineRenderer.queueBox(Transform{.translation = a}, BoundingBox(vec3(-0.1 + i * 0.01), vec3(0.1 + i * 0.01)), colors[i % 3] );
+        //     lineRenderer.queueBox(Transform{.translation = b}, BoundingBox(vec3(-0.1 + i * 0.01), vec3(0.1 + i * 0.01)), colors[i% 3] );
+        //     lineRenderer.queueBox(Transform{.translation = c}, BoundingBox(vec3(-0.1 + i * 0.01), vec3(0.1 + i * 0.01)), colors[i% 3] );
+        //     i++;
+        // }
+        // lineRenderer.queueBox(Transform{.translation = trophySdf.facePoint},
+        //     BoundingBox(vec3(-0.1 + i * 0.01), vec3(0.1 + i * 0.01)) );
+
+        // show tri normals
+        for (auto [start, end] : trophySdf.faceNormals) {
+            lineRenderer.queueLine(start, end);
+        }
 
         for (auto &hitPos: raymarchDebugHitPos) {
             lineRenderer.queueUnitCube(Transform{

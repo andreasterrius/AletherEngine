@@ -4,6 +4,8 @@
 
 #include "util.h"
 
+#include "glm/gtc/epsilon.hpp"
+
 std::optional<unsigned int> Util::loadTexture(const char *path) {
     unsigned int textureID;
     glGenTextures(1, &textureID);
@@ -56,6 +58,21 @@ float Util::distanceFromBox(vec3 p, vec3 min, vec3 max) {
     return length(glm::max(d, 0.0f)) + glm::min(glm::max(d.x, glm::max(d.y, d.z)), 0.0f);
 }
 
+vec3 Util::getFaceNormal(const vec3 v0, const vec3 v1, const vec3 v2) {
+    vec3 edge1 = v1 - v0;
+    vec3 edge2 = v2 - v0;
+    vec3 normal = cross(edge1, edge2);
+    return normalize(normal);
+}
+
+vec3 Util::getFaceCenter(const vec3 v0, const vec3 v1, const vec3 v2) {
+    vec3 centroid;
+    centroid.x = (v0.x + v1.x + v2.x) / 3.0;
+    centroid.y = (v0.y + v1.y + v2.y) / 3.0;
+    centroid.z = (v0.z + v1.z + v2.z) / 3.0;
+    return centroid;
+}
+
 float Util::udTriangle( vec3 p, vec3 a, vec3 b, vec3 c )
 {
     vec3 ba = b - a; vec3 pa = p - a;
@@ -74,4 +91,34 @@ float Util::udTriangle( vec3 p, vec3 a, vec3 b, vec3 c )
        dot2(ac*clamp(dot(ac,pc)/dot2(ac),0.0f,1.0f)-pc) )
        :
        dot(nor,pa)*dot(nor,pa)/dot2(nor) );
+}
+
+
+bool Util::rayTriangleIntersect(vec3 orig, vec3 dir, vec3 v0, vec3 v1, vec3 v2, float &t) {
+    const float EPSILON = 1e-6f;
+    glm::vec3 edge1 = v1 - v0;
+    glm::vec3 edge2 = v2 - v0;
+    glm::vec3 h = glm::cross(dir, edge2);
+    float a = glm::dot(edge1, h);
+    if (glm::epsilonEqual(a, 0.0f, EPSILON)) {
+        return false; // Ray is parallel to the triangle
+    }
+    float f = 1.0f / a;
+    glm::vec3 s = orig - v0;
+    float u = f * glm::dot(s, h);
+    if (u < 0.0f || u > 1.0f) {
+        return false;
+    }
+    glm::vec3 q = glm::cross(s, edge1);
+    float v = f * glm::dot(dir, q);
+    if (v < 0.0f || u + v > 1.0f) {
+        return false;
+    }
+    // At this stage, we can compute t to find out where the intersection point is on the line
+    t = f * glm::dot(edge2, q);
+    if (t > EPSILON) { // Ray intersection
+        return true;
+    } else { // Line intersection but not a ray intersection
+        return false;
+    }
 }

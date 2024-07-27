@@ -10,7 +10,8 @@
 #include "../file_system.h"
 #include "../data/model.h"
 
-#define LINE_BUFFER_SIZE 100000
+#define LINE_BUFFER_SIZE 300000
+#define BOX_BUFFER_SIZE 90000
 
 using namespace ale;
 using afs = ale::FileSystem;
@@ -21,12 +22,12 @@ LineRenderer::LineRenderer() : lineShader(Shader(
                                boxShader(Shader(
                                    afs::root("src/renderer/box.vs").c_str(),
                                    afs::root("src/renderer/box.fs").c_str())) {
-
     glGenVertexArrays(1, &linesVAO);
     glGenBuffers(1, &linesVBO);
     // fill buffer
     glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
-    glBufferData(GL_ARRAY_BUFFER, LINE_BUFFER_SIZE * sizeof(Data), nullptr, GL_DYNAMIC_DRAW); //just blit it multiple times bro
+    glBufferData(GL_ARRAY_BUFFER, LINE_BUFFER_SIZE * sizeof(Data), nullptr, GL_DYNAMIC_DRAW);
+    //just blit it multiple times bro
     // link vertex attributes
     glBindVertexArray(linesVAO);
     glEnableVertexAttribArray(0); // position
@@ -73,17 +74,21 @@ LineRenderer::LineRenderer() : lineShader(Shader(
     // instancing
     glGenBuffers(1, &boxInstanceVBO);
     glBindBuffer(GL_ARRAY_BUFFER, boxInstanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 10000, nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * LINE_BUFFER_SIZE, nullptr, GL_DYNAMIC_DRAW);
 
     glEnableVertexAttribArray(7);
-    glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3) * 2, (void *) 0);
+    glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3) * 3, (void *) 0);
 
     glEnableVertexAttribArray(8);
-    glVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3) * 2, (void *) sizeof(glm::vec3));
+    glVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3) * 3, (void *) sizeof(glm::vec3));
+
+    glEnableVertexAttribArray(9);
+    glVertexAttribPointer(9, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3) * 3, (void *) (2*sizeof(vec3)));
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glVertexAttribDivisor(7, 1);
     glVertexAttribDivisor(8, 1);
+    glVertexAttribDivisor(9, 1);
     glBindVertexArray(0);
 }
 
@@ -102,8 +107,8 @@ void LineRenderer::render(mat4 projection, mat4 view) {
         this->lineShader.use();
         this->lineShader.setMat4("view", view);
         this->lineShader.setMat4("projection", projection);
-        for(int i = 0; i < this->lineData.size(); i += LINE_BUFFER_SIZE) {
-            int size = std::min(LINE_BUFFER_SIZE, (int)this->lineData.size() - i);
+        for (int i = 0; i < this->lineData.size(); i += LINE_BUFFER_SIZE) {
+            int size = std::min(LINE_BUFFER_SIZE, (int) this->lineData.size() - i);
             glBufferSubData(GL_ARRAY_BUFFER, 0, size * sizeof(Data), &this->lineData[i]);
 
             glBindVertexArray(linesVAO);
@@ -120,24 +125,29 @@ void LineRenderer::render(mat4 projection, mat4 view) {
         this->boxShader.setMat4("view", view);
         this->boxShader.setMat4("projection", projection);
         glBindBuffer(GL_ARRAY_BUFFER, boxInstanceVBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, boxData.size() * sizeof(vec3), this->boxData.data());
+        for (int i = 0; i < this->boxData.size(); i += BOX_BUFFER_SIZE) {
+            int size = std::min(BOX_BUFFER_SIZE, (int) this->boxData.size() - i);;
 
-        glBindVertexArray(boxVAO);
-        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 36, boxData.size());
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, size * sizeof(vec3), &this->boxData[i]);
+
+            glBindVertexArray(boxVAO);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glDrawArraysInstanced(GL_TRIANGLES, 0, 36, size);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
         glBindVertexArray(0);
-        glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         this->boxData.clear();
     }
 }
 
-void LineRenderer::queueBox(Transform transform, BoundingBox bb) {
+void LineRenderer::queueBox(Transform transform, BoundingBox bb, vec3 color) {
     BoundingBox bbT = bb;
     bbT.min = transform.getModelMatrix() * vec4(bb.min, 1.0);
     bbT.max = transform.getModelMatrix() * vec4(bb.max, 1.0);
     this->boxData.push_back(bbT.min);
     this->boxData.push_back(bbT.max);
+    this->boxData.push_back(color);
 }
 
 void LineRenderer::queueUnitCube(Transform transform) {
@@ -147,5 +157,3 @@ void LineRenderer::queueUnitCube(Transform transform) {
     this->boxData.push_back(bb.min);
     this->boxData.push_back(bb.max);
 }
-
-

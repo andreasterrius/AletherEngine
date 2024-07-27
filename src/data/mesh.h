@@ -90,6 +90,7 @@ public:
 
         // draw mesh
         glBindVertexArray(VAO);
+        // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
         if(indices.empty()) {
             glDrawArrays(GL_TRIANGLES, 0, vertices.size());
         } else {
@@ -106,6 +107,7 @@ public:
         // always good practice to set everything back to defaults once configured.
         glActiveTexture(GL_TEXTURE0);
     }
+
 
 private:
     // render data 

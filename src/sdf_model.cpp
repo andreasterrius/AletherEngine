@@ -19,7 +19,7 @@ using afs = ale::FileSystem;
 
 
 SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), outerBB(model.meshes[0].boundingBox),
-    bb(model.meshes[0].boundingBox){
+                                                  bb(model.meshes[0].boundingBox) {
     // explode the bounding box a little bit
     Transform scaleBB{.scale = vec3(1.1, 1.1, 1.1),}; // make it a bit bigger
     this->outerBB = this->outerBB.applyTransform(scaleBB);
@@ -32,19 +32,59 @@ SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), outerBB(
     distances = vector(cubeCount, vector(cubeCount, vector(cubeCount, INFINITY)));
     positions = vector(cubeCount, vector(cubeCount, vector(cubeCount, vec3())));
 
+    int ctr = 0;
     this->loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
+        // vec3 faceNormal;
+        // vec3 faceToCenter;
+
+        vector<vec3> isectPoint;
+        // vector<tuple<vec3, vec3, vec3> > tris;
         for (int tri = 0; tri + 2 < model.meshes[0].indices.size(); tri += 3) {
             Vertex a = model.meshes[0].vertices[model.meshes[0].indices[tri]];
             Vertex b = model.meshes[0].vertices[model.meshes[0].indices[tri + 1]];
             Vertex c = model.meshes[0].vertices[model.meshes[0].indices[tri + 2]];
 
+            float tIsect;
+            if (Util::rayTriangleIntersect(bb.center, normalize(vec3(0.0, 1.0, 0.0)),
+                                           a.Position, b.Position, c.Position, tIsect)) {
+                vec3 isect = bb.center + vec3(0.0, 1.0, 0.0) * tIsect;
+                bool ok = true;
+                for(auto ii : isectPoint) {
+                    if(distance(isect, ii) < 0.001) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if(ok) {
+                    isectPoint.push_back(isect);
+                    // tris.emplace_back(a.Position, b.Position, c.Position);
+                }
+            }
+
+            // vec3 faceNormal = Util::getFaceNormal(a.Position, b.Position, c.Position);
+            // vec3 triCenter = Util::getFaceCenter(a.Position, b.Position, c.Position);
+            // faceNormals.push_back(make_pair(triCenter, triCenter+faceNormal));
 
             float distance = Util::udTriangle(bb.center, a.Position, b.Position, c.Position);
-            if(distance < distances[i][j][k]) {
+            if (distance < distances[i][j][k]) {
                 distances[i][j][k] = distance;
                 positions[i][j][k] = bb.center;
             }
         }
+        if (isectPoint.size() % 2 == 1) {
+            distances[i][j][k] = -distances[i][j][k];
+        }
+        // if (isectPoint.size() > 2) {
+        //     faceNormals.emplace_back(bb.center, bb.center + vec3(0.0, 10.0, 0.0));
+        //     // ctr++;
+        // }
+        // if (ctr == 8 && isectPoints.empty()) {
+        //     facePoint = bb.getCenter();
+        //     for (int j = 0; j < tris.size(); j++) {
+        //         isectPoints.push_back(tris[j]);
+        //     }
+        //     faceNormals.emplace_back(bb.center, bb.center + vec3(0.0, 10.0, 0.0));
+        // }
     });
 
     this->texture3D = Texture3D(distances);
@@ -83,8 +123,7 @@ void SdfModel::loopOverCubes(function<void(int, int, int, BoundingBox)> func) {
 }
 
 void SdfModel::bindToShader(Shader shader) {
-    if(texture3D.has_value()) {
-
+    if (texture3D.has_value()) {
         vec3 size = this->outerBB.max - this->outerBB.min;
         shader.setVec3("bbMin", this->outerBB.min);
         shader.setVec3("bbMax", this->outerBB.max);
@@ -101,7 +140,7 @@ void SdfModel::writeToFile(string path) {
     ofstream outFile;
     outFile.open(afs::root(path));
 
-    if(outFile.is_open()) {
+    if (outFile.is_open()) {
         for (int i = 0; i < cubeCount; ++i) {
             outFile << "i: " << i << endl;
             for (int j = 0; j < cubeCount; ++j) {
@@ -121,9 +160,7 @@ void SdfModel::writeToFile(string path) {
     cout << "data written to " << path << endl;
 }
 
-bool SdfModel::findHitPositions(Ray debugRay, vector<vec3> *debugHitPos){
-
-    float kEps = 0.1;
+bool SdfModel::findHitPositions(Ray debugRay, vector<vec3> *debugHitPos) {
     // to box only
     // cout << "hit T" << endl;
     // for(int i = 0; i < 20; ++i) {
@@ -136,7 +173,7 @@ bool SdfModel::findHitPositions(Ray debugRay, vector<vec3> *debugHitPos){
 
     // to box with sdf
     //cout << "hit T" << endl;
-    for(int i = 0; i < 20; ++i) {
+    for (int i = 0; i < 50; ++i) {
         if (this->bb.isInside(debugRay.origin)) {
             vec3 localCoord = debugRay.origin - this->outerBB.min;
             vec3 boxArrSize = this->outerBB.getSize() / vec3(this->cubeCount);
@@ -146,35 +183,34 @@ bool SdfModel::findHitPositions(Ray debugRay, vector<vec3> *debugHitPos){
             float dist = this->distances[x][y][z];
             debugRay.origin = debugRay.resolveT(dist);
 
-            if(dist < kEps) {
-                if(debugHitPos != nullptr) {
+            if (dist < 0.01) {
+                if (debugHitPos != nullptr) {
                     debugHitPos->push_back(debugRay.origin);
-                    cout << "isect found: " << debugRay.origin.x << " " << debugRay.origin.y << " " << debugRay.origin.z << endl;
+                    cout << "isect found: " << debugRay.origin.x << " " << debugRay.origin.y << " " << debugRay.origin.z
+                            << endl;
                 }
                 return true;
             }
-
         } else {
             float dist = Util::distanceFromBox(debugRay.origin, this->bb.min, this->bb.max);
             debugRay.origin = debugRay.resolveT(dist);
         }
 
         // first check the box.
-        if(debugHitPos != nullptr) {
+        if (debugHitPos != nullptr) {
             debugHitPos->push_back(debugRay.origin);
             //cout << debugRay.origin.x << " " << debugRay.origin.y << " " << debugRay.origin.z << endl;
         }
     }
-    if(debugHitPos != nullptr) {
+    if (debugHitPos != nullptr) {
         cout << "isect not found" << endl;
     }
     return false;
 }
 
 
-Texture3D::Texture3D(vector<vector<vector<float>>> distances) {
-
-    if(distances.empty() || distances[0].empty() || distances[0][0].empty()) {
+Texture3D::Texture3D(vector<vector<vector<float> > > distances) {
+    if (distances.empty() || distances[0].empty() || distances[0][0].empty()) {
         return;
     }
 
