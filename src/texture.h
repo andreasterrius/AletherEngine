@@ -37,6 +37,8 @@ public:
     TextureRenderer();
 
     void render(Texture &texture);
+
+    void renderRaw(int id);
 };
 
 #endif //TEXTURE_H

@@ -15,6 +15,7 @@ add_subdirectory(external/glfw)
 add_subdirectory(external/glm)
 
 file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
+file(GLOB_RECURSE ENGINE_SOURCE_43 ./src/*.cpp external/glad43/src/glad.c)
 file(GLOB_RECURSE ENGINE_HEADER ./src/*.h)
 
 ## stb needs to be added manualy to executable
@@ -25,6 +26,7 @@ add_executable(AletherEngine
         cmd/editor/main.cpp
         ${ENGINE_HEADER}
         ${ENGINE_SOURCE}
+        src/data/compute_shader.cpp
 )
 target_include_directories(AletherEngine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
         external/glm
@@ -64,3 +66,18 @@ target_include_directories(RaymarchSdf PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_BINARY_DIR}/external/assimp/include
 )
 target_link_libraries(RaymarchSdf glfw glm::glm assimp::assimp)
+
+## Register learn_compute_shader exe
+add_executable(LearnComputeShader
+        cmd/learn_compute_shader/main.cpp
+        ${ENGINE_HEADER}
+        ${ENGINE_SOURCE_43}
+)
+target_include_directories(LearnComputeShader PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+        external/glm
+        external/stb
+        external/glad43/include
+        external/assimp/include
+        ${CMAKE_BINARY_DIR}/external/assimp/include
+)
+target_link_libraries(LearnComputeShader glfw glm::glm assimp::assimp)

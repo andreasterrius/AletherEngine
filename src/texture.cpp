@@ -45,9 +45,14 @@ TextureRenderer::TextureRenderer() : shader(afs::root("src/shaders/texture2d.vs"
 }
 
 void TextureRenderer::render(Texture &texture) {
+    renderRaw(texture.id);
+}
+
+void TextureRenderer::renderRaw(int id) {
     shader.use();
+    shader.setInt("texture1", 0);
     glActiveTexture(GL_TEXTURE0 + 0); // active proper texture unit before binding
-    glBindTexture(GL_TEXTURE_2D, texture.id);
+    glBindTexture(GL_TEXTURE_2D, id);
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);

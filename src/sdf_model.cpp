@@ -32,13 +32,9 @@ SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), outerBB(
     distances = vector(cubeCount, vector(cubeCount, vector(cubeCount, INFINITY)));
     positions = vector(cubeCount, vector(cubeCount, vector(cubeCount, vec3())));
 
-    int ctr = 0;
     this->loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
-        // vec3 faceNormal;
-        // vec3 faceToCenter;
 
         vector<vec3> isectPoint;
-        // vector<tuple<vec3, vec3, vec3> > tris;
         for (int tri = 0; tri + 2 < model.meshes[0].indices.size(); tri += 3) {
             Vertex a = model.meshes[0].vertices[model.meshes[0].indices[tri]];
             Vertex b = model.meshes[0].vertices[model.meshes[0].indices[tri + 1]];
@@ -57,13 +53,8 @@ SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), outerBB(
                 }
                 if(ok) {
                     isectPoint.push_back(isect);
-                    // tris.emplace_back(a.Position, b.Position, c.Position);
                 }
             }
-
-            // vec3 faceNormal = Util::getFaceNormal(a.Position, b.Position, c.Position);
-            // vec3 triCenter = Util::getFaceCenter(a.Position, b.Position, c.Position);
-            // faceNormals.push_back(make_pair(triCenter, triCenter+faceNormal));
 
             float distance = Util::udTriangle(bb.center, a.Position, b.Position, c.Position);
             if (distance < distances[i][j][k]) {
@@ -74,17 +65,6 @@ SdfModel::SdfModel(Model &model, int cubeCount) : cubeCount(cubeCount), outerBB(
         if (isectPoint.size() % 2 == 1) {
             distances[i][j][k] = -distances[i][j][k];
         }
-        // if (isectPoint.size() > 2) {
-        //     faceNormals.emplace_back(bb.center, bb.center + vec3(0.0, 10.0, 0.0));
-        //     // ctr++;
-        // }
-        // if (ctr == 8 && isectPoints.empty()) {
-        //     facePoint = bb.getCenter();
-        //     for (int j = 0; j < tris.size(); j++) {
-        //         isectPoints.push_back(tris[j]);
-        //     }
-        //     faceNormals.emplace_back(bb.center, bb.center + vec3(0.0, 10.0, 0.0));
-        // }
     });
 
     this->texture3D = Texture3D(distances);
@@ -173,7 +153,7 @@ bool SdfModel::findHitPositions(Ray debugRay, vector<vec3> *debugHitPos) {
 
     // to box with sdf
     //cout << "hit T" << endl;
-    for (int i = 0; i < 50; ++i) {
+    for (int i = 0; i < 20; ++i) {
         if (this->bb.isInside(debugRay.origin)) {
             vec3 localCoord = debugRay.origin - this->outerBB.min;
             vec3 boxArrSize = this->outerBB.getSize() / vec3(this->cubeCount);
