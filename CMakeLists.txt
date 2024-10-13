@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.22.1)
 project(AletherEngine)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -14,8 +14,8 @@ add_subdirectory(external/assimp)
 add_subdirectory(external/glfw)
 add_subdirectory(external/glm)
 
+#file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
 file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
-file(GLOB_RECURSE ENGINE_SOURCE_43 ./src/*.cpp external/glad43/src/glad.c)
 file(GLOB_RECURSE ENGINE_HEADER ./src/*.h)
 
 ## stb needs to be added manualy to executable
@@ -71,12 +71,12 @@ target_link_libraries(RaymarchSdf glfw glm::glm assimp::assimp)
 add_executable(LearnComputeShader
         cmd/learn_compute_shader/main.cpp
         ${ENGINE_HEADER}
-        ${ENGINE_SOURCE_43}
+        ${ENGINE_SOURCE}
 )
 target_include_directories(LearnComputeShader PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
         external/glm
         external/stb
-        external/glad43/include
+        external/glad/include
         external/assimp/include
         ${CMAKE_BINARY_DIR}/external/assimp/include
 )

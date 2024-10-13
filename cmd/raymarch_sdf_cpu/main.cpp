@@ -433,9 +433,9 @@ int main() {
         //     BoundingBox(vec3(-0.1 + i * 0.01), vec3(0.1 + i * 0.01)) );
 
         // show tri normals
-        for (auto [start, end] : trophySdf.faceNormals) {
-            lineRenderer.queueLine(start, end);
-        }
+        // for (auto [start, end] : trophySdf.faceNormals) {
+        //     lineRenderer.queueLine(start, end);
+        // }
 
         for (auto &hitPos: raymarchDebugHitPos) {
             lineRenderer.queueUnitCube(Transform{

@@ -222,7 +222,7 @@ int main() {
     cout << "Compute Shader (GL_MAX_COMPUTE_WORK_GROUP_SIZE): (" << maxGroupSizeX << "," << maxGroupSizeY << "," << maxGroupSizeZ << ")\n";
 
     // compute shader
-    ComputeShader testCompute(afs::root("src/shaders/basic_compute_shader.cs"), wd.screenWidth, wd.screenHeight);
+    ComputeShader testCompute(afs::root("src/shaders/sdf_compute_shader.cs"), wd.screenWidth, wd.screenHeight);
     testCompute.execute();
 
     // load some random mesh
