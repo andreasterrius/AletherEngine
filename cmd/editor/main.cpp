@@ -124,44 +124,7 @@ void renderCube();
 void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &shadows, bool &shadowsKeyPressed);
 
 void pickupObject(GLFWwindow *window, WindowData wd, vector<Object> &objectsToSelect, Object *&selectedObject,
-                  Camera &camera, Gizmo &gizmo, Ray &lastRay);
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-    auto *wd = (WindowData *) glfwGetWindowUserPointer(window);
-    wd->screenWidth = width;
-    wd->screenHeight = height;
-
-    // make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
-
-void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
-    auto *wd = (WindowData *) glfwGetWindowUserPointer(window);
-    wd->camera->ProcessMouseScroll(yOffset);
-}
-
-void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        double xpos, ypos;
-        //getting cursor position
-        glfwGetCursorPos(window, &xpos, &ypos);
-        cout << "Cursor Position at (" << xpos << "," << ypos << ")" << endl;
-    }
-
-
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-        auto *wd = (WindowData *) glfwGetWindowUserPointer(window);
-        if (wd->isCursorDisabled) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        } else {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        }
-        wd->isCursorDisabled = !wd->isCursorDisabled;
-    }
-}
+                  Camera &camera, Gizmo &gizmo, Ray &lastRay);\
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
@@ -197,17 +160,20 @@ int main() {
     };
 
     glfwInit();
-    auto window = createWindow(wd.screenWidth, wd.screenHeight);
-    if (window == nullptr) {
-        glfwTerminate();
-        cerr << "window not found";
-        return -1;
-    }
-    glfwSetMouseButtonCallback(window.get(), mouse_button_callback);
-    glfwSetCursorPosCallback(window.get(), mouseCallback);
-    glfwSetWindowUserPointer(window.get(), &wd);
-    glfwSetFramebufferSizeCallback(window.get(), framebuffer_size_callback);
-    glfwSetScrollCallback(window.get(), scroll_callback);
+    auto window = Window(wd.screenWidth, wd.screenHeight, "SDF CPU");
+    window.set_debug(true);
+    window.set_default_inputs(DefaultInputs{
+        .keyboard_key_to_disable_cursor = GLFW_KEY_L,
+        .keyboard_key_to_enable_cursor = GLFW_KEY_L
+    });
+    window.attach_mouse_button_callback([](int button, int action, int mods) {});
+    window.attach_cursor_pos_callback([&](double xpos, double ypos, double xoffset, double yoffset) {
+        camera.ProcessMouseMovement(xoffset, yoffset);
+    });
+    window.attach_framebuffer_size_callback([&](int width, int height) {});
+    window.attach_scroll_callback([&](double xoffset, double yoffset) {
+        camera.ProcessMouseScroll(yoffset);
+    });
 
     Shader colorShader(afs::root("src/shaders/point_shadows.vs").c_str(),
                        afs::root("src/shaders/point_shadows.fs").c_str());

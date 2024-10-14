@@ -57,6 +57,10 @@ public:
 
     void set_debug(bool flag);
 
+    bool should_close();
+
+    void swap_buffer_and_poll_inputs();
+
     // input callbacks
     void attach_mouse_button_callback(const function<void(int, int, int)> &func);
 

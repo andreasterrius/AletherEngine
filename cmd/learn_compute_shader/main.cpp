@@ -34,10 +34,16 @@ int main() {
         maxGroupSizeZ << ")\n";
 
     // compute shader
-    ComputeShader testCompute(afs::root("src/shaders/sdf_compute_shader.cs"), 1024, 768);
-    testCompute.execute();
+    ComputeShader testCompute(afs::root("src/shaders/sdf_compute_shader.cs"));
 
     TextureRenderer textureRenderer;
+    Texture texture(Texture::Meta{
+        .width = 1024,
+        .height = 768,
+        .internal_format = GL_RGBA32F,
+        .input_format = GL_RGBA,
+        .input_type = GL_FLOAT,
+    });
 
     float deltaTime, lastFrame = glfwGetTime();
     while (!glfwWindowShouldClose(window.get())){
@@ -52,8 +58,8 @@ int main() {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        testCompute.execute();
-        textureRenderer.renderRaw(testCompute.textureId);
+        testCompute.executeAndSaveToTexture(texture);
+        textureRenderer.render(texture);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(window.get());

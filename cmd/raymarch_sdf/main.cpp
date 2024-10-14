@@ -156,7 +156,7 @@ int main() {
         },
     };
 
-    SdfModel trophySdf(*objects[0].model.get(), 64);
+    SdfModel trophySdf(*objects[0].model.get(), 16);
     trophySdf.writeToFile("resources/trophySdf.txt");
 
     float deltaTime, lastFrame = glfwGetTime();
@@ -176,9 +176,6 @@ int main() {
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        float near_plane = 1.0f;
-        float far_plane = 25.0f;;
 
         // 2. render scene as normal
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

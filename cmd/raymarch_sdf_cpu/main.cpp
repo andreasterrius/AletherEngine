@@ -232,7 +232,7 @@ int main() {
     });
 
     //SdfModel robotSdf(robot, 4);
-    SdfModel trophySdf(*objects[1].model.get(), 32);
+    SdfModel trophySdf(*objects[1].model.get(), 16);
     auto size = trophySdf.outerBB.getSize();
     cout << size.x << " " << size.y << " " << size.z << endl;
 
@@ -249,7 +249,10 @@ int main() {
     vector<vec3> raymarchDebugHitPos;
 
     TextureRenderer textureRenderer;
-    Texture raymarchResult(wd.screenWidth, wd.screenHeight);
+    Texture raymarchResult(Texture::Meta{
+        .width = wd.screenWidth,
+        .height = wd.screenHeight,
+    });
     bool showRaymarchResult = false;
 
     float deltaTime, lastFrame = glfwGetTime();

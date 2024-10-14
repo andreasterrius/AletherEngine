@@ -8,27 +8,25 @@
 #include<string>
 #include <glad/glad.h>
 
+#include "src/texture.h"
+
 using namespace std;
 
 namespace ale {
 class ComputeShader {
 public:
     unsigned int id;
-    unsigned int textureWidth, textureHeight;
-    unsigned int textureId;
 
-    unsigned int ssboId;
+    ComputeShader(string path);
 
-    ComputeShader(string path, int textureWidth, int textureHeight);
+    void executeAndSaveToTexture(Texture& texture);
 
-    void execute();
+    void executeAndSaveToTexture3D(Texture3D& texture);
 
 private:
     // utility function for checking shader compilation/linking errors.
     // ------------------------------------------------------------------------
     void checkCompileErrors(GLuint shader, std::string type, std::string path);
-
 };
-}
-
+};
 #endif //COMPUTE_SHADER_H

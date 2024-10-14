@@ -21,62 +21,28 @@ file(GLOB_RECURSE ENGINE_HEADER ./src/*.h)
 ## stb needs to be added manualy to executable
 #file(GLOB_RECURSE STB_SOURCE_HEADER ./external/stb/stb_image.h)
 
-## Register AletherEngine exe
-add_executable(AletherEngine
-        cmd/editor/main.cpp
+function(create_exe name folder_name)
+    file(GLOB_RECURSE ${folder_name}_SOURCE ./cmd/${folder_name}/*.cpp)
+    file(GLOB_RECURSE ${folder_name}_HEADER ./cmd/${folder_name}/*.h)
+    add_executable(${name}
+        ${${folder_name}_SOURCE}
+        ${${folder_name}_HEADER}
         ${ENGINE_HEADER}
         ${ENGINE_SOURCE}
-)
-target_include_directories(AletherEngine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-        external/glm
-        external/stb
-        external/glad/include
-        external/assimp/include
-        ${CMAKE_BINARY_DIR}/external/assimp/include
-)
-target_link_libraries(AletherEngine glfw glm::glm assimp::assimp)
+    )
+    target_include_directories(${name} PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            external/glm
+            external/stb
+            external/glad/include
+            external/assimp/include
+            ${CMAKE_BINARY_DIR}/external/assimp/include
+    )
+    target_link_libraries(${name} glfw glm::glm assimp::assimp)
+endfunction()
 
-## Register RaymarchSdfCpu exe
-add_executable(RaymarcherSdfCpu
-        cmd/raymarch_sdf_cpu/main.cpp
-        ${ENGINE_HEADER}
-        ${ENGINE_SOURCE}
-)
-target_include_directories(RaymarcherSdfCpu PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-        external/glm
-        external/stb
-        external/glad/include
-        external/assimp/include
-        ${CMAKE_BINARY_DIR}/external/assimp/include
-)
-target_link_libraries(RaymarcherSdfCpu glfw glm::glm assimp::assimp)
-
-## Register RaymarchSdf exe
-add_executable(RaymarchSdf
-        cmd/raymarch_sdf/main.cpp
-        ${ENGINE_HEADER}
-        ${ENGINE_SOURCE}
-)
-target_include_directories(RaymarchSdf PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-        external/glm
-        external/stb
-        external/glad/include
-        external/assimp/include
-        ${CMAKE_BINARY_DIR}/external/assimp/include
-)
-target_link_libraries(RaymarchSdf glfw glm::glm assimp::assimp)
-
-## Register learn_compute_shader exe
-add_executable(LearnComputeShader
-        cmd/learn_compute_shader/main.cpp
-        ${ENGINE_HEADER}
-        ${ENGINE_SOURCE}
-)
-target_include_directories(LearnComputeShader PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-        external/glm
-        external/stb
-        external/glad/include
-        external/assimp/include
-        ${CMAKE_BINARY_DIR}/external/assimp/include
-)
-target_link_libraries(LearnComputeShader glfw glm::glm assimp::assimp)
+create_exe(AletherEngine editor)
+create_exe(RaymarchSdfCpu raymarch_sdf_cpu)
+create_exe(RaymarchSdf raymarch_sdf)
+create_exe(LearnComputeShader learn_compute_shader)
+create_exe(SdfGenerator sdf_generator_gpu)

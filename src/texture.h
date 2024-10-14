@@ -16,17 +16,41 @@ using namespace glm;
 
 class Texture {
 public:
+    struct Meta {
+        int width = 0;
+        int height = 0;
+        int internal_format = GL_RGBA;
+        int input_format = GL_RGBA;
+        int input_type = GL_FLOAT;
+    };
+
+    Meta meta;
     unsigned int id;
 
-    int width;
-    int height;
-
     // initialize an empty texture
-    Texture(int width, int height);
+    Texture(Meta meta);
 
-    void replaceData(vector<vector<vec4>> &colorData);
+    void replaceData(vector<vector<vec4>>& colorData);
 
-    void replaceData(vector<vec4> &flatColorData);
+    void replaceData(vector<vec4>& flatColorData);
+};
+
+class Texture3D {
+public:
+    struct Meta {
+        int width = 0;
+        int height = 0;
+        int depth = 0;
+        int internal_format = GL_RGBA;
+        int input_format = GL_RGBA;
+        int input_type = GL_FLOAT;
+    };
+
+    Meta meta;
+    unsigned int id;
+
+    // initialize a texture, empty data is possible
+    Texture3D(Meta meta, vector<float> *data = nullptr);
 };
 
 class TextureRenderer {
@@ -36,9 +60,7 @@ public:
 
     TextureRenderer();
 
-    void render(Texture &texture);
-
-    void renderRaw(int id);
+    void render(Texture& texture);
 };
 
 #endif //TEXTURE_H

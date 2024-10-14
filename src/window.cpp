@@ -32,10 +32,10 @@ Window::Window(int width, int height, string caption) {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    attach_mouse_button_callback(nullptr);
-    attach_cursor_pos_callback(nullptr);
-    attach_framebuffer_size_callback(nullptr);
-    attach_scroll_callback(nullptr);
+    glfwSetMouseButtonCallback(this->raw_window, mouse_button_callback);
+    glfwSetCursorPosCallback(this->raw_window, cursor_pos_callback);
+    glfwSetFramebufferSizeCallback(this->raw_window, framebuffer_size_callback);
+    glfwSetScrollCallback(this->raw_window, scroll_callback);
 
     Data* data = (Data*)glfwGetWindowUserPointer(raw_window);
     cout << data->cursor_last_x;
@@ -47,6 +47,16 @@ void Window::set_default_inputs(DefaultInputs default_inputs) {
 
 void Window::set_debug(bool flag) {
     this->data.debug = flag;
+}
+
+bool Window::should_close() {
+    return glfwWindowShouldClose(this->raw_window);
+}
+
+void Window::swap_buffer_and_poll_inputs() {
+    // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+    glfwSwapBuffers(this->raw_window);
+    glfwPollEvents();
 }
 
 void Window::attach_mouse_button_callback(const function<void(int, int, int)>& func) {

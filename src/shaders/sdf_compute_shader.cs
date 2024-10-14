@@ -24,7 +24,6 @@ void main(){
     }
 
     if(gl_LocalInvocationIndex == 0){
-//          float color = sharedColors[0].x/gl_WorkGroupSize.x;
         float color = sharedColors[0].x * 0.1;
         imageStore(imgOutput, texelCoord, vec4(vec3(color), 1.0));
     }

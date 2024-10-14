@@ -13,6 +13,7 @@
 #include"data/shader.h"
 #include"data/ray.h"
 #include<utility>
+#include"texture.h"
 
 using namespace glm;
 using namespace std;
@@ -21,13 +22,6 @@ namespace ale {
 
 class Model;
 class LineRenderer;
-
-class Texture3D {
-public:
-    unsigned int id;
-
-    Texture3D(vector<vector<vector<float>>> distances);
-};
 
 // This is a 3d array representative given a mesh
 class SdfModel {
