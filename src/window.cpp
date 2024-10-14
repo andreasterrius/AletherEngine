@@ -4,6 +4,7 @@
 
 #include "window.h"
 #include <string>
+#include <iostream>
 
 using namespace ale;
 
@@ -36,9 +37,6 @@ Window::Window(int width, int height, string caption) {
     glfwSetCursorPosCallback(this->raw_window, cursor_pos_callback);
     glfwSetFramebufferSizeCallback(this->raw_window, framebuffer_size_callback);
     glfwSetScrollCallback(this->raw_window, scroll_callback);
-
-    Data* data = (Data*)glfwGetWindowUserPointer(raw_window);
-    cout << data->cursor_last_x;
 }
 
 void Window::set_default_inputs(DefaultInputs default_inputs) {
@@ -57,6 +55,14 @@ void Window::swap_buffer_and_poll_inputs() {
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
     glfwSwapBuffers(this->raw_window);
     glfwPollEvents();
+}
+
+int Window::get_width() {
+    return data.width;
+}
+
+int Window::get_height() {
+    return data.height;
 }
 
 void Window::attach_mouse_button_callback(const function<void(int, int, int)>& func) {

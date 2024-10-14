@@ -6,12 +6,10 @@
 #define ALETHERENGINE_WINDOW_H
 
 #include <functional>
-
 #include <glad/glad.h>
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 #include <string>
 #include <stdexcept>
-#include <iostream>
 
 using namespace std;
 class GLFWwindow;
@@ -60,6 +58,10 @@ public:
     bool should_close();
 
     void swap_buffer_and_poll_inputs();
+
+    int get_width();
+
+    int get_height();
 
     // input callbacks
     void attach_mouse_button_callback(const function<void(int, int, int)> &func);

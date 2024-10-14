@@ -86,7 +86,7 @@ void Texture::replaceData(vector<vec4>& flatColorData) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-Texture3D::Texture3D(Meta meta, vector<float> *data) {
+Texture3D::Texture3D(Meta meta, vector<float> *data) : meta(meta) {
 
     glGenTextures(1, &this->id);
     glBindTexture(GL_TEXTURE_3D, this->id);

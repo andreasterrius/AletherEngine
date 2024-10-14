@@ -7,7 +7,6 @@
 
 #include<vector>
 #include<glm/glm.hpp>
-
 #include "data/shader.h"
 
 using namespace std;
@@ -47,10 +46,10 @@ public:
     };
 
     Meta meta;
-    unsigned int id;
+    unsigned int id = 0;
 
     // initialize a texture, empty data is possible
-    Texture3D(Meta meta, vector<float> *data = nullptr);
+    Texture3D(Meta meta, vector<float>* data = nullptr);
 };
 
 class TextureRenderer {

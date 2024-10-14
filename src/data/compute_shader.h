@@ -1,13 +1,8 @@
-//
-// Created by Alether on 7/28/2024.
-//
-
 #ifndef COMPUTE_SHADER_H
 #define COMPUTE_SHADER_H
 
 #include<string>
 #include <glad/glad.h>
-
 #include "src/texture.h"
 
 using namespace std;

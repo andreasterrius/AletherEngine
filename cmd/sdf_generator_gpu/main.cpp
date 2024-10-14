@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <src/window.h>
 #include "src/sdf_generator_gpu.h"
@@ -13,7 +14,7 @@ using afs = ale::FileSystem;
 
 int main() {
     glfwInit();
-    auto window = Window(1024, 768, "SDF Generator");
+    auto window = Window(32, 32, "SDF Generator");
 
     Model sample(afs::root("resources/models/sample.obj"));
 
@@ -21,13 +22,14 @@ int main() {
     sdfgen.add("sample", sample.meshes[0], 32, 32, 32);
     sdfgen.generate();
 
-    bool should_close = false;
-    while(!should_close){
-        // polls and wait
+    TextureRenderer texture_renderer;
 
-        // if(sdfgen.complete()){
-        //  should_close = true;
-        // }
+    bool should_close = false;
+    while (!window.should_close()){
+        glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        texture_renderer.render(sdfgen.debug_result.at("sample"));
 
         window.swap_buffer_and_poll_inputs();
     }
