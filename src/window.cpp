@@ -3,10 +3,12 @@
 //
 
 #include "window.h"
+#include <string>
 
-void ale::DestroyGLFWwindow::operator()(GLFWwindow *ptr) { glfwDestroyWindow(ptr); }
+using namespace ale;
 
-unique_ptr<GLFWwindow, ale::DestroyGLFWwindow> ale::createWindow(int width, int height) {
+Window::Window(int width, int height, string caption) {
+    //TODO: hardcoded for now, unless the need arise to separate this
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -14,19 +16,117 @@ unique_ptr<GLFWwindow, ale::DestroyGLFWwindow> ale::createWindow(int width, int 
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(width, height, "LearnComputeShader", NULL, NULL);
-    if (window == nullptr) {
-        return nullptr;
+    this->raw_window = glfwCreateWindow(width, height, caption.c_str(), NULL, NULL);
+    if (this->raw_window == nullptr) {
+        throw WindowException("glfwCreateWindow returns null");
     }
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(this->raw_window);
 
-    if(!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-        return nullptr;
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+        throw WindowException("loading gl functions failed");
     }
+
+    glfwSetWindowUserPointer(this->raw_window, &this->data);
+    glfwGetCursorPos(this->raw_window, &this->data.cursor_last_x, &this->data.cursor_last_y);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    return unique_ptr<GLFWwindow, DestroyGLFWwindow>(window);
+    Data *data = (Data *) glfwGetWindowUserPointer(raw_window);
+    cout << data->cursor_last_x;
 }
 
+void Window::set_default_inputs(DefaultInputs default_inputs) {
+    this->data.default_inputs = default_inputs;
+}
+
+void Window::set_debug(bool flag) {
+    this->data.debug = flag;
+}
+
+void Window::attach_mouse_button_callback(const function<void(int, int, int)> &func) {
+    this->data.mouse_button_callback = func;
+    glfwSetMouseButtonCallback(this->raw_window, mouse_button_callback);
+}
+
+void Window::attach_cursor_pos_callback(const function<void(double, double, double, double)> &func) {
+    this->data.cursor_pos_callback = func;
+    glfwSetCursorPosCallback(this->raw_window, cursor_pos_callback);
+}
+
+void Window::attach_framebuffer_size_callback(const function<void(int, int)> &func) {
+    this->data.framebuffer_size_callback = func;
+    glfwSetFramebufferSizeCallback(this->raw_window, framebuffer_size_callback);
+}
+
+void Window::attach_scroll_callback(const function<void(double, double)> &func) {
+    this->data.scroll_callback = func;
+    glfwSetScrollCallback(this->raw_window, scroll_callback);
+}
+
+Window::~Window() {
+    glfwDestroyWindow(raw_window);
+}
+
+void ale::mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+    Data *data = static_cast<Data *>(glfwGetWindowUserPointer(window));
+
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        if (data->debug) {
+            cout << "Cursor Position at (" << xpos << "," << ypos << ")" << endl;
+        }
+    }
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+        if (data->is_cursor_enabled) {
+            // enable -> disable
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            data->is_cursor_enabled = false;
+        } else {
+            // disable -> enable
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            data->is_cursor_enabled = true;
+        }
+    }
+
+    if (data && data->mouse_button_callback != nullptr) {
+        data->mouse_button_callback(button, action, mods);
+    }
+}
+
+void ale::cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
+    auto *data = static_cast<Data *>(glfwGetWindowUserPointer(window));
+
+    data->cursor_offset_x = xpos - data->cursor_last_x;
+    data->cursor_offset_y = data->cursor_last_y - ypos; // reversed since y-coordinates go from bottom to top
+    data->cursor_last_x = xpos;
+    data->cursor_last_y = ypos;
+
+    if (data->cursor_pos_callback != nullptr) {
+        data->cursor_pos_callback(xpos, ypos, data->cursor_offset_x, data->cursor_offset_y);
+    }
+}
+
+void ale::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+    auto *d = static_cast<Data *>(glfwGetWindowUserPointer(window));
+    d->width = width;
+    d->height = height;
+
+    // make sure the viewport matches the new window dimensions; note that width and
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+
+    if(d->framebuffer_size_callback) {
+        d->framebuffer_size_callback(width, height);
+    }
+}
+
+void ale::scroll_callback(GLFWwindow *window, double x_offset, double y_offset) {
+    auto *d = (Data *) glfwGetWindowUserPointer(window);
+
+    if(d->scroll_callback != nullptr) {
+        d->scroll_callback(x_offset, y_offset);
+    }
+}

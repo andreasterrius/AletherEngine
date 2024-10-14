@@ -32,7 +32,7 @@ using afs = ale::FileSystem;
 
 // should hold non owning datas
 struct WindowData {
-    Camera *camera;
+    Camera* camera;
     bool firstMouse;
     float lastX;
     float lastY;
@@ -75,11 +75,11 @@ Ray getMouseRay(float mouseX, float mouseY,
     return r;
 }
 
-vector<Ray> shootRaymarchRay(float screenWidth, float screenHeight, Camera &cam) {
+vector<Ray> shootRaymarchRay(float screenWidth, float screenHeight, Camera& cam) {
     vector<Ray> rays;
     mat4 invViewProj = inverse(cam.GetProjectionMatrix(screenWidth, screenHeight) * cam.GetViewMatrix());
-    for (float j = 0; j < screenHeight; ++j) {
-        for (float i = 0; i < screenWidth; ++i) {
+    for (float j = 0; j < screenHeight; ++j){
+        for (float i = 0; i < screenWidth; ++i){
             vec2 uv = vec2(i / screenWidth * 2.0 - 1.0, j / screenHeight * 2.0 - 1.0);
 
             vec4 rayStartWorld = vec4(cam.Position, 1.0);
@@ -95,7 +95,7 @@ vector<Ray> shootRaymarchRay(float screenWidth, float screenHeight, Camera &cam)
     return rays;
 }
 
-Ray shootRaymarchRaySingular(float i, float j, float screenWidth, float screenHeight, Camera &cam) {
+Ray shootRaymarchRaySingular(float i, float j, float screenWidth, float screenHeight, Camera& cam) {
     mat4 invViewProj = inverse(cam.GetProjectionMatrix(screenWidth, screenHeight) * cam.GetViewMatrix());
     vec2 uv = vec2(i / screenWidth * 2.0 - 1.0, j / screenHeight * 2.0 - 1.0);
 
@@ -108,75 +108,16 @@ Ray shootRaymarchRaySingular(float i, float j, float screenWidth, float screenHe
     return Ray(rayStartWorld, rayDir);
 }
 
-vector<vec4> raymarch(vector<Ray> &rays, SdfModel &sdf);
+vector<vec4> raymarch(vector<Ray>& rays, SdfModel& sdf);
 
-void renderScene(Shader &shader, vector<Object> &objects);
+void renderScene(Shader& shader, vector<Object>& objects);
 
 void renderCube();
 
 //void renderBoundingBoxWireframe(LineRenderer &lr, Transform transform, BoundingBox bbT);
 
-void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &shadows, bool &shadowsKeyPressed);
+void processInput(GLFWwindow* window, float deltaTime, Camera& camera, bool& shadows, bool& shadowsKeyPressed);
 
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-    auto *wd = (WindowData *) glfwGetWindowUserPointer(window);
-    wd->screenWidth = width;
-    wd->screenHeight = height;
-
-    // make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
-
-void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
-    auto *wd = (WindowData *) glfwGetWindowUserPointer(window);
-    wd->camera->ProcessMouseScroll(yOffset);
-}
-
-void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        double xpos, ypos;
-        //getting cursor position
-        glfwGetCursorPos(window, &xpos, &ypos);
-        cout << "Cursor Position at (" << xpos << "," << ypos << ")" << endl;
-    }
-
-
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-        auto *wd = (WindowData *) glfwGetWindowUserPointer(window);
-        if (wd->isCursorDisabled) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        } else {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        }
-        wd->isCursorDisabled = !wd->isCursorDisabled;
-    }
-}
-
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
-void mouseCallback(GLFWwindow *window, double xposIn, double yposIn) {
-    auto *wd = (WindowData *) glfwGetWindowUserPointer(window);
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
-
-    if (wd->firstMouse) {
-        wd->lastX = xpos;
-        wd->lastY = ypos;
-        wd->firstMouse = false;
-    }
-
-    float xoffset = xpos - wd->lastX;
-    float yoffset = wd->lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-    wd->lastX = xpos;
-    wd->lastY = ypos;
-
-    wd->camera->ProcessMouseMovement(xoffset, yoffset);
-}
 
 int main() {
     Camera camera(ARCBALL, glm::vec3(3.0f, 3.0f, 10.0f));
@@ -190,17 +131,21 @@ int main() {
     };
 
     glfwInit();
-    auto window = createWindow(wd.screenWidth, wd.screenHeight);
-    if (window == nullptr) {
-        glfwTerminate();
-        cerr << "window not found";
-        return -1;
-    }
-    glfwSetMouseButtonCallback(window.get(), mouseButtonCallback);
-    glfwSetCursorPosCallback(window.get(), mouseCallback);
-    glfwSetWindowUserPointer(window.get(), &wd);
-    glfwSetFramebufferSizeCallback(window.get(), framebuffer_size_callback);
-    glfwSetScrollCallback(window.get(), scrollCallback);
+    auto window = Window(wd.screenWidth, wd.screenHeight, "SDF CPU");
+    window.set_debug(true);
+    window.set_default_inputs(DefaultInputs{
+        .keyboard_key_to_disable_cursor = GLFW_KEY_L,
+        .keyboard_key_to_enable_cursor = GLFW_KEY_L
+    });
+    window.attach_mouse_button_callback([](int button, int action, int mods) {});
+    window.attach_cursor_pos_callback([&](double xpos, double ypos, double xoffset, double yoffset) {
+        camera.ProcessMouseMovement(xoffset, yoffset);
+    });
+    window.attach_framebuffer_size_callback([&](int width, int height) {});
+    window.attach_scroll_callback([&](double xoffset, double yoffset) {
+        camera.ProcessMouseScroll(yoffset);
+    });
+
 
     Shader colorShader(afs::root("src/shaders/point_shadows.vs").c_str(),
                        afs::root("src/shaders/point_shadows.fs").c_str());
@@ -209,7 +154,7 @@ int main() {
                              afs::root("src/shaders/point_shadows_depth.gs").c_str());
 
     auto woodTextureOpt = Util::loadTexture(afs::root("resources/textures/wood.png").c_str());
-    if (!woodTextureOpt.has_value()) {
+    if (!woodTextureOpt.has_value()){
         cerr << "wood texture not found";
         return -2;
     }
@@ -258,7 +203,7 @@ int main() {
     LineRenderer lineRenderer;
     Ray lastMouseRay(vec3(0.0), camera.Front);
 
-    Object *selectedObject = nullptr;
+    Object* selectedObject = nullptr;
     vector<Object> objects{
         Object{
             .transform = Transform{
@@ -308,10 +253,10 @@ int main() {
     bool showRaymarchResult = false;
 
     float deltaTime, lastFrame = glfwGetTime();
-    while (!glfwWindowShouldClose(window.get())) {
+    while (!glfwWindowShouldClose(window.get())){
         // per-frame time logic
         // --------------------
-        float currentFrame = (float) (glfwGetTime());
+        float currentFrame = (float)(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
@@ -320,7 +265,7 @@ int main() {
         processInput(window.get(), deltaTime, camera, shadows, shadowKeyPressed);
 
 
-        if (glfwGetKey(window.get(), GLFW_KEY_SPACE) == GLFW_PRESS) {
+        if (glfwGetKey(window.get(), GLFW_KEY_SPACE) == GLFW_PRESS){
             double xpos, ypos;
             glfwGetCursorPos(window.get(), &xpos, &ypos);
             raymarchDebugHitPos.clear();
@@ -329,17 +274,17 @@ int main() {
                                            camera.GetViewMatrix());
             trophySdf.findHitPositions(raymarchDebugRay, &raymarchDebugHitPos);
         }
-        if (glfwGetKey(window.get(), GLFW_KEY_ENTER) == GLFW_PRESS) {
+        if (glfwGetKey(window.get(), GLFW_KEY_ENTER) == GLFW_PRESS){
             std::cout << "Shooting raymarching rays..." << endl;
             vector<Ray> initialRays = shootRaymarchRay(wd.screenWidth, wd.screenHeight, camera);
             vector<vec4> color = raymarch(initialRays, trophySdf);
             raymarchResult.replaceData(color);
             std::cout << "Shooting raymarching rays done." << endl;
         }
-        if (glfwGetKey(window.get(), GLFW_KEY_M) == GLFW_PRESS) {
+        if (glfwGetKey(window.get(), GLFW_KEY_M) == GLFW_PRESS){
             showRaymarchResult = true;
         }
-        if (glfwGetKey(window.get(), GLFW_KEY_M) == GLFW_RELEASE) {
+        if (glfwGetKey(window.get(), GLFW_KEY_M) == GLFW_RELEASE){
             showRaymarchResult = false;
         }
 
@@ -355,7 +300,7 @@ int main() {
         // -----------------------------------------------
         float near_plane = 1.0f;
         float far_plane = 25.0f;
-        glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float) SHADOW_WIDTH / (float) SHADOW_HEIGHT,
+        glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT,
                                                 near_plane, far_plane);
         std::vector<glm::mat4> shadowTransforms;
         shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f),
@@ -405,21 +350,21 @@ int main() {
 
         gizmo.render(camera, lightPos, vec2(wd.screenWidth, wd.screenHeight));
 
-        // lineRenderer.queueBox(objects[1].transform, objects[1].model->meshes[0].boundingBox);
-        // lineRenderer.queueBox(Transform{}, trophySdf.bb, vec3(0.0, 1.0, 0.0));
-        // lineRenderer.queueBox(Transform{}, trophySdf.outerBB, vec3(1.0, 0.0, 0.0));
+        lineRenderer.queueBox(Transform{}, trophySdf.bb, vec3(0.0, 1.0, 0.0));
+        lineRenderer.queueBox(Transform{}, trophySdf.outerBB, vec3(1.0, 0.0, 0.0));
         trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
             vec3 color;
-            if(trophySdf.distances[i][j][k] < 0) {
+            if (trophySdf.distances[i][j][k] < 0){
                 lineRenderer.queueBox(Transform{}, bb, vec3(0.0, 1.0, 0.0));
-                // color = vec3(1.0, 0.0, 0.0); // RED
-            } else {
+                // color =
+                // vec3(1.0, 0.0, 0.0); // RED
             }
+            else{}
         });
-        for (auto &r: rays) {
+        for (auto& r : rays){
             lineRenderer.queueLine(r, WHITE);
         }
-        // // lineRenderer.queueLine(raymarchDebugRay, WHITE);
+        lineRenderer.queueLine(raymarchDebugRay, WHITE);
         // int i = 0;
         // vec3 colors[3] = {vec3(1.0,0.0,0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0)};
         // for (auto &p : trophySdf.isectPoints) {
@@ -429,15 +374,8 @@ int main() {
         //     lineRenderer.queueBox(Transform{.translation = c}, BoundingBox(vec3(-0.1 + i * 0.01), vec3(0.1 + i * 0.01)), colors[i% 3] );
         //     i++;
         // }
-        // lineRenderer.queueBox(Transform{.translation = trophySdf.facePoint},
-        //     BoundingBox(vec3(-0.1 + i * 0.01), vec3(0.1 + i * 0.01)) );
 
-        // show tri normals
-        // for (auto [start, end] : trophySdf.faceNormals) {
-        //     lineRenderer.queueLine(start, end);
-        // }
-
-        for (auto &hitPos: raymarchDebugHitPos) {
+        for (auto& hitPos : raymarchDebugHitPos){
             lineRenderer.queueUnitCube(Transform{
                 .translation = hitPos,
                 // .scale = vec3(0.3f)
@@ -446,7 +384,7 @@ int main() {
 
         lineRenderer.render(projection, view);
 
-        if(showRaymarchResult) {
+        if (showRaymarchResult){
             textureRenderer.render(raymarchResult);
         }
 
@@ -459,21 +397,21 @@ int main() {
     return 0;
 }
 
-vector<vec4> raymarch(vector<Ray> &rays, SdfModel &sdf) {
+vector<vec4> raymarch(vector<Ray>& rays, SdfModel& sdf) {
     vector<vec4> color(rays.size(), vec4());
-    for(int i = 0; i < rays.size(); ++i) {
-        if(sdf.findHitPositions(rays[i], nullptr)) {
-            color[i]=(vec4(1.0, 1.0, 1.0, 0.0));
+    for (int i = 0; i < rays.size(); ++i){
+        if (sdf.findHitPositions(rays[i], nullptr)){
+            color[i] = (vec4(1.0, 1.0, 1.0, 0.0));
         }
     }
     return color;
 }
 
-void renderScene(Shader &shader, vector<Object> &objects) {
+void renderScene(Shader& shader, vector<Object>& objects) {
     glEnable(GL_CULL_FACE);
 
-    for (auto &object: objects) {
-        if (object.shouldRender) {
+    for (auto& object : objects){
+        if (object.shouldRender){
             shader.setMat4("model", object.transform.getModelMatrix());
             shader.setVec4("diffuseColor", object.color);
             object.model->draw(shader);
@@ -481,7 +419,7 @@ void renderScene(Shader &shader, vector<Object> &objects) {
     }
 }
 
-void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &shadows, bool &shadowsKeyPressed) {
+void processInput(GLFWwindow* window, float deltaTime, Camera& camera, bool& shadows, bool& shadowsKeyPressed) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
@@ -500,11 +438,11 @@ void processInput(GLFWwindow *window, float deltaTime, Camera &camera, bool &sha
         camera.ProcessKeyboardArcball(false);
 
 
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !shadowsKeyPressed) {
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !shadowsKeyPressed){
         shadows = !shadows;
         shadowsKeyPressed = true;
     }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE){
         shadowsKeyPressed = false;
     }
 }

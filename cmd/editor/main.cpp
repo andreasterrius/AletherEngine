@@ -203,11 +203,11 @@ int main() {
         cerr << "window not found";
         return -1;
     }
-    glfwSetMouseButtonCallback(window.get(), mouseButtonCallback);
+    glfwSetMouseButtonCallback(window.get(), mouse_button_callback);
     glfwSetCursorPosCallback(window.get(), mouseCallback);
     glfwSetWindowUserPointer(window.get(), &wd);
     glfwSetFramebufferSizeCallback(window.get(), framebuffer_size_callback);
-    glfwSetScrollCallback(window.get(), scrollCallback);
+    glfwSetScrollCallback(window.get(), scroll_callback);
 
     Shader colorShader(afs::root("src/shaders/point_shadows.vs").c_str(),
                        afs::root("src/shaders/point_shadows.fs").c_str());

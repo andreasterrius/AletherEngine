@@ -26,7 +26,6 @@ add_executable(AletherEngine
         cmd/editor/main.cpp
         ${ENGINE_HEADER}
         ${ENGINE_SOURCE}
-        src/data/compute_shader.cpp
 )
 target_include_directories(AletherEngine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
         external/glm

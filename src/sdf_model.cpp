@@ -104,15 +104,19 @@ void SdfModel::loopOverCubes(function<void(int, int, int, BoundingBox)> func) {
 
 void SdfModel::bindToShader(Shader shader) {
     if (texture3D.has_value()) {
-        vec3 size = this->outerBB.max - this->outerBB.min;
-        shader.setVec3("bbMin", this->outerBB.min);
-        shader.setVec3("bbMax", this->outerBB.max);
-        shader.setVec3("bbSize", size);
-        shader.setVec3("textureSize", this->cubeSize);
+        vec3 outerSize = this->outerBB.max - this->outerBB.min;
+        shader.setVec3("outerBBMin", this->outerBB.min);
+        shader.setVec3("outerBBMax", this->outerBB.max);
+        shader.setVec3("outerBBSize", outerSize);
+
+        vec3 innerSize = this->bb.max - this->bb.min;
+        shader.setVec3("innerBBMin", this->bb.min);
+        shader.setVec3("innerBBMax", this->bb.max);
+        shader.setVec3("innerBBSize", innerSize);
 
         glActiveTexture(GL_TEXTURE0);
         glUniform1i(glGetUniformLocation(shader.ID, "texture3D"), 0);
-        glBindTexture(GL_TEXTURE_2D, this->texture3D->id);
+        glBindTexture(GL_TEXTURE_3D, this->texture3D->id);
     }
 }
 
@@ -210,7 +214,7 @@ Texture3D::Texture3D(vector<vector<vector<float> > > distances) {
 
     glGenTextures(1, &this->id);
     glBindTexture(GL_TEXTURE_3D, this->id);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, width, height, depth, 0, GL_RED, GL_FLOAT, distances1D.data());
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, width, height, depth, 0, GL_RED, GL_FLOAT, distances1D.data());
 
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
