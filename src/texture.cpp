@@ -107,3 +107,20 @@ Texture3D::Texture3D(Meta meta, vector<float> *data) : meta(meta) {
 
     glBindTexture(GL_TEXTURE_3D, 0);
 }
+
+vector<float> Texture3D::dump_data_from_gpu(){
+    unsigned long long data_size = this->meta.width * this->meta.height * this->meta.depth;
+    if(this->meta.input_format == GL_RGBA) {
+        data_size *= 4;
+    }
+    if(this->meta.input_type == GL_FLOAT) {
+        data_size *= sizeof(float);
+    }
+    vector<float> data(data_size);
+
+    glBindTexture(GL_TEXTURE_3D, this->id);
+    glGetTexImage(GL_TEXTURE_3D, 0, this->meta.input_format, this->meta.input_type, data.data());
+    glBindTexture(GL_TEXTURE_3D, 0);
+    
+    return data;
+}

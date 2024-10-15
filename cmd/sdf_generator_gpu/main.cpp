@@ -30,11 +30,10 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         texture_renderer.render(sdfgen.debug_result.at("sample"));
-
         window.swap_buffer_and_poll_inputs();
     }
 
-    sdfgen.dump("resources/somefolder");
+    sdfgen.dump("sample");
 
     glfwTerminate();
     return 0;

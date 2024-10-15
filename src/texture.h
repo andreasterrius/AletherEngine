@@ -50,6 +50,8 @@ public:
 
     // initialize a texture, empty data is possible
     Texture3D(Meta meta, vector<float>* data = nullptr);
+
+    vector<float> dump_data_from_gpu();
 };
 
 class TextureRenderer {
