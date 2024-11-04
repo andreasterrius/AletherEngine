@@ -12,10 +12,24 @@
 namespace ale {
     class SDFGeneratorGPU {
     public:
+        
+        // Passed as UBO
+        struct GPUBoundingBox
+        {
+            vec4 inner_bb_min;
+            vec4 inner_bb_max;
+            vec4 outer_bb_min;
+            vec4 outer_bb_max;
+        } ;
+
         struct Data {
             unsigned int vertex_ssbo = 0;
             unsigned int index_ssbo = 0;
+            unsigned int bb_ubo = 0;
             bool has_generated = false;
+            int width;
+            int height;
+            int depth;
         };
 
     private:
@@ -34,7 +48,9 @@ namespace ale {
 
         void generate();
 
-        void dump(string path);
+        void dump(string name);
+
+        void dump_textfile(string name);
     };
 }
 

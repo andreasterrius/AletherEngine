@@ -232,9 +232,11 @@ int main() {
     });
 
     //SdfModel robotSdf(robot, 4);
-    SdfModel trophySdf(*objects[1].model.get(), 16);
+    SdfModel trophySdf(*objects[1].model.get(), 8);
     auto size = trophySdf.outerBB.getSize();
     cout << size.x << " " << size.y << " " << size.z << endl;
+
+    trophySdf.writeToFile("resources/sample_cpu.txt");
 
     // objects.push_back(Object{
     //     .transform = Transform{

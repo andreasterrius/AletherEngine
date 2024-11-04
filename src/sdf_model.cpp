@@ -151,7 +151,7 @@ void SdfModel::writeToFile(string path) {
                 for (int k = 0; k < cubeCount; ++k){
                     outFile << distances[i][j][k] << " ";
                 }
-                outFile << endl;
+                outFile << "| j: " << j << endl;
             }
             outFile << endl;
         }

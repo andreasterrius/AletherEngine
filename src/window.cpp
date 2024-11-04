@@ -45,6 +45,13 @@ void Window::set_default_inputs(DefaultInputs default_inputs) {
 
 void Window::set_debug(bool flag) {
     this->data.debug = flag;
+    if(flag) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback(debugCallback, nullptr);
+    } else {
+        glDisable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback(nullptr, nullptr);
+    }
 }
 
 bool Window::should_close() {
@@ -147,4 +154,38 @@ void ale::scroll_callback(GLFWwindow* window, double x_offset, double y_offset) 
     if (d->scroll_callback != nullptr){
         d->scroll_callback(x_offset, y_offset);
     }
+}
+
+void GLAPIENTRY ale::debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+    std::cerr << "---------------" << std::endl;
+    std::cerr << "Source: ";
+    switch (source) {
+        case GL_DEBUG_SOURCE_API:            std::cerr << "API"; break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   std::cerr << "Window System"; break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: std::cerr << "Shader Compiler"; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     std::cerr << "Third Party"; break;
+        case GL_DEBUG_SOURCE_APPLICATION:      std::cerr << "Application"; break;
+        case GL_DEBUG_SOURCE_OTHER:            std::cerr << "Other"; break;
+    }
+
+    std::cerr << "\nType: ";
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR:               std::cerr << "Error"; break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cerr << "Deprecated Behavior"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::cerr << "Undefined Behavior"; break;
+        case GL_DEBUG_TYPE_PORTABILITY:          std::cerr << "Portability"; break;
+        case GL_DEBUG_TYPE_PERFORMANCE:          std::cerr << "Performance"; break;
+        case GL_DEBUG_TYPE_OTHER:                std::cerr << "Other"; break;
+    }
+
+    std::cerr << "\nID: " << id;
+    std::cerr << "\nSeverity: ";
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH:         std::cerr << "high"; break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       std::cerr << "medium"; break;
+        case GL_DEBUG_SEVERITY_LOW:          std::cerr << "low"; break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION:  std::cerr << "notification"; break;
+    }
+
+    std::cerr << "\nMessage: " << message << std::endl;
 }

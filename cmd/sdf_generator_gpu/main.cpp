@@ -3,6 +3,7 @@
 #include <src/window.h>
 #include "src/sdf_generator_gpu.h"
 #include "src/data/model.h"
+#include "src/camera.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -14,12 +15,12 @@ using afs = ale::FileSystem;
 
 int main() {
     glfwInit();
-    auto window = Window(32, 32, "SDF Generator");
-
+    auto window = Window(8, 8, "SDF Generator");
+    window.set_debug(true);
     Model sample(afs::root("resources/models/sample.obj"));
 
     SDFGeneratorGPU sdfgen;
-    sdfgen.add("sample", sample.meshes[0], 32, 32, 32);
+    sdfgen.add("sample", sample.meshes[0], 8, 8, 8);
     sdfgen.generate();
 
     TextureRenderer texture_renderer;
@@ -33,7 +34,7 @@ int main() {
         window.swap_buffer_and_poll_inputs();
     }
 
-    sdfgen.dump("sample");
+    sdfgen.dump_textfile("sample");
 
     glfwTerminate();
     return 0;
