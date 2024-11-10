@@ -10,6 +10,9 @@
 #include <string>
 
 namespace ale {
+    const int DEBUG_TEXTURE_WIDTH = 1024;
+    const int DEBUG_TEXTURE_HEIGHT = 1;
+
     class SDFGeneratorGPU {
     public:
         

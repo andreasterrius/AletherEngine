@@ -17,7 +17,7 @@ int main() {
     glfwInit();
     auto window = Window(8, 8, "SDF Generator");
     window.set_debug(true);
-    Model sample(afs::root("resources/models/sample.obj"));
+    Model sample(afs::root("resources/models/unit_cube.obj"));
 
     SDFGeneratorGPU sdfgen;
     sdfgen.add("sample", sample.meshes[0], 8, 8, 8);

@@ -216,7 +216,7 @@ int main() {
             .transform = Transform{
                 .translation = vec3(0.0f),
             },
-            .model = make_shared<Model>(std::move(trophy))
+            .model = make_shared<Model>(std::move(unitCube))
         },
         Object{
             .transform = Transform{
@@ -256,6 +256,13 @@ int main() {
         .height = wd.screenHeight,
     });
     bool showRaymarchResult = false;
+
+    ofstream debug_out_file(afs::root("resources/bb_debug.txt"));
+    trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
+        debug_out_file << "(" << bb.center.x << "," << bb.center.y << "," << bb.center.z << ")\n"; 
+    });
+
+
 
     float deltaTime, lastFrame = glfwGetTime();
     while (!glfwWindowShouldClose(window.get())){

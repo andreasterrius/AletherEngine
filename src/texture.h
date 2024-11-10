@@ -32,6 +32,8 @@ public:
     void replaceData(vector<vector<vec4>>& colorData);
 
     void replaceData(vector<vec4>& flatColorData);
+
+    vector<float> dump_data_from_gpu();
 };
 
 class Texture3D {

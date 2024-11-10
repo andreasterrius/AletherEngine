@@ -61,7 +61,7 @@ void main() {
         (outer_bb_max.y - outer_bb_min.y) / image_size.y,
         (outer_bb_max.z - outer_bb_min.z) / image_size.z
     );
-    vec3 cube_center_pos = outer_bb_min.xyz + cube_size * texel_coord; 
+    vec3 cube_center_pos = (outer_bb_min.xyz+cube_size/2) + cube_size * texel_coord; 
 
     // find distance to all triangles
     float distance = 1000.0; //very large number
@@ -76,11 +76,14 @@ void main() {
         }
     }
 
-    distance = 1.0;
     color = vec3(distance);
+    
+    vec3 debug_color = vec3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+    uint debug_index = gl_GlobalInvocationID.x + 
+                        gl_GlobalInvocationID.y * gl_NumWorkGroups.x + 
+                        gl_GlobalInvocationID.z * gl_NumWorkGroups.x * gl_NumWorkGroups.y;
+
+    imageStore(debugResult, ivec2(debug_index, 0), vec4(cube_center_pos, 1.0));
 
     imageStore(imgOutput, texel_coord, vec4(distance, 0.0, 0.0, 1.0));
-    imageStore(debugResult, texel_coord.xy, vec4(color, 1.0));
-
-    barrier();
 }

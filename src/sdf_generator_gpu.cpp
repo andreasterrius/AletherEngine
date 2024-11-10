@@ -81,8 +81,8 @@ void SDFGeneratorGPU::add(string name, Mesh &mesh, int width, int height, int de
                                    .input_format = GL_RED,
                                    .input_type = GL_FLOAT}));
     this->debug_result.emplace(name, Texture(Texture::Meta{
-                                         .width = width,
-                                         .height = height,
+                                         .width = DEBUG_TEXTURE_WIDTH,
+                                         .height = DEBUG_TEXTURE_HEIGHT,
                                          .internal_format = GL_RGBA32F,
                                          .input_format = GL_RGBA,
                                          .input_type = GL_FLOAT}));
@@ -118,6 +118,7 @@ void SDFGeneratorGPU::dump(string name)
 void ale::SDFGeneratorGPU::dump_textfile(string name)
 {
     auto result3d = this->result.at(name).dump_data_from_gpu();
+    auto debug_result = this->debug_result.at(name).dump_data_from_gpu();
 
     ofstream out_file(afs::root("resources/" + name + ".txt"));
     // out_file.write(reinterpret_cast<char *>(result3d.data()), result3d.size() * sizeof(float));
@@ -138,7 +139,22 @@ void ale::SDFGeneratorGPU::dump_textfile(string name)
             out_file << endl;
         }
     }
-
-
     out_file.close();
+    
+    ofstream debug_out_file(afs::root("resources/" + name + "_debug.txt"));
+    if(debug_out_file.is_open()) {
+        int ctr = 0;
+        for (int i = 0; i < DEBUG_TEXTURE_WIDTH; ++i){
+            for (int j = 0; j < DEBUG_TEXTURE_HEIGHT; ++j){
+                debug_out_file << "(" << 
+                    debug_result[ctr] << "," <<
+                    debug_result[ctr+1] << "," <<
+                    debug_result[ctr+2] << "," <<
+                    debug_result[ctr+3] << ") ";
+                ctr += 4;
+            }
+            debug_out_file << endl;
+        }
+    }
+    debug_out_file.close();
 }

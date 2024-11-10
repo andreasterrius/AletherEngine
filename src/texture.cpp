@@ -86,6 +86,25 @@ void Texture::replaceData(vector<vec4>& flatColorData) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+vector<float> Texture::dump_data_from_gpu()
+{
+    unsigned long long element_size = this->meta.width * this->meta.height;
+    
+    switch (this->meta.input_format){
+        case GL_RGBA: element_size *= 4; break;
+        case GL_RGB: element_size *= 3; break;
+        case GL_RG: element_size *= 2; break;
+        case GL_RED: element_size *= 1; break;
+    }
+    vector<float> data(element_size);
+    
+    glBindTexture(GL_TEXTURE_2D, this->id);
+    glGetTexImage(GL_TEXTURE_2D, 0, this->meta.input_format, this->meta.input_type, data.data());
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return data;
+}
+
 Texture3D::Texture3D(Meta meta, vector<float> *data) : meta(meta) {
 
     glGenTextures(1, &this->id);
