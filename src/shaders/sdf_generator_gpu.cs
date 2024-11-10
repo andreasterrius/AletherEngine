@@ -78,12 +78,14 @@ void main() {
 
     color = vec3(distance);
     
-    vec3 debug_color = vec3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+    vec3 debug_color = vec3(-1);
     uint debug_index = gl_GlobalInvocationID.x + 
                         gl_GlobalInvocationID.y * gl_NumWorkGroups.x + 
                         gl_GlobalInvocationID.z * gl_NumWorkGroups.x * gl_NumWorkGroups.y;
-
-    imageStore(debugResult, ivec2(debug_index, 0), vec4(cube_center_pos, 1.0));
+    if(debug_index < indices_size) {
+        debug_color = vec3(vertices[debug_index].normal.xyz);
+    }
+    imageStore(debugResult, ivec2(debug_index, 0), vec4(debug_color, 1.0));
 
     imageStore(imgOutput, texel_coord, vec4(distance, 0.0, 0.0, 1.0));
 }

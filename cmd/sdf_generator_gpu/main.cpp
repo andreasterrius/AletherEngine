@@ -15,7 +15,7 @@ using afs = ale::FileSystem;
 
 int main() {
     glfwInit();
-    auto window = Window(8, 8, "SDF Generator");
+    auto window = Window(1024, 100, "SDF Generator");
     window.set_debug(true);
     Model sample(afs::root("resources/models/unit_cube.obj"));
 

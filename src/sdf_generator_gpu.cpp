@@ -27,17 +27,19 @@ SDFGeneratorGPU::~SDFGeneratorGPU()
 
 void SDFGeneratorGPU::add(string name, Mesh &mesh, int width, int height, int depth)
 {
+    unsigned int vertices_size = mesh.vertices.size();
+    unsigned int indices_size = mesh.indices.size();
+ 
     Data sdf_info;
     glGenBuffers(1, &sdf_info.vertex_ssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, sdf_info.vertex_ssbo);
     glBufferData(GL_SHADER_STORAGE_BUFFER,
-                 sizeof(unsigned int) + mesh.vertices.size() * sizeof(Vertex),
+                  4*sizeof(unsigned int) + mesh.vertices.size() * sizeof(Vertex),
                  nullptr, GL_STATIC_DRAW);
 
-    unsigned int vertices_size = mesh.vertices.size();
-    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(unsigned int), &vertices_size); // pass size
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 4*sizeof(unsigned int), &vertices_size); // pass size
     glBufferSubData(GL_SHADER_STORAGE_BUFFER,
-                    sizeof(unsigned int),
+                    4*sizeof(unsigned int), //account for padding
                     mesh.vertices.size() * sizeof(Vertex),
                     mesh.vertices.data());
 
@@ -47,7 +49,6 @@ void SDFGeneratorGPU::add(string name, Mesh &mesh, int width, int height, int de
                  sizeof(unsigned int) + mesh.indices.size() * sizeof(unsigned int),
                  nullptr, GL_STATIC_DRAW);
 
-    unsigned int indices_size = mesh.indices.size();
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(unsigned int), &indices_size); // pass size
     glBufferSubData(GL_SHADER_STORAGE_BUFFER,
                     sizeof(unsigned int),

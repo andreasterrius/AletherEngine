@@ -8,6 +8,7 @@
 #include "shader.h"
 #include "boundingbox.h"
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -17,20 +18,16 @@ using namespace std;
 #define MAX_BONE_INFLUENCE 4
 
 struct Vertex {
-    // position
-    glm::vec3 Position;
-    // normal
-    glm::vec3 Normal;
-    // texCoords
-    glm::vec2 TexCoords;
-    // tangent
-    glm::vec3 Tangent;
-    // bitangent
-    glm::vec3 Bitangent;
+    alignas(16) glm::vec3 Position;
+    alignas(16) glm::vec3 Normal;
+    alignas(16) glm::vec2 TexCoords;
+    alignas(16) glm::vec3 Tangent;
+    alignas(16) glm::vec3 Bitangent;
+    
     //bone indexes which will influence this vertex
-    int m_BoneIDs[MAX_BONE_INFLUENCE];
+    alignas(16) int m_BoneIDs[MAX_BONE_INFLUENCE];
     //weights from each bone
-    float m_Weights[MAX_BONE_INFLUENCE];
+    alignas(16) float m_Weights[MAX_BONE_INFLUENCE];
 };
 
 struct LoadedTexture {
@@ -150,13 +147,13 @@ private:
         // vertex bitangent
         glEnableVertexAttribArray(4);
         glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, Bitangent));
-        // ids
+        // bone ids
         glEnableVertexAttribArray(5);
         glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void *) offsetof(Vertex, m_BoneIDs));
-
         // weights
         glEnableVertexAttribArray(6);
         glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, m_Weights));
+
 //        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // THIS IS NOT ALLOWED, THIS WILL UNBOUND EBO FROM VAO;
         glBindBuffer(GL_ARRAY_BUFFER, 0); // THIS IS ALLOWED.
         glBindVertexArray(0);
