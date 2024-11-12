@@ -216,7 +216,7 @@ int main() {
             .transform = Transform{
                 .translation = vec3(0.0f),
             },
-            .model = make_shared<Model>(std::move(unitCube))
+            .model = make_shared<Model>(std::move(trophy))
         },
         Object{
             .transform = Transform{
