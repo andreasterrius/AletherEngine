@@ -25,21 +25,21 @@ SDFGeneratorGPU::~SDFGeneratorGPU()
     }
 }
 
-void SDFGeneratorGPU::add(string name, Mesh &mesh, int width, int height, int depth)
+void SDFGeneratorGPU::add_mesh(string name, Mesh &mesh, int width, int height, int depth)
 {
     unsigned int vertices_size = mesh.vertices.size();
     unsigned int indices_size = mesh.indices.size();
- 
+
     Data sdf_info;
     glGenBuffers(1, &sdf_info.vertex_ssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, sdf_info.vertex_ssbo);
     glBufferData(GL_SHADER_STORAGE_BUFFER,
-                  4*sizeof(unsigned int) + mesh.vertices.size() * sizeof(Vertex),
+                 4 * sizeof(unsigned int) + mesh.vertices.size() * sizeof(Vertex),
                  nullptr, GL_STATIC_DRAW);
 
-    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 4*sizeof(unsigned int), &vertices_size); // pass size
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 4 * sizeof(unsigned int), &vertices_size); // pass size
     glBufferSubData(GL_SHADER_STORAGE_BUFFER,
-                    4*sizeof(unsigned int), //account for padding
+                    4 * sizeof(unsigned int), // account for padding
                     mesh.vertices.size() * sizeof(Vertex),
                     mesh.vertices.data());
 
@@ -54,7 +54,7 @@ void SDFGeneratorGPU::add(string name, Mesh &mesh, int width, int height, int de
                     sizeof(unsigned int),
                     mesh.indices.size() * sizeof(unsigned int),
                     mesh.indices.data());
-                    
+
     glGenBuffers(1, &sdf_info.bb_ubo);
     glBindBuffer(GL_UNIFORM_BUFFER, sdf_info.bb_ubo);
 
@@ -73,14 +73,18 @@ void SDFGeneratorGPU::add(string name, Mesh &mesh, int width, int height, int de
     sdf_info.height = height;
     sdf_info.width = width;
 
+    std::vector<float> empty;
+    Texture3D texture = Texture3D(Texture3D::Meta{
+                                      .width = width,
+                                      .height = height,
+                                      .depth = depth,
+                                      .internal_format = GL_R32F,
+                                      .input_format = GL_RED,
+                                      .input_type = GL_FLOAT},
+                                  empty);
+
     this->sdf_infos.emplace(name, sdf_info);
-    this->result.emplace(name, Texture3D(Texture3D::Meta{
-                                   .width = width,
-                                   .height = height,
-                                   .depth = depth,
-                                   .internal_format = GL_R32F,
-                                   .input_format = GL_RED,
-                                   .input_type = GL_FLOAT}));
+    this->result.emplace(name, std::move(texture));
     this->debug_result.emplace(name, Texture(Texture::Meta{
                                          .width = DEBUG_TEXTURE_WIDTH,
                                          .height = DEBUG_TEXTURE_HEIGHT,
@@ -89,7 +93,7 @@ void SDFGeneratorGPU::add(string name, Mesh &mesh, int width, int height, int de
                                          .input_type = GL_FLOAT}));
 }
 
-void SDFGeneratorGPU::generate()
+void SDFGeneratorGPU::generate_all()
 {
     for (auto &[k, v] : this->sdf_infos)
     {
@@ -107,13 +111,9 @@ void SDFGeneratorGPU::generate()
     }
 }
 
-void SDFGeneratorGPU::dump(string name)
+Texture3D &ale::SDFGeneratorGPU::at(string name)
 {
-    auto result3d = this->result.at(name).dump_data_from_gpu();
-
-    ofstream out_file(afs::root("resources/" + name + ".bin"), std::ios::binary);
-    out_file.write(reinterpret_cast<char *>(result3d.data()), result3d.size() * sizeof(float));
-    out_file.close();
+    return this->result.at(name);
 }
 
 void ale::SDFGeneratorGPU::dump_textfile(string name)
@@ -122,16 +122,19 @@ void ale::SDFGeneratorGPU::dump_textfile(string name)
     auto debug_result = this->debug_result.at(name).dump_data_from_gpu();
 
     ofstream out_file(afs::root("resources/" + name + ".txt"));
-    // out_file.write(reinterpret_cast<char *>(result3d.data()), result3d.size() * sizeof(float));
-    
+
     auto sdf_info = sdf_infos.at(name);
 
-    if (out_file.is_open()){
+    if (out_file.is_open())
+    {
         int ctr = 0;
-        for (int i = 0; i < sdf_info.width; ++i){
+        for (int i = 0; i < sdf_info.width; ++i)
+        {
             out_file << "i: " << i << endl;
-            for (int j = 0; j < sdf_info.height; ++j){
-                for (int k = 0; k < sdf_info.depth; ++k){
+            for (int j = 0; j < sdf_info.height; ++j)
+            {
+                for (int k = 0; k < sdf_info.depth; ++k)
+                {
                     out_file << result3d[ctr] << " ";
                     ctr++;
                 }
@@ -141,17 +144,16 @@ void ale::SDFGeneratorGPU::dump_textfile(string name)
         }
     }
     out_file.close();
-    
+
     ofstream debug_out_file(afs::root("resources/" + name + "_debug.txt"));
-    if(debug_out_file.is_open()) {
+    if (debug_out_file.is_open())
+    {
         int ctr = 0;
-        for (int i = 0; i < DEBUG_TEXTURE_WIDTH; ++i){
-            for (int j = 0; j < DEBUG_TEXTURE_HEIGHT; ++j){
-                debug_out_file << "(" << 
-                    debug_result[ctr] << "," <<
-                    debug_result[ctr+1] << "," <<
-                    debug_result[ctr+2] << "," <<
-                    debug_result[ctr+3] << ") ";
+        for (int i = 0; i < DEBUG_TEXTURE_WIDTH; ++i)
+        {
+            for (int j = 0; j < DEBUG_TEXTURE_HEIGHT; ++j)
+            {
+                debug_out_file << "(" << debug_result[ctr] << "," << debug_result[ctr + 1] << "," << debug_result[ctr + 2] << "," << debug_result[ctr + 3] << ") ";
                 ctr += 4;
             }
             debug_out_file << endl;

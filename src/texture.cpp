@@ -9,13 +9,14 @@
 using afs = ale::FileSystem;
 
 TextureRenderer::TextureRenderer() : shader(afs::root("src/shaders/texture2d.vs").c_str(),
-                                            afs::root("src/shaders/texture2d.fs").c_str()) {
+                                            afs::root("src/shaders/texture2d.fs").c_str())
+{
     float vertices[] = {
         // Positions       // Texture Coords
-        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, // Top-left
+        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,  // Top-left
         -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // Bottom-left
-        1.0f, -1.0f, 0.0f, 1.0f, 0.0f, // Bottom-right
-        1.0f, 1.0f, 0.0f, 1.0f, 1.0f  // Top-right
+        1.0f, -1.0f, 0.0f, 1.0f, 0.0f,  // Bottom-right
+        1.0f, 1.0f, 0.0f, 1.0f, 1.0f    // Top-right
     };
     unsigned int indices[] = {
         0, 1, 2, // First triangle
@@ -34,16 +35,17 @@ TextureRenderer::TextureRenderer() : shader(afs::root("src/shaders/texture2d.vs"
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
 
-void TextureRenderer::render(Texture& texture) {
+void TextureRenderer::render(Texture &texture)
+{
     shader.use();
     shader.setInt("texture1", 0);
     glActiveTexture(GL_TEXTURE0 + 0); // active proper texture unit before binding
@@ -53,7 +55,8 @@ void TextureRenderer::render(Texture& texture) {
     glBindVertexArray(0);
 }
 
-Texture::Texture(Meta meta) : meta(meta) {
+Texture::Texture(Meta meta) : meta(meta)
+{
     vector<vec4> emptyPixel(meta.width * meta.height, vec4(0.0));
 
     glGenTextures(1, &this->id);
@@ -69,17 +72,20 @@ Texture::Texture(Meta meta) : meta(meta) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture::replaceData(vector<vector<vec4>>& colorData) {
+void Texture::replaceData(vector<vector<vec4>> &colorData)
+{
     // Flatten the 2D vector to a 1D array
     std::vector<glm::vec4> flattenedData;
-    for (const auto& row : colorData){
+    for (const auto &row : colorData)
+    {
         flattenedData.insert(flattenedData.end(), row.begin(), row.end());
     }
 
     this->replaceData(flattenedData);
 }
 
-void Texture::replaceData(vector<vec4>& flatColorData) {
+void Texture::replaceData(vector<vec4> &flatColorData)
+{
     glBindTexture(GL_TEXTURE_2D, this->id);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, meta.width, meta.height, meta.input_format, meta.input_type,
                     flatColorData.data());
@@ -89,15 +95,24 @@ void Texture::replaceData(vector<vec4>& flatColorData) {
 vector<float> Texture::dump_data_from_gpu()
 {
     unsigned long long element_size = this->meta.width * this->meta.height;
-    
-    switch (this->meta.input_format){
-        case GL_RGBA: element_size *= 4; break;
-        case GL_RGB: element_size *= 3; break;
-        case GL_RG: element_size *= 2; break;
-        case GL_RED: element_size *= 1; break;
+
+    switch (this->meta.input_format)
+    {
+    case GL_RGBA:
+        element_size *= 4;
+        break;
+    case GL_RGB:
+        element_size *= 3;
+        break;
+    case GL_RG:
+        element_size *= 2;
+        break;
+    case GL_RED:
+        element_size *= 1;
+        break;
     }
     vector<float> data(element_size);
-    
+
     glBindTexture(GL_TEXTURE_2D, this->id);
     glGetTexImage(GL_TEXTURE_2D, 0, this->meta.input_format, this->meta.input_type, data.data());
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -105,17 +120,20 @@ vector<float> Texture::dump_data_from_gpu()
     return data;
 }
 
-Texture3D::Texture3D(Meta meta, vector<float> *data) : meta(meta) {
-
+Texture3D::Texture3D(Meta meta, vector<float> &data) : meta(meta)
+{
     glGenTextures(1, &this->id);
     glBindTexture(GL_TEXTURE_3D, this->id);
-    if(data != nullptr){
+    if (!data.empty())
+    {
         glTexImage3D(GL_TEXTURE_3D, 0, meta.internal_format,
-                     meta.width, meta.height, meta.depth, 0, meta.input_format, meta.input_type, data->data());
-    } else{
+                     meta.width, meta.height, meta.depth, 0, meta.input_format, meta.input_type, data.data());
+    }
+    else
+    {
         vector<vec4> empty_pixel(meta.width * meta.height * meta.depth, vec4(0.0));
         glTexImage3D(GL_TEXTURE_3D, 0, meta.internal_format,
-                    meta.width, meta.height, meta.depth, 0, meta.input_format, meta.input_type, empty_pixel.data());
+                     meta.width, meta.height, meta.depth, 0, meta.input_format, meta.input_type, empty_pixel.data());
     }
 
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -127,20 +145,96 @@ Texture3D::Texture3D(Meta meta, vector<float> *data) : meta(meta) {
     glBindTexture(GL_TEXTURE_3D, 0);
 }
 
-vector<float> Texture3D::dump_data_from_gpu(){
+vector<float> Texture3D::dump_data_from_gpu()
+{
     unsigned long long element_size = this->meta.width * this->meta.height * this->meta.depth;
-    
-    switch (this->meta.input_format){
-        case GL_RGBA: element_size *= 4; break;
-        case GL_RGB: element_size *= 3; break;
-        case GL_RG: element_size *= 2; break;
-        case GL_RED: element_size *= 1; break;
+
+    switch (this->meta.input_format)
+    {
+    case GL_RGBA:
+        element_size *= 4;
+        break;
+    case GL_RGB:
+        element_size *= 3;
+        break;
+    case GL_RG:
+        element_size *= 2;
+        break;
+    case GL_RED:
+        element_size *= 1;
+        break;
     }
     vector<float> data(element_size);
-    
+
     glBindTexture(GL_TEXTURE_3D, this->id);
     glGetTexImage(GL_TEXTURE_3D, 0, this->meta.input_format, this->meta.input_type, data.data());
     glBindTexture(GL_TEXTURE_3D, 0);
 
     return data;
+}
+
+void Texture3D::save(string name)
+{
+    string path = "resources/" + name + ".bin";
+    ofstream out_file(afs::root(path), std::ios::out | std::ios::binary);
+    if (!out_file.is_open())
+    {
+        throw TextureException("unable to create file: " + path);
+    }
+
+    auto pixels = this->dump_data_from_gpu();
+    auto pixels_size = pixels.size();
+
+    out_file.write(reinterpret_cast<const char *>(&meta), sizeof(meta));
+    out_file.write(reinterpret_cast<const char *>(&pixels_size), sizeof(pixels_size));
+    out_file.write(reinterpret_cast<const char *>(pixels.data()), pixels_size * sizeof(float));
+    out_file.close();
+}
+
+void Texture3D::save_textfile(string name)
+{
+    string path = "resources/" + name + ".txt";
+    ofstream out_file(afs::root(path), std::ios::out | std::ios::binary);
+    if (out_file.is_open())
+    {
+        auto pixels = this->dump_data_from_gpu();
+        int ctr = 0;
+        for (int i = 0; i < meta.width; ++i)
+        {
+            out_file << "i : " << i << endl;
+            for (int j = 0; j < meta.height; ++j)
+            {
+                for (int k = 0; k < meta.depth; ++k)
+                {
+                    out_file << pixels[ctr] << " ";
+                    ctr++;
+                }
+                out_file << "| j: " << j << endl;
+            }
+            out_file << endl;
+        }
+    }
+    out_file.close();
+}
+
+Texture3D Texture3D::load(string name)
+{
+    string path = "resources/" + name + ".bin";
+    ifstream in_file(afs::root(path), std::ios::binary);
+    if (!in_file.is_open())
+    {
+        throw TextureException("uanble to load file: " + path);
+    }
+
+    Meta meta;
+    size_t pixels_size;
+    vector<float> pixels;
+
+    in_file.read(reinterpret_cast<char *>(&meta), sizeof(meta));
+    in_file.read(reinterpret_cast<char *>(&pixels_size), sizeof(size_t));
+    pixels.resize(pixels_size);
+    in_file.read(reinterpret_cast<char *>(pixels.data()), pixels_size * sizeof(float));
+    in_file.close();
+
+    return move(Texture3D(meta, pixels));
 }

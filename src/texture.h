@@ -12,6 +12,11 @@
 using namespace std;
 using namespace glm;
 
+class TextureException final : public runtime_error {
+public:
+    explicit TextureException(const string &msg): runtime_error(msg) {
+    }
+};
 
 class Texture {
 public:
@@ -51,9 +56,15 @@ public:
     unsigned int id = 0;
 
     // initialize a texture, empty data is possible
-    Texture3D(Meta meta, vector<float>* data = nullptr);
+    Texture3D(Meta meta, vector<float> &data);
 
     vector<float> dump_data_from_gpu();
+
+    void save(string name);
+
+    void save_textfile(string name);
+
+    static Texture3D load(string name);
 };
 
 class TextureRenderer {

@@ -20,8 +20,8 @@ int main() {
     Model sample(afs::root("resources/models/sample2.obj"));
 
     SDFGeneratorGPU sdfgen;
-    sdfgen.add("sample", sample.meshes[0], 8, 8, 8);
-    sdfgen.generate();
+    sdfgen.add_mesh("sample", sample.meshes[0], 8, 8, 8);
+    sdfgen.generate_all();
 
     TextureRenderer texture_renderer;
 
@@ -34,7 +34,12 @@ int main() {
         window.swap_buffer_and_poll_inputs();
     }
 
-    sdfgen.dump_textfile("sample");
+    auto t1 = sdfgen.at("sample");
+    t1.save("test_save");
+    t1.save_textfile("sample1");
+
+    auto t2 = Texture3D::load("test_save");
+    t2.save_textfile("sample2");
 
     glfwTerminate();
     return 0;

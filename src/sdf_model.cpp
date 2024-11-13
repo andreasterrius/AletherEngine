@@ -87,7 +87,7 @@ SdfModel::SdfModel(Model& model, int cubeCount) : cubeCount(cubeCount), outerBB(
         .internal_format = GL_R32F,
         .input_format = GL_RED,
         .input_type = GL_FLOAT
-    }, &distances1D);
+    }, distances1D);
 }
 
 void SdfModel::loopOverCubes(function<void(int, int, int, BoundingBox)> func) {

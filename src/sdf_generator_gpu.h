@@ -44,19 +44,19 @@ namespace ale {
         ComputeShader compute_shader;
 
         unordered_map<string, Data> sdf_infos;
-        unordered_map<string, Texture3D> result;
 
     public:
+        unordered_map<string, Texture3D> result;
         unordered_map<string, Texture> debug_result;
 
         SDFGeneratorGPU();
         ~SDFGeneratorGPU();
 
-        void add(string name, Mesh& mesh, int width, int height, int depth);
+        void add_mesh(string name, Mesh& mesh, int width, int height, int depth);
 
-        void generate();
+        void generate_all();
 
-        void dump(string name);
+        Texture3D &at(string name);
 
         void dump_textfile(string name);
     };
