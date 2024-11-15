@@ -10,9 +10,9 @@ namespace ale {
 
 struct Camera_ArcballInput {
     // Used only if input type is arcball
-    glm::vec3 ArcballTarget = vec3();
+    glm::vec3 ArcballTarget = glm::vec3();
 
-    glm::vec2 CurrentMousePos = vec2();
+    glm::vec2 CurrentMousePos = glm::vec2();
 
     // mutable input states
     bool ShouldOrbit = false;
@@ -133,7 +133,7 @@ public:
             glm::qua goRight = glm::angleAxis(glm::radians(-xoffset), this->Up);
             glm::qua combined = goUp * goRight;
 
-            vec3 pivotToPosition = this->Position - this->arcballInput.ArcballTarget;
+            glm::vec3 pivotToPosition = this->Position - this->arcballInput.ArcballTarget;
             this->Position = combined * pivotToPosition;
         }
 
