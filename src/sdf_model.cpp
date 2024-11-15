@@ -140,12 +140,10 @@ void SdfModel::bindToShader(Shader shader) {
         vec3 outerSize = this->outerBB.max - this->outerBB.min;
         shader.setVec3("outerBBMin", this->outerBB.min);
         shader.setVec3("outerBBMax", this->outerBB.max);
-        shader.setVec3("outerBBSize", outerSize);
 
         vec3 innerSize = this->bb.max - this->bb.min;
         shader.setVec3("innerBBMin", this->bb.min);
         shader.setVec3("innerBBMax", this->bb.max);
-        shader.setVec3("innerBBSize", innerSize);
 
         glActiveTexture(GL_TEXTURE0);
         glUniform1i(glGetUniformLocation(shader.ID, "texture3D"), 0);

@@ -3,19 +3,15 @@
 out vec4 out_color;
 
 uniform vec2 iResolution;
-uniform float iTime;
 uniform mat4 invViewProj;
 uniform vec3 cameraPos;
 
 uniform vec3 outerBBMin;
 uniform vec3 outerBBMax;
-uniform vec3 outerBBSize;
 
 uniform vec3 innerBBMin;
 uniform vec3 innerBBMax;
-uniform vec3 innerBBSize;
 
-uniform vec3 textureSize;
 uniform sampler3D texture3D;
 uniform mat4 modelMat;
 uniform mat4 invModelMat;
@@ -28,7 +24,7 @@ vec3 ConvertWorldToTexture(vec3 worldPos, vec3 boxMin, vec3 boxSize)
 
 float distance_from_texture3D(vec3 p)
 {
-    vec3 uvwCoord = ConvertWorldToTexture(p, outerBBMin, outerBBSize);
+    vec3 uvwCoord = ConvertWorldToTexture(p, outerBBMin, outerBBMax-outerBBMin);
     return texture(texture3D, uvwCoord).r;
 }
 
