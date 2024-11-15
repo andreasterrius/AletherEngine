@@ -55,7 +55,7 @@ public:
         glEnableVertexAttribArray(0);
     }
 
-    void draw(Camera &camera, SdfModel &sdfModel)
+    void draw(Camera &camera, SdfModel &sdfModel, Transform transform)
     {
         glDisable(GL_CULL_FACE);
 
@@ -65,6 +65,8 @@ public:
         shader.setVec3("cameraPos", camera.Position);
         mat4 invViewProj = inverse(camera.GetProjectionMatrix(screenWidth, screenHeight) * camera.GetViewMatrix());
         shader.setMat4("invViewProj", invViewProj);
+        shader.setMat4("modelMat", transform.getModelMatrix());
+        shader.setMat4("invModelMat", inverse(transform.getModelMatrix()));
 
         sdfModel.bindToShader(shader);
 
@@ -101,7 +103,7 @@ int main()
 
     glfwInit();
     auto window = Window(windowWidth, windowHeight, "Raymarch SDF");
-    window.set_debug(true);
+    window.set_debug(false);
     window.set_default_inputs(DefaultInputs{
         .keyboard_key_to_disable_cursor = GLFW_KEY_L,
         .keyboard_key_to_enable_cursor = GLFW_KEY_L});
@@ -120,22 +122,20 @@ int main()
     Shader colorShader(afs::root("src/shaders/point_shadows.vs").c_str(),
                        afs::root("src/shaders/point_shadows.fs").c_str());
     // load some random mesh
-    Model trophy(afs::root("resources/models/monkey.obj"));
+    Model monkey(afs::root("resources/models/monkey.obj"));
 
     LineRenderer lineRenderer;
 
-    vector<Object> objects{
-        Object{
-            .transform = Transform{
-                .translation = vec3(0.0f),
-            },
-            .model = make_shared<Model>(std::move(trophy))},
-    };
-
     // SdfModel trophySdf(*objects[0].model.get(), 16);
-    SdfModel monkeySdfGpu64(*objects[0].model.get(), Texture3D::load("monkey64"), 64);
-    SdfModel monkeySdfGpu32(*objects[0].model.get(), Texture3D::load("monkey32"), 32);
-    SdfModel monkeySdfGpu16(*objects[0].model.get(), Texture3D::load("monkey16"), 16);
+    SdfModel monkeySdfGpu64(monkey, Texture3D::load("monkey64"), 64);
+    SdfModel monkeySdfGpu32(monkey, Texture3D::load("monkey32"), 32);
+    SdfModel monkeySdfGpu16(monkey, Texture3D::load("monkey16"), 16);
+
+    Transform transform;
+    transform.translation = vec3(0.0, 0.0, 0.0);
+
+    glm::vec3 eulerAngles = glm::vec3(glm::radians(45.0f), glm::radians(0.0f), glm::radians(0.0f)); // Pitch, yaw, roll
+    transform.rotation = quat(eulerAngles);
 
     int sdfModel = 1;
 
@@ -175,15 +175,15 @@ int main()
 
         if (sdfModel == 1)
         {
-            raymarcher.draw(camera, monkeySdfGpu16);
+            raymarcher.draw(camera, monkeySdfGpu16, transform);
         }
         else if (sdfModel == 2)
         {
-            raymarcher.draw(camera, monkeySdfGpu32);
+            raymarcher.draw(camera, monkeySdfGpu32, transform);
         }
         else if (sdfModel == 3)
         {
-            raymarcher.draw(camera, monkeySdfGpu64);
+            raymarcher.draw(camera, monkeySdfGpu64, Transform{});
         }
 
         // trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb)

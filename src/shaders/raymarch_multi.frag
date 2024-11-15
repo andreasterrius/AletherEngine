@@ -2,23 +2,30 @@
 
 out vec4 out_color;
 
-uniform vec2 iResolution;
-uniform float iTime;
+layout (rgba32f, binding = 0) uniform SDFObject debugResult;
+
+struct SDFMeta {
+    vec3 outerBBMin;
+    vec3 outerBBMax;
+    vec3 innerBBMin;
+    vec3 innerBBMax;
+};
+
+layout (std430, binding = 2) buffer VertexBuffer {
+    uint vertices_size;
+    Vertex vertices[];
+};
+
+uniform SDFObject sdfObjects[20];
+uniform int sdfObjectsSize;
+
+uniform vec2 screenSize;
+
 uniform mat4 invViewProj;
 uniform vec3 cameraPos;
 
-uniform vec3 outerBBMin;
-uniform vec3 outerBBMax;
-uniform vec3 outerBBSize;
-
-uniform vec3 innerBBMin;
-uniform vec3 innerBBMax;
-uniform vec3 innerBBSize;
-
 uniform vec3 textureSize;
 uniform sampler3D texture3D;
-uniform mat4 modelMat;
-uniform mat4 invModelMat;
 
 vec3 ConvertWorldToTexture(vec3 worldPos, vec3 boxMin, vec3 boxSize)
 {
@@ -77,10 +84,7 @@ vec3 raymarch(vec3 ro, vec3 rd) {
 
     // make a light because why not
     const vec3 lightPos = vec3(3.0, 5.0, 5.0);
-    const vec3 lightColor = vec3(3.0, 3.0, 3.0);\
-
-    ro = vec3(invModelMat * vec4(ro, 1.0));
-    rd = vec3(normalize(invModelMat * vec4(rd, 0.0))); 
+    const vec3 lightColor = vec3(3.0, 3.0, 3.0);
 
     for (int i = 0; i < NUMBER_OF_STEPS; ++i)
     {
@@ -97,7 +101,7 @@ vec3 raymarch(vec3 ro, vec3 rd) {
 //            // CHECK TEXTURE UVW
 //            return vec3(ConvertWorldToTexture(ro, outerBBMin, outerBBMax));
             if (dist < MINIMUM_HIT_DISTANCE) {
-                vec3 isectPos = vec3(modelMat*vec4(ro+rd*dist, 1.0));
+                vec3 isectPos = ro+rd*dist;
                 vec3 normal = normalize(isectPos - (innerBBMin + innerBBMax/2.0));
                 return lambertBRDF(normal, normalize(lightPos - isectPos), SDF_COLOR);
             }

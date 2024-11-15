@@ -7,6 +7,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 using namespace glm;
 
@@ -15,9 +16,10 @@ class Transform {
 public:
     vec3 translation = vec3(0.0f);
     vec3 scale = vec3(1.0f);
-    vec4 rotation = vec4(0.0f); //quaternion
+    quat rotation = glm::identity<glm::quat>(); //quaternion
 
     mat4 getModelMatrix();
+    mat4 getInvModelMatrix();
 };
 }
 

@@ -6,9 +6,9 @@
 using namespace glm;
 
 mat4 ale::Transform::getModelMatrix() {
-    //TODO: scale and rotation
-    mat4 transform = mat4(1.0);
-    transform = translate(transform, translation);
-    transform = glm::scale(transform, scale);
-    return transform;
+    mat4 translation = glm::translate(mat4(1.0f), this->translation);
+    mat4 rotation = glm::mat4_cast(this->rotation);
+    mat4 scale = glm::scale(mat4(1.0f), this->scale);
+
+    return rotation * translation  * scale;
 }
