@@ -2,7 +2,7 @@
 #include <glfw/glfw3.h>
 #include "src/camera.h"
 #include "src/data/model.h"
-#include "src/data/scene.h"
+#include "src/components/renderable.h"
 #include "src/renderer/basic_renderer.h"
 #include "src/sdf_generator_gpu.h"
 #include "src/window.h"
@@ -12,31 +12,35 @@
 
 #include "src/file_system.h"
 
+using namespace std;
 using namespace ale;
 using afs = ale::FileSystem;
 
-struct Character {
-  string name;
-};
-struct Enemy {};
+int main()
+{
+    glfwInit();
 
-int main() {
-  glfwInit();
+    auto window = Window(800, 600, "Scene 01");
+    auto camera = Camera(ARCBALL, glm::vec3(0.0f, 0.0f, 10.0f));
+    auto basic_renderer = BasicRenderer();
 
-  auto window = Window(800, 600, "Scene 01");
+    auto lights = vector<Light>{};
 
-  BasicRenderer renderer;
+    auto renderables = vector<Renderable>{};
+    renderables.emplace_back(Transform{}, std::nullopt, nullptr); //TODO: load the model in here.
 
-  SceneNode root;
-  root.data = make_shared<std::any>(Character{"hero"});
+    basic_renderer.prepare_shadowable_objects(renderables);
 
-  while (!window.should_close()) {
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    while (!window.should_close())
+    {
+        glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    window.swap_buffer_and_poll_inputs();
-  }
+        basic_renderer.render(camera, lights, renderables);
 
-  glfwTerminate();
-  return 0;
+        window.swap_buffer_and_poll_inputs();
+    }
+
+    glfwTerminate();
+    return 0;
 }
