@@ -60,13 +60,22 @@ bool is_inside_box(vec3 p, vec3 bbMin, vec3 bbMax) {
     );
 }
 
+vec3 lambertBRDF(vec3 normal, vec3 lightDir, vec3 albedo) {
+    float NdotL = max(dot(normal, lightDir), 0.0);
+    return albedo * NdotL / 3.14;
+}
+
 vec3 raymarch(vec3 ro, vec3 rd) {
     float total_distance_traveled = 0.0;
-    const int NUMBER_OF_STEPS = 64;
-    const float MINIMUM_HIT_DISTANCE = 0.001;
+    const int NUMBER_OF_STEPS = 100;
+    const float MINIMUM_HIT_DISTANCE = 0.01;
     const float MAXIMUM_TRACE_DISTANCE = 1000.0;
     const vec3 NO_HIT_COLOR = vec3(0.52, 0.8, 0.92);
     const vec3 SDF_COLOR =  vec3(0.83, 0.3, 0.05);
+
+    // make a light because why not
+    const vec3 lightPos = vec3(3.0, 5.0, 5.0);
+    const vec3 lightColor = vec3(3.0, 3.0, 3.0);
 
     for (int i = 0; i < NUMBER_OF_STEPS; ++i)
     {
@@ -83,7 +92,9 @@ vec3 raymarch(vec3 ro, vec3 rd) {
 //            // CHECK TEXTURE UVW
 //            return vec3(ConvertWorldToTexture(ro, outerBBMin, outerBBMax));
             if (dist < MINIMUM_HIT_DISTANCE) {
-                return SDF_COLOR;
+                vec3 isectPos = ro+rd*dist;
+                vec3 normal = normalize(isectPos - (innerBBMin + innerBBMax/2.0));
+                return lambertBRDF(normal, normalize(lightPos - isectPos), SDF_COLOR);
             }
             ro = ro + rd * dist;
         }

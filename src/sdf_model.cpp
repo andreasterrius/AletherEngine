@@ -33,7 +33,7 @@ SdfModel::SdfModel(Model& model, int cubeCount) : cubeCount(cubeCount), outerBB(
     distances = vector(cubeCount, vector(cubeCount, vector(cubeCount, INFINITY)));
     positions = vector(cubeCount, vector(cubeCount, vector(cubeCount, vec3())));
 
-    this->loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
+    this->loopOverCubes([&](int k, int j, int i, BoundingBox bb) {
         vector<vec3> isectPoint;
         for (int tri = 0; tri + 2 < model.meshes[0].indices.size(); tri += 3){
             Vertex a = model.meshes[0].vertices[model.meshes[0].indices[tri]];
@@ -59,7 +59,7 @@ SdfModel::SdfModel(Model& model, int cubeCount) : cubeCount(cubeCount), outerBB(
             float distance = Util::udTriangle(bb.center, a.Position, b.Position, c.Position);
             if (distance < distances[i][j][k]){
                 distances[i][j][k] = distance;
-                positions[i][j][k] = bb.center;
+                positions[k][j][i] = bb.center;
             }
         }
         if (isectPoint.size() % 2 == 1){
@@ -88,6 +88,19 @@ SdfModel::SdfModel(Model& model, int cubeCount) : cubeCount(cubeCount), outerBB(
         .input_format = GL_RED,
         .input_type = GL_FLOAT
     }, distances1D);
+}
+
+ale::SdfModel::SdfModel(Model &model, Texture3D texture3D, int cubeCount) : texture3D(texture3D),
+    cubeCount(cubeCount), outerBB(model.meshes[0].boundingBox), bb(model.meshes[0].boundingBox)
+{
+    Transform scaleBB{.scale = vec3(1.1, 1.1, 1.1),}; // make it a bit bigger
+    this->outerBB = this->outerBB.applyTransform(scaleBB);
+    
+    cubeSize = vec3(
+        (outerBB.max.x - outerBB.min.x) / cubeCount,
+        (outerBB.max.y - outerBB.min.y) / cubeCount,
+        (outerBB.max.z - outerBB.min.z) / cubeCount
+    );
 }
 
 void SdfModel::loopOverCubes(function<void(int, int, int, BoundingBox)> func) {

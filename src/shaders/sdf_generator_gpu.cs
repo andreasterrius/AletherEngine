@@ -113,7 +113,7 @@ void main() {
             // check if we have already intersected this before
             bool ok = true;
             for(int j = 0; j < isectPointSize; j++) {
-                if(distance(isect, isectPoint[j]) < 0.001) {
+                if(distance(isect, isectPoint[j]) < 1e-6f) {
                     ok = false;
                     break;
                 }
@@ -144,5 +144,6 @@ void main() {
     // }
     imageStore(debugResult, ivec2(debug_index, 0), vec4(debug_color, 1.0));
 
+    // texel_coord.x = image_size.x - texel_coord.x;
     imageStore(imgOutput, texel_coord, vec4(final_distance, 0.0, 0.0, 1.0));
 }

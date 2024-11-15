@@ -28,21 +28,8 @@ using namespace ale;
 
 using afs = ale::FileSystem;
 
-/***
- * Let's try to do raymarching here
- * Vertex Shader just NDC
-*  const static GLfloat vertices[] = {
-        -1.0f,  1.0f,  1.0f,  1.0f,  1.0f, -1.0f,
-        1.0f,  -1.0f, -1.0f, -1.0f, -1.0f,  1.0f};
-
-        https://github.com/gitEllE-if/ray_marcher/blob/master/srcs/main.c
-
-    1. Setup shader
-    2. Render a cute sphere (https://timcoster.com/2020/02/11/raymarching-shader-pt1-glsl/)
-    3. Pass 3d texture to shader
-    4. Plug in the texture distance function
- */
-class Raymarcher {
+class Raymarcher
+{
     unsigned int vao, vbo;
     Shader shader;
 
@@ -52,7 +39,8 @@ public:
 
     Raymarcher(int screenWidth, int screenHeight) : screenWidth(screenWidth), screenHeight(screenHeight),
                                                     shader(afs::root("src/shaders/raymarch.vert").c_str(),
-                                                           afs::root("src/shaders/raymarch.frag").c_str()) {
+                                                           afs::root("src/shaders/raymarch.frag").c_str())
+    {
         glGenVertexArrays(1, &vao);
         glGenBuffers(1, &vbo);
 
@@ -61,14 +49,14 @@ public:
         const static GLfloat vertices[] = {
             -1.0f, 1.0f, 1.0f, 1.0f,
             1.0f, -1.0f, 1.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f, 1.0f
-        };
+            -1.0f, -1.0f, -1.0f, 1.0f};
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
         glEnableVertexAttribArray(0);
     }
 
-    void draw(Camera& camera, SdfModel& sdfModel) {
+    void draw(Camera &camera, SdfModel &sdfModel)
+    {
         glDisable(GL_CULL_FACE);
 
         shader.use();
@@ -90,9 +78,10 @@ public:
 };
 
 // should hold non owning datas
-struct WindowData {
-    Raymarcher* raymarcher;
-    Camera* camera;
+struct WindowData
+{
+    Raymarcher *raymarcher;
+    Camera *camera;
     bool firstMouse;
     float lastX;
     float lastY;
@@ -102,11 +91,12 @@ struct WindowData {
     bool isCursorDisabled;
 };
 
-void processInput(GLFWwindow* window, float deltaTime, Camera& camera, bool& shadows, bool& shadowsKeyPressed);
+void processInput(GLFWwindow *window, float deltaTime, Camera &camera);
 
-int main() {
-    int windowWidth = 400;
-    int windowHeight = 800;
+int main()
+{
+    int windowWidth = 1024;
+    int windowHeight = 768;
     Camera camera(ARCBALL, glm::vec3(3.0f, 3.0f, 10.0f));
 
     glfwInit();
@@ -114,36 +104,23 @@ int main() {
     window.set_debug(true);
     window.set_default_inputs(DefaultInputs{
         .keyboard_key_to_disable_cursor = GLFW_KEY_L,
-        .keyboard_key_to_enable_cursor = GLFW_KEY_L
-    });
+        .keyboard_key_to_enable_cursor = GLFW_KEY_L});
     window.attach_mouse_button_callback([](int button, int action, int mods) {});
-    window.attach_cursor_pos_callback([&](double xpos, double ypos, double xoffset, double yoffset) {
-        camera.ProcessMouseMovement(xoffset, yoffset);
-    });
+    window.attach_cursor_pos_callback([&](double xpos, double ypos, double xoffset, double yoffset)
+                                      { camera.ProcessMouseMovement(xoffset, yoffset); });
 
     Raymarcher raymarcher(windowWidth, windowHeight);
-    window.attach_framebuffer_size_callback([&](int width, int height) {
+    window.attach_framebuffer_size_callback([&](int width, int height)
+                                            {
         raymarcher.screenWidth = width;
-        raymarcher.screenHeight = height;
-    });
-    window.attach_scroll_callback([&](double xoffset, double yoffset) {
-        camera.ProcessMouseScroll(yoffset);
-    });
+        raymarcher.screenHeight = height; });
+    window.attach_scroll_callback([&](double xoffset, double yoffset)
+                                  { camera.ProcessMouseScroll(yoffset); });
 
     Shader colorShader(afs::root("src/shaders/point_shadows.vs").c_str(),
                        afs::root("src/shaders/point_shadows.fs").c_str());
     // load some random mesh
-    Model trophy(afs::root("resources/models/sample.obj"));
-
-    // shader configuration
-    // --------------------
-    colorShader.use();
-    colorShader.setInt("diffuseTexture", 0);
-    colorShader.setInt("depthMap", 1);
-
-    vec3 lightPos(10.0f, 10.0f, 0.0f);
-    bool shadows = true;
-    bool shadowKeyPressed = false;
+    Model trophy(afs::root("resources/models/monkey.obj"));
 
     LineRenderer lineRenderer;
 
@@ -152,15 +129,19 @@ int main() {
             .transform = Transform{
                 .translation = vec3(0.0f),
             },
-            .model = make_shared<Model>(std::move(trophy))
-        },
+            .model = make_shared<Model>(std::move(trophy))},
     };
 
-    SdfModel trophySdf(*objects[0].model.get(), 16);
-    trophySdf.writeToFile("resources/trophySdf.txt");
+    // SdfModel trophySdf(*objects[0].model.get(), 16);
+    SdfModel monkeySdfGpu64(*objects[0].model.get(), Texture3D::load("monkey64"), 64);
+    SdfModel monkeySdfGpu32(*objects[0].model.get(), Texture3D::load("monkey32"), 32);
+    SdfModel monkeySdfGpu16(*objects[0].model.get(), Texture3D::load("monkey16"), 16);
+
+    int sdfModel = 1;
 
     float deltaTime, lastFrame = glfwGetTime();
-    while (!glfwWindowShouldClose(window.get())){
+    while (!glfwWindowShouldClose(window.get()))
+    {
         // per-frame time logic
         // --------------------
         float currentFrame = (float)(glfwGetTime());
@@ -169,23 +150,45 @@ int main() {
 
         // input
         // -----
-        processInput(window.get(), deltaTime, camera, shadows, shadowKeyPressed);
+        processInput(window.get(), deltaTime, camera);
 
-        // move light position over time
-        lightPos.z = static_cast<float>(sin(glfwGetTime() * 0.5) * 3.0);
+        // 1 to check CPU SDF
+        // 2 to check GPU SDF
+        if (glfwGetKey(window.get(), GLFW_KEY_1) == GLFW_PRESS)
+        {
+            sdfModel = 1;
+            cout << "sdf 1 enabled\n";
+        }
+        else if (glfwGetKey(window.get(), GLFW_KEY_2) == GLFW_PRESS)
+        {
+            sdfModel = 2;
+            cout << "sdf 2 enabled\n";
+        }
+        else if (glfwGetKey(window.get(), GLFW_KEY_3) == GLFW_PRESS)
+        {
+            sdfModel = 3;
+            cout << "sdf 3 enabled\n";
+        }
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // 2. render scene as normal
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if (sdfModel == 1)
+        {
+            raymarcher.draw(camera, monkeySdfGpu16);
+        }
+        else if (sdfModel == 2)
+        {
+            raymarcher.draw(camera, monkeySdfGpu32);
+        }
+        else if (sdfModel == 3)
+        {
+            raymarcher.draw(camera, monkeySdfGpu64);
+        }
 
-        //raymarcher.draw(camera);
-        trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
-            lineRenderer.queueBox(Transform{}, bb);
-        });
-
-        raymarcher.draw(camera, trophySdf);
+        // trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb)
+        //                         { lineRenderer.queueBox(Transform{}, bb); });
+        // lineRenderer.render(camera.GetProjectionMatrix(windowWidth, windowHeight), camera.GetViewMatrix());
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(window.get());
@@ -196,7 +199,8 @@ int main() {
     return 0;
 }
 
-void processInput(GLFWwindow* window, float deltaTime, Camera& camera, bool& shadows, bool& shadowsKeyPressed) {
+void processInput(GLFWwindow *window, float deltaTime, Camera &camera)
+{
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
@@ -213,13 +217,4 @@ void processInput(GLFWwindow* window, float deltaTime, Camera& camera, bool& sha
         camera.ProcessKeyboardArcball(true);
     else if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_RELEASE)
         camera.ProcessKeyboardArcball(false);
-
-
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !shadowsKeyPressed){
-        shadows = !shadows;
-        shadowsKeyPressed = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE){
-        shadowsKeyPressed = false;
-    }
 }

@@ -13,11 +13,6 @@ namespace ale {
     const int DEBUG_TEXTURE_WIDTH = 1024;
     const int DEBUG_TEXTURE_HEIGHT = 1;
 
-    struct K {
-        unsigned int vertices_size;
-        vector<Vertex> vertices;
-    };
-
     class SDFGeneratorGPU {
     public:
         

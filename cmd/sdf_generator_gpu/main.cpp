@@ -17,10 +17,12 @@ int main() {
     glfwInit();
     auto window = Window(1024, 100, "SDF Generator");
     window.set_debug(true);
-    Model sample(afs::root("resources/models/sample2.obj"));
+    Model sample(afs::root("resources/models/monkey.obj"));
 
     SDFGeneratorGPU sdfgen;
-    sdfgen.add_mesh("sample", sample.meshes[0], 8, 8, 8);
+    sdfgen.add_mesh("monkey64", sample.meshes[0], 64, 64, 64);
+    sdfgen.add_mesh("monkey32", sample.meshes[0], 32, 32, 32);
+    sdfgen.add_mesh("monkey16", sample.meshes[0], 16, 16, 16);
     sdfgen.generate_all();
 
     TextureRenderer texture_renderer;
@@ -30,16 +32,13 @@ int main() {
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        texture_renderer.render(sdfgen.debug_result.at("sample"));
+        texture_renderer.render(sdfgen.debug_result.at("monkey64"));
         window.swap_buffer_and_poll_inputs();
     }
 
-    auto t1 = sdfgen.at("sample");
-    t1.save("test_save");
-    t1.save_textfile("sample1");
-
-    auto t2 = Texture3D::load("test_save");
-    t2.save_textfile("sample2");
+    sdfgen.at("monkey64").save("monkey64");
+    sdfgen.at("monkey32").save("monkey32");
+    sdfgen.at("monkey16").save("monkey16");
 
     glfwTerminate();
     return 0;

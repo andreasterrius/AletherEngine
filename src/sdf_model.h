@@ -29,9 +29,9 @@ private:
     vec3 cubeSize;
     int cubeCount; // for 1 dimension
 
+public:
     optional<Texture3D> texture3D;
 
-public:
     //TODO: move to private, public is for debugging
     vector<vector<vector<float>>> distances;
     vector<vector<vector<vec3>>> positions; // Only used for debugging
@@ -43,7 +43,11 @@ public:
     BoundingBox outerBB; //bb for sdf
     BoundingBox bb; //mesh bb
 
+    // Will generate SDF on CPU
     SdfModel(Model &model, int cubeCount = 16);
+
+    // Skips sdf generation (pass it in through texture3D)
+    SdfModel(Model &model, Texture3D texture3D, int cubeCount);
 
     // returns small cubes that creates the sdf
     void loopOverCubes(function<void(int, int, int, BoundingBox)> func);

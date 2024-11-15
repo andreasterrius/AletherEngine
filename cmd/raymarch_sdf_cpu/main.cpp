@@ -163,6 +163,7 @@ int main() {
     // load some random mesh
     Model robot(afs::root("resources/models/cyborg/cyborg.obj"));
     Model trophy(afs::root("resources/models/sample2.obj"));
+    Model monkey(afs::root("resources/models/monkey.obj"));
     Model unitCube(afs::root("resources/models/unit_cube.obj"));
 
     // configure depth map FBO
@@ -216,7 +217,7 @@ int main() {
             .transform = Transform{
                 .translation = vec3(0.0f),
             },
-            .model = make_shared<Model>(std::move(trophy))
+            .model = make_shared<Model>(std::move(monkey))
         },
         Object{
             .transform = Transform{
@@ -232,7 +233,7 @@ int main() {
     });
 
     //SdfModel robotSdf(robot, 4);
-    SdfModel trophySdf(*objects[1].model.get(), 8);
+    SdfModel trophySdf(*objects[1].model.get(), 32);
     auto size = trophySdf.outerBB.getSize();
     cout << size.x << " " << size.y << " " << size.z << endl;
 
