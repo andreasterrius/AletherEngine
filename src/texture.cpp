@@ -44,6 +44,13 @@ TextureRenderer::TextureRenderer() : shader(afs::root("src/shaders/texture2d.vs"
     glBindVertexArray(0);
 }
 
+TextureRenderer::~TextureRenderer()
+{
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(1, &ebo);
+}
+
 void TextureRenderer::render(Texture &texture)
 {
     shader.use();
@@ -55,14 +62,13 @@ void TextureRenderer::render(Texture &texture)
     glBindVertexArray(0);
 }
 
-Texture::Texture(Meta meta) : meta(meta)
+Texture::Texture(Meta meta, vector<float> &pixels) : meta(meta)
 {
-    vector<vec4> emptyPixel(meta.width * meta.height, vec4(0.0));
-
     glGenTextures(1, &this->id);
     glBindTexture(GL_TEXTURE_2D, this->id);
     glTexImage2D(GL_TEXTURE_2D, 0, meta.internal_format,
-                 meta.width, meta.height, 0, meta.input_format, meta.input_type, emptyPixel.data());
+                 meta.width, meta.height, 0, meta.input_format, meta.input_type,
+                 pixels.empty() ? nullptr : pixels.data());
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -70,6 +76,10 @@ Texture::Texture(Meta meta) : meta(meta)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+Texture::~Texture() {
+    glDeleteBuffers(1, &this->id);
 }
 
 void Texture::replaceData(vector<vector<vec4>> &colorData)
@@ -92,7 +102,7 @@ void Texture::replaceData(vector<vec4> &flatColorData)
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-vector<float> Texture::dump_data_from_gpu()
+vector<float> Texture::retrieve_data_from_gpu()
 {
     unsigned long long element_size = this->meta.width * this->meta.height;
 
@@ -120,6 +130,38 @@ vector<float> Texture::dump_data_from_gpu()
     return data;
 }
 
+void Texture::dump_data_to_file(string path)
+{
+    auto data = this->retrieve_data_from_gpu();
+    ofstream out_file(path);
+    if (out_file.is_open())
+    {
+        int ctr = 0;
+        for (int i = 0; i < meta.width; ++i)
+        {
+            for (int j = 0; j < meta.height; ++j)
+            {
+                if (meta.input_format == GL_RGBA)
+                {
+                    out_file << "(" << data[ctr] << "," << data[ctr + 1] << "," << data[ctr + 2] << "," << data[ctr + 3] << ") ";
+                    ctr += 4;
+                }
+                else if (meta.input_format == GL_RED)
+                {
+                    out_file << data[ctr] << " ";
+                    ctr += 1;
+                }
+                else
+                {
+                    throw new TextureException("format not yet supported");
+                }
+            }
+            out_file << "\n";
+        }
+    }
+    out_file.close();
+}
+
 Texture3D::Texture3D(Meta meta, vector<float> &data) : meta(meta)
 {
     glGenTextures(1, &this->id);
@@ -145,7 +187,12 @@ Texture3D::Texture3D(Meta meta, vector<float> &data) : meta(meta)
     glBindTexture(GL_TEXTURE_3D, 0);
 }
 
-vector<float> Texture3D::dump_data_from_gpu()
+Texture3D::~Texture3D()
+{
+    glDeleteTextures(1, &id);
+}
+
+vector<float> Texture3D::retrieve_data_from_gpu()
 {
     unsigned long long element_size = this->meta.width * this->meta.height * this->meta.depth;
 
@@ -182,7 +229,7 @@ void Texture3D::save(string name)
         throw TextureException("unable to create file: " + path);
     }
 
-    auto pixels = this->dump_data_from_gpu();
+    auto pixels = this->retrieve_data_from_gpu();
     auto pixels_size = pixels.size();
 
     out_file.write(reinterpret_cast<const char *>(&meta), sizeof(meta));
@@ -197,7 +244,7 @@ void Texture3D::save_textfile(string name)
     ofstream out_file(afs::root(path), std::ios::out | std::ios::binary);
     if (out_file.is_open())
     {
-        auto pixels = this->dump_data_from_gpu();
+        auto pixels = this->retrieve_data_from_gpu();
         int ctr = 0;
         for (int i = 0; i < meta.width; ++i)
         {

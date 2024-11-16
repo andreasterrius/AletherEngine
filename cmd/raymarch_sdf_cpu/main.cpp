@@ -251,11 +251,12 @@ int main() {
     Ray raymarchDebugRay(vec3(), camera.Front);
     vector<vec3> raymarchDebugHitPos;
 
+    vector<float> empty;
     TextureRenderer textureRenderer;
     Texture raymarchResult(Texture::Meta{
         .width = wd.screenWidth,
         .height = wd.screenHeight,
-    });
+    }, empty);
     bool showRaymarchResult = false;
 
     ofstream debug_out_file(afs::root("resources/bb_debug.txt"));

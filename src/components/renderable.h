@@ -9,12 +9,12 @@
 
 namespace ale
 {
-    class SDFShadowMeta
+    struct SDFShadowMeta
     {
         int resolution;
     };
 
-    class Renderable
+    struct Renderable
     {
         Transform transform; //TODO: is it supposed to be here?
         std::optional<SDFShadowMeta> shadow;

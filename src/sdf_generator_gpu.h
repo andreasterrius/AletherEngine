@@ -9,13 +9,14 @@
 #include <unordered_map>
 #include <string>
 
-namespace ale {
+namespace ale
+{
     const int DEBUG_TEXTURE_WIDTH = 1024;
     const int DEBUG_TEXTURE_HEIGHT = 1;
 
-    class SDFGeneratorGPU {
+    class SDFGeneratorGPU
+    {
     public:
-        
         // Passed as UBO
         struct GPUBoundingBox
         {
@@ -23,9 +24,10 @@ namespace ale {
             vec4 inner_bb_max;
             vec4 outer_bb_min;
             vec4 outer_bb_max;
-        } ;
+        };
 
-        struct Data {
+        struct Data
+        {
             unsigned int vertex_ssbo = 0;
             unsigned int index_ssbo = 0;
             unsigned int bb_ubo = 0;
@@ -42,20 +44,30 @@ namespace ale {
 
     public:
         unordered_map<string, Texture3D> result;
+
         unordered_map<string, Texture> debug_result;
 
         SDFGeneratorGPU();
         ~SDFGeneratorGPU();
 
-        void add_mesh(string name, Mesh& mesh, int width, int height, int depth);
+        void add_mesh(string name, Mesh &mesh, int width, int height, int depth);
 
         void generate_all();
 
         Texture3D &at(string name);
 
-        void dump_textfile(string name);
+        void dump_textfile(string name, string filename="" /*if not provided namne == path*/);
+
+    public:
+        // Iterator
+        using ResultIterator = unordered_map<string, Texture3D>::iterator;
+        using ConstResultIterator = unordered_map<string, Texture3D>::const_iterator;
+
+        ResultIterator begin() { return result.begin(); }
+        ResultIterator end() { return result.end(); }
+        ConstResultIterator cbegin() const { return result.cbegin(); }
+        ConstResultIterator cend() const { return result.cend(); }
     };
 }
 
-
-#endif //SDFGENERATOR_H
+#endif // SDFGENERATOR_H

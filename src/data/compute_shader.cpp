@@ -91,18 +91,18 @@ void ale::ComputeShader::checkCompileErrors(GLuint shader, std::string type, std
     }
 }
 
-void ale::ComputeShader::executeAndSaveToTexture(Texture& texture) {
+void ale::ComputeShader::execute_2d_save_to_texture_2d(Texture& texture) {
     glUseProgram(this->id);
     //TODO: this does not need to be bound inside hot loop actually. but convinent
     glBindImageTexture(0, texture.id, 0, GL_FALSE, 0, GL_READ_WRITE, texture.meta.internal_format);
     glDispatchCompute(texture.meta.width, texture.meta.height, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_UPDATE_BARRIER_BIT);
 }
 
-void ale::ComputeShader::executeAndSaveToTexture3D(Texture3D& texture) {
+void ale::ComputeShader::execute_3d_save_to_texture_3d(Texture3D& texture) {
     glUseProgram(this->id);
     //TODO: this does not need to be bound inside hot loop actually. but convinent
     glBindImageTexture(0, texture.id, 0, GL_TRUE, 0, GL_READ_WRITE, texture.meta.internal_format);
     glDispatchCompute(texture.meta.width, texture.meta.height, texture.meta.depth);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_UPDATE_BARRIER_BIT);
 }
