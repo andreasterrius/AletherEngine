@@ -1,5 +1,5 @@
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <src/window.h>
 #include "src/sdf_generator_gpu.h"
 #include "src/data/model.h"

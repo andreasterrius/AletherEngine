@@ -1,4 +1,4 @@
-./src/config.h
+src/config.h
 cmake-build-debug
 .idea
 .vscode

@@ -4,6 +4,13 @@ project(AletherEngine)
 set(CMAKE_CXX_STANDARD 23)
 configure_file(config.in ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
+## Create symlink for clangd-lsp
+file(CREATE_LINK
+  "${CMAKE_BINARY_DIR}/compile_commands.json"
+  "${CMAKE_SOURCE_DIR}/compile_commands.json"
+  SYMBOLIC
+)
+
 ## dependency
 set(BUILD_SHARED_LIBS OFF)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
