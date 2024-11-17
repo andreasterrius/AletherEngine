@@ -1,15 +1,22 @@
 cmake_minimum_required(VERSION 3.22.1)
 project(AletherEngine)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 configure_file(config.in ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
 ## Create symlink for clangd-lsp
-file(CREATE_LINK
-  "${CMAKE_BINARY_DIR}/compile_commands.json"
-  "${CMAKE_SOURCE_DIR}/compile_commands.json"
-  SYMBOLIC
-)
+if(UNIX)
+  file(CREATE_LINK
+    "${CMAKE_BINARY_DIR}/compile_commands.json"
+    "${CMAKE_SOURCE_DIR}/compile_commands.json"
+    SYMBOLIC
+  )
+else()
+  file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/compile_commands.json" _dstDir)
+  file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/compile_commands.json" _srcDir)
+  execute_process(COMMAND cmd.exe /c mklink /J "${_dstDir}" "${_srcDir}")
+endif()
+
 
 ## dependency
 set(BUILD_SHARED_LIBS OFF)
@@ -43,6 +50,7 @@ function(create_exe name folder_name)
             external/stb
             external/glad/include
             external/assimp/include
+            external/glfw/include
             ${CMAKE_BINARY_DIR}/external/assimp/include
     )
     target_link_libraries(${name} glfw glm::glm assimp::assimp)
