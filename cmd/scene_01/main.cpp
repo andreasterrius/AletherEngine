@@ -33,6 +33,10 @@ int main()
     renderables.emplace_back(Transform{}, SDFShadowMeta{.resolution = 8}, make_shared<Model>(monkey));
     renderables.emplace_back(Transform{}, SDFShadowMeta{.resolution = 8}, make_shared<Model>(unit_cube));
 
+    int value;
+    glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &value);  
+    cout << "value: " << value << endl;
+
     basic_renderer.prepare_shadowable_objects(renderables);
 
     while (!window.should_close())

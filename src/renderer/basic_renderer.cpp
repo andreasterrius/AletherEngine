@@ -48,17 +48,20 @@ void ale::BasicRenderer::prepare_shadowable_objects(vector<Renderable> &renderab
 
         index += 1;
         ivec3 size = ivec3(meta.width, meta.height, meta.depth);
+        ivec3 size2d = ivec3(64, 64, 64);
         for (int i = 0; i < sdf_data.size(); ++i)
         {
             unsigned int z = i / (size.x * size.y);
             unsigned int y = (i % (size.x * size.y) / size.x);
             unsigned int x = i % size.x;
 
-            unsigned int flat_x = x * z * size.x;
-            unsigned int flat_y = y;
-            unsigned int flat_index = x + (index * 64) + (y * size.x);
+            unsigned int flat_index = x + (y * size2d.x * size2d.z) + (z * size2d.x);
 
+            // stack it
+            flat_index = index * size2d.x * size2d.z * size2d.y + flat_index;
+            
             // finish the remapping
+            cout << x << " " << y << " " << z << " | " << flat_index << "\n";
             flat_data[flat_index] = sdf_data[i];
         }
 

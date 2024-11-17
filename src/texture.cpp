@@ -79,7 +79,7 @@ Texture::Texture(Meta meta, vector<float> &pixels) : meta(meta)
 }
 
 Texture::~Texture() {
-    glDeleteBuffers(1, &this->id);
+    // glDeleteBuffers(1, &this->id);
 }
 
 void Texture::replaceData(vector<vector<vec4>> &colorData)
@@ -137,9 +137,9 @@ void Texture::dump_data_to_file(string path)
     if (out_file.is_open())
     {
         int ctr = 0;
-        for (int i = 0; i < meta.width; ++i)
+        for (int i = 0; i < meta.height; ++i)
         {
-            for (int j = 0; j < meta.height; ++j)
+            for (int j = 0; j < meta.width; ++j)
             {
                 if (meta.input_format == GL_RGBA)
                 {
@@ -189,7 +189,7 @@ Texture3D::Texture3D(Meta meta, vector<float> &data) : meta(meta)
 
 Texture3D::~Texture3D()
 {
-    glDeleteTextures(1, &id);
+    // glDeleteTextures(1, &id);
 }
 
 vector<float> Texture3D::retrieve_data_from_gpu()
