@@ -14,9 +14,9 @@ public:
 
     ComputeShader(string path);
 
-    void executeAndSaveToTexture(Texture& texture);
+    void execute_2d_save_to_texture_2d(Texture& texture);
 
-    void executeAndSaveToTexture3D(Texture3D& texture);
+    void execute_3d_save_to_texture_3d(Texture3D& texture);
 
 private:
     // utility function for checking shader compilation/linking errors.

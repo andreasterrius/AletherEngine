@@ -5,22 +5,26 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include<vector>
-#include<glm/glm.hpp>
+#include <vector>
+#include <glm/glm.hpp>
 #include "data/shader.h"
 
 using namespace std;
 using namespace glm;
 
-class TextureException final : public runtime_error {
+class TextureException final : public runtime_error
+{
 public:
-    explicit TextureException(const string &msg): runtime_error(msg) {
+    explicit TextureException(const string &msg) : runtime_error(msg)
+    {
     }
 };
 
-class Texture {
+class Texture
+{
 public:
-    struct Meta {
+    struct Meta
+    {
         int width = 0;
         int height = 0;
         int internal_format = GL_RGBA;
@@ -31,19 +35,23 @@ public:
     Meta meta;
     unsigned int id;
 
-    // initialize an empty texture
-    Texture(Meta meta);
+    Texture(Meta meta, vector<float> &data);
+    ~Texture();
 
-    void replaceData(vector<vector<vec4>>& colorData);
+    void replaceData(vector<vector<vec4>> &colorData);
 
-    void replaceData(vector<vec4>& flatColorData);
+    void replaceData(vector<vec4> &flatColorData);
 
-    vector<float> dump_data_from_gpu();
+    vector<float> retrieve_data_from_gpu();
+
+    void dump_data_to_file(string path);
 };
 
-class Texture3D {
+class Texture3D
+{
 public:
-    struct Meta {
+    struct Meta
+    {
         int width = 0;
         int height = 0;
         int depth = 0;
@@ -57,8 +65,9 @@ public:
 
     // initialize a texture, empty data is possible
     Texture3D(Meta meta, vector<float> &data);
+    ~Texture3D();
 
-    vector<float> dump_data_from_gpu();
+    vector<float> retrieve_data_from_gpu();
 
     void save(string name);
 
@@ -67,14 +76,16 @@ public:
     static Texture3D load(string name);
 };
 
-class TextureRenderer {
+class TextureRenderer
+{
 public:
     unsigned int vao, vbo, ebo;
     Shader shader;
 
     TextureRenderer();
+    ~TextureRenderer();
 
-    void render(Texture& texture);
+    void render(Texture &texture);
 };
 
-#endif //TEXTURE_H
+#endif // TEXTURE_H

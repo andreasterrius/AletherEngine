@@ -40,6 +40,8 @@ int main() {
     sdfgen.at("monkey32").save("monkey32");
     sdfgen.at("monkey16").save("monkey16");
 
+    sdfgen.dump_textfile("monkey64");
+
     glfwTerminate();
     return 0;
 }

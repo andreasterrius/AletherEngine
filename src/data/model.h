@@ -8,6 +8,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <filesystem>
 
 #include "mesh.h"
 #include "boundingbox.h"
@@ -32,6 +33,7 @@ public:
     vector<LoadedTexture> textures_loaded;    // stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
     vector<Mesh> meshes;
     string directory;
+    std::filesystem::path path;
     bool gammaCorrection;
 
     // constructor, expects a filepath to a 3D model.

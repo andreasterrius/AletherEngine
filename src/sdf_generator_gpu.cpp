@@ -6,6 +6,7 @@
 #include "file_system.h"
 #include "sdf_model.h"
 #include "data/mesh.h"
+#include <filesystem>
 #include <fstream>
 
 using afs = ale::FileSystem;
@@ -22,6 +23,15 @@ SDFGeneratorGPU::~SDFGeneratorGPU()
     {
         glDeleteBuffers(1, &v.index_ssbo);
         glDeleteBuffers(1, &v.vertex_ssbo);
+        glDeleteBuffers(1, &v.bb_ubo);
+    }
+
+    for (auto &[k, v] : this->debug_result) {
+
+    }
+
+    for (auto &[k, v] : this->result) {
+        
     }
 }
 
@@ -90,7 +100,7 @@ void SDFGeneratorGPU::add_mesh(string name, Mesh &mesh, int width, int height, i
                                          .height = DEBUG_TEXTURE_HEIGHT,
                                          .internal_format = GL_RGBA32F,
                                          .input_format = GL_RGBA,
-                                         .input_type = GL_FLOAT}));
+                                         .input_type = GL_FLOAT}, empty));
 }
 
 void SDFGeneratorGPU::generate_all()
@@ -105,7 +115,7 @@ void SDFGeneratorGPU::generate_all()
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, v.index_ssbo);
             glBindBufferBase(GL_UNIFORM_BUFFER, 4, v.bb_ubo);
 
-            this->compute_shader.executeAndSaveToTexture3D(this->result.at(k));
+            this->compute_shader.execute_3d_save_to_texture_3d(this->result.at(k));
             v.has_generated = true;
         }
     }
@@ -116,12 +126,14 @@ Texture3D &ale::SDFGeneratorGPU::at(string name)
     return this->result.at(name);
 }
 
-void ale::SDFGeneratorGPU::dump_textfile(string name)
+void ale::SDFGeneratorGPU::dump_textfile(string name, string filename)
 {
-    auto result3d = this->result.at(name).dump_data_from_gpu();
-    auto debug_result = this->debug_result.at(name).dump_data_from_gpu();
+    auto result3d = this->result.at(name).retrieve_data_from_gpu();
+    auto debug_result = this->debug_result.at(name).retrieve_data_from_gpu();
 
-    ofstream out_file(afs::root("resources/" + name + ".txt"));
+    if(filename == "") filename = name;
+
+    ofstream out_file(afs::root("resources/sdfgen/" + filename + ".txt"));
 
     auto sdf_info = sdf_infos.at(name);
 

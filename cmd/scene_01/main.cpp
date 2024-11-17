@@ -26,8 +26,16 @@ int main()
 
     auto lights = vector<Light>{};
 
+    auto monkey = Model(afs::root("resources/models/monkey.obj"));
+    auto unit_cube = Model(afs::root("resources/models/unit_cube.obj"));
+
     auto renderables = vector<Renderable>{};
-    renderables.emplace_back(Transform{}, std::nullopt, nullptr); //TODO: load the model in here.
+    renderables.emplace_back(Transform{}, SDFShadowMeta{.resolution = 8}, make_shared<Model>(monkey));
+    renderables.emplace_back(Transform{}, SDFShadowMeta{.resolution = 8}, make_shared<Model>(unit_cube));
+
+    int value;
+    glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &value);  
+    cout << "value: " << value << endl;
 
     basic_renderer.prepare_shadowable_objects(renderables);
 

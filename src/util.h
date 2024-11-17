@@ -9,6 +9,7 @@
 #include <glad/glad.h>
 #include <stb_image.h>
 #include <optional>
+#include <vector>
 
 using namespace glm;
 
