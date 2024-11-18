@@ -5,13 +5,12 @@
 #ifndef ALETHERENGINE_RAY_H
 #define ALETHERENGINE_RAY_H
 
-#include<string>
-#include<glm/glm.hpp>
-#include<optional>
+#include <glm/glm.hpp>
+#include <optional>
+#include <string>
 
 using namespace glm;
 using namespace std;
-
 
 namespace ale {
 
@@ -20,25 +19,26 @@ class Transform;
 
 class Ray {
 public:
-    vec3 origin;
-    vec3 dir;
-    vec3 invDir;
+  vec3 origin;
+  vec3 dir;
+  vec3 invDir;
 
-    Ray(vec3 origin, vec3 dir) : origin(origin), dir(normalize(dir)){
-        this->invDir = vec3(1.0f/dir.x, 1.0f/dir.y, 1.0f/dir.z);
-    }
+  Ray(vec3 origin, vec3 dir) : origin(origin), dir(normalize(dir)) {
+    this->invDir = vec3(1.0f / dir.x, 1.0f / dir.y, 1.0f / dir.z);
+  }
 
-    optional<float> tryIntersect(Transform transform, const BoundingBox &box, float limitTMin = 0, float limitTMax = INFINITY);
+  optional<float> tryIntersect(Transform transform, const BoundingBox &box,
+                               float limitTMin = 0, float limitTMax = INFINITY);
 
-    vec3 resolveT(float t);
+  vec3 resolveT(float t);
 
-    string toString() {
-        return "o:(" + to_string(origin.x) + "." + to_string(origin.y) + "," + to_string(origin.z) + ")" +
-                " | d:(" + to_string(dir.x) + "." + to_string(dir.y) + "," + to_string(dir.z) + ")";
-    }
+  string toString() {
+    return "o:(" + to_string(origin.x) + "." + to_string(origin.y) + "," +
+           to_string(origin.z) + ")" + " | d:(" + to_string(dir.x) + "." +
+           to_string(dir.y) + "," + to_string(dir.z) + ")";
+  }
 };
 
-}
+} // namespace ale
 
-
-#endif //ALETHERENGINE_RAY_H
+#endif // ALETHERENGINE_RAY_H

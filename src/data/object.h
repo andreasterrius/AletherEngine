@@ -5,9 +5,9 @@
 #ifndef ALETHERENGINE_OBJECT_H
 #define ALETHERENGINE_OBJECT_H
 
-#include<glm/glm.hpp>
-#include<memory>
-#include"transform.h"
+#include "transform.h"
+#include <glm/glm.hpp>
+#include <memory>
 
 using namespace glm;
 using namespace std;
@@ -18,12 +18,12 @@ class Model;
 
 class Object {
 public:
-    Transform transform;
-    shared_ptr<Model> model;
-    bool shouldRender = true;
+  Transform transform;
+  shared_ptr<Model> model;
+  bool shouldRender = true;
 
-    vec4 color;
+  vec4 color;
 };
-}
+} // namespace ale
 
-#endif //ALETHERENGINE_OBJECT_H
+#endif // ALETHERENGINE_OBJECT_H

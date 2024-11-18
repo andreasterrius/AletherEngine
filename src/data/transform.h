@@ -14,14 +14,13 @@ using namespace glm;
 namespace ale {
 class Transform {
 public:
-    vec3 translation = vec3(0.0f);
-    vec3 scale = vec3(1.0f);
-    quat rotation = glm::identity<glm::quat>(); //quaternion
+  vec3 translation = vec3(0.0f);
+  vec3 scale = vec3(1.0f);
+  quat rotation = glm::identity<glm::quat>(); // quaternion
 
-    mat4 getModelMatrix();
-    mat4 getInvModelMatrix();
+  mat4 getModelMatrix();
+  mat4 getInvModelMatrix();
 };
-}
+} // namespace ale
 
-
-#endif //ALETHERENGINE_TRANSFORM_H
+#endif // ALETHERENGINE_TRANSFORM_H

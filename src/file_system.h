@@ -5,8 +5,8 @@
 #ifndef ALETHERENGINE_FILE_SYSTEM_H
 #define ALETHERENGINE_FILE_SYSTEM_H
 
-#include"config.h"
-#include<string>
+#include "config.h"
+#include <string>
 
 using namespace std;
 
@@ -14,9 +14,9 @@ namespace ale {
 
 class FileSystem {
 public:
-    static string root(const string& path);
+  static string root(const string &path);
 };
 
-} // ale
+} // namespace ale
 
-#endif //ALETHERENGINE_FILE_SYSTEM_H
+#endif // ALETHERENGINE_FILE_SYSTEM_H

@@ -6,31 +6,22 @@
 #include "transform.h"
 
 ale::BoundingBox::BoundingBox(vec3 min, vec3 max) : min(min), max(max) {
-    this->center = vec3(
-        min.x + (max.x - min.x) / 2,
-        min.y + (max.y - min.y) / 2,
-        min.z + (max.z - min.z) / 2
-    );
+  this->center = vec3(min.x + (max.x - min.x) / 2, min.y + (max.y - min.y) / 2,
+                      min.z + (max.z - min.z) / 2);
 }
 
 ale::BoundingBox ale::BoundingBox::applyTransform(ale::Transform t) const {
-    vec3 newSize = t.getModelMatrix() * vec4(this->getSize(), 1.0);
-    vec3 newMin = this->getCenter() - newSize / 2.0f;
-    vec3 newMax = this->getCenter() + newSize / 2.0f;
-    return BoundingBox(newMin, newMax);
+  vec3 newSize = t.getModelMatrix() * vec4(this->getSize(), 1.0);
+  vec3 newMin = this->getCenter() - newSize / 2.0f;
+  vec3 newMax = this->getCenter() + newSize / 2.0f;
+  return BoundingBox(newMin, newMax);
 }
 
-vec3 ale::BoundingBox::getCenter() const {
-    return this->center;
-}
+vec3 ale::BoundingBox::getCenter() const { return this->center; }
 
-vec3 ale::BoundingBox::getSize() const {
-    return this->max - this->min;
-}
+vec3 ale::BoundingBox::getSize() const { return this->max - this->min; }
 
 bool ale::BoundingBox::isInside(vec3 p) {
-    return (min[0] <= p[0] && p[0] <= max[0] &&
-           min[1] <= p[1] && p[1] <= max[1] &&
-           min[2] <= p[2] && p[2] <= max[2]);
+  return (min[0] <= p[0] && p[0] <= max[0] && min[1] <= p[1] &&
+          p[1] <= max[1] && min[2] <= p[2] && p[2] <= max[2]);
 }
-

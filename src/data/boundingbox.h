@@ -5,8 +5,8 @@
 #ifndef ALETHERENGINE_BOUNDINGBOX_H
 #define ALETHERENGINE_BOUNDINGBOX_H
 
-#include<glm/glm.hpp>
-#include"src/data/transform.h"
+#include "src/data/transform.h"
+#include <glm/glm.hpp>
 
 using namespace glm;
 
@@ -16,18 +16,17 @@ class Transform;
 
 class BoundingBox {
 public:
-    vec3 min, max, center;
-    BoundingBox(vec3 min, vec3 max);
+  vec3 min, max, center;
+  BoundingBox(vec3 min, vec3 max);
 
-    BoundingBox applyTransform(Transform t) const;
+  BoundingBox applyTransform(Transform t) const;
 
-    vec3 getCenter() const;
+  vec3 getCenter() const;
 
-    vec3 getSize() const;
+  vec3 getSize() const;
 
-    bool isInside(vec3 p);
+  bool isInside(vec3 p);
 };
-}
+} // namespace ale
 
-
-#endif //ALETHERENGINE_BOUNDINGBOX_H
+#endif // ALETHERENGINE_BOUNDINGBOX_H

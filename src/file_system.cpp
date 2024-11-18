@@ -5,7 +5,7 @@
 #include "file_system.h"
 
 namespace ale {
-string FileSystem::root(const string& path) {
-    return string(ALE_ROOT_PATH) + "/" + path;
+string FileSystem::root(const string &path) {
+  return string(ALE_ROOT_PATH) + "/" + path;
 }
-} // ale
+} // namespace ale

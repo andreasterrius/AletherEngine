@@ -38,6 +38,10 @@ public:
     Texture(Meta meta, vector<float> &data);
     ~Texture();
 
+    Texture(const Texture &other) = delete;
+    Texture& operator=(const Texture &other) = delete;
+
+
     void replaceData(vector<vector<vec4>> &colorData);
 
     void replaceData(vector<vec4> &flatColorData);

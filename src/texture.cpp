@@ -3,285 +3,263 @@
 //
 
 #include "texture.h"
-#include <glad/glad.h>
 #include "file_system.h"
+#include <glad/glad.h>
 
 using afs = ale::FileSystem;
 
-TextureRenderer::TextureRenderer() : shader(afs::root("src/shaders/texture2d.vs").c_str(),
-                                            afs::root("src/shaders/texture2d.fs").c_str())
-{
-    float vertices[] = {
-        // Positions       // Texture Coords
-        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,  // Top-left
-        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // Bottom-left
-        1.0f, -1.0f, 0.0f, 1.0f, 0.0f,  // Bottom-right
-        1.0f, 1.0f, 0.0f, 1.0f, 1.0f    // Top-right
-    };
-    unsigned int indices[] = {
-        0, 1, 2, // First triangle
-        2, 3, 0  // Second triangle
-    };
+TextureRenderer::TextureRenderer()
+    : shader(afs::root("src/shaders/texture2d.vs").c_str(),
+             afs::root("src/shaders/texture2d.fs").c_str()) {
+  float vertices[] = {
+      // Positions       // Texture Coords
+      -1.0f, 1.0f,  0.0f, 0.0f, 1.0f, // Top-left
+      -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // Bottom-left
+      1.0f,  -1.0f, 0.0f, 1.0f, 0.0f, // Bottom-right
+      1.0f,  1.0f,  0.0f, 1.0f, 1.0f  // Top-right
+  };
+  unsigned int indices[] = {
+      0, 1, 2, // First triangle
+      2, 3, 0  // Second triangle
+  };
 
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
+  glGenVertexArrays(1, &vao);
+  glGenBuffers(1, &vbo);
+  glGenBuffers(1, &ebo);
 
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glBindVertexArray(vao);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+               GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
+                        (void *)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
 }
 
-TextureRenderer::~TextureRenderer()
-{
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
-    glDeleteBuffers(1, &ebo);
+TextureRenderer::~TextureRenderer() {
+  glDeleteVertexArrays(1, &vao);
+  glDeleteBuffers(1, &vbo);
+  glDeleteBuffers(1, &ebo);
 }
 
-void TextureRenderer::render(Texture &texture)
-{
-    shader.use();
-    shader.setInt("texture1", 0);
-    glActiveTexture(GL_TEXTURE0 + 0); // active proper texture unit before binding
-    glBindTexture(GL_TEXTURE_2D, texture.id);
-    glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+void TextureRenderer::render(Texture &texture) {
+  shader.use();
+  shader.setInt("texture1", 0);
+  glActiveTexture(GL_TEXTURE0 + 0); // active proper texture unit before binding
+  glBindTexture(GL_TEXTURE_2D, texture.id);
+  glBindVertexArray(vao);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  glBindVertexArray(0);
 }
 
-Texture::Texture(Meta meta, vector<float> &pixels) : meta(meta)
-{
-    glGenTextures(1, &this->id);
-    glBindTexture(GL_TEXTURE_2D, this->id);
-    glTexImage2D(GL_TEXTURE_2D, 0, meta.internal_format,
-                 meta.width, meta.height, 0, meta.input_format, meta.input_type,
-                 pixels.empty() ? nullptr : pixels.data());
+Texture::Texture(Meta meta, vector<float> &pixels) : meta(meta) {
+  glGenTextures(1, &this->id);
+  glBindTexture(GL_TEXTURE_2D, this->id);
+  glTexImage2D(GL_TEXTURE_2D, 0, meta.internal_format, meta.width, meta.height,
+               0, meta.input_format, meta.input_type,
+               pixels.empty() ? nullptr : pixels.data());
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 Texture::~Texture() {
-    // glDeleteBuffers(1, &this->id);
+  // glDeleteBuffers(1, &this->id);
 }
 
-void Texture::replaceData(vector<vector<vec4>> &colorData)
-{
-    // Flatten the 2D vector to a 1D array
-    std::vector<glm::vec4> flattenedData;
-    for (const auto &row : colorData)
-    {
-        flattenedData.insert(flattenedData.end(), row.begin(), row.end());
-    }
+void Texture::replaceData(vector<vector<vec4>> &colorData) {
+  // Flatten the 2D vector to a 1D array
+  std::vector<glm::vec4> flattenedData;
+  for (const auto &row : colorData) {
+    flattenedData.insert(flattenedData.end(), row.begin(), row.end());
+  }
 
-    this->replaceData(flattenedData);
+  this->replaceData(flattenedData);
 }
 
-void Texture::replaceData(vector<vec4> &flatColorData)
-{
-    glBindTexture(GL_TEXTURE_2D, this->id);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, meta.width, meta.height, meta.input_format, meta.input_type,
-                    flatColorData.data());
-    glBindTexture(GL_TEXTURE_2D, 0);
+void Texture::replaceData(vector<vec4> &flatColorData) {
+  glBindTexture(GL_TEXTURE_2D, this->id);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, meta.width, meta.height,
+                  meta.input_format, meta.input_type, flatColorData.data());
+  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-vector<float> Texture::retrieve_data_from_gpu()
-{
-    unsigned long long element_size = this->meta.width * this->meta.height;
+vector<float> Texture::retrieve_data_from_gpu() {
+  unsigned long long element_size = this->meta.width * this->meta.height;
 
-    switch (this->meta.input_format)
-    {
-    case GL_RGBA:
-        element_size *= 4;
-        break;
-    case GL_RGB:
-        element_size *= 3;
-        break;
-    case GL_RG:
-        element_size *= 2;
-        break;
-    case GL_RED:
-        element_size *= 1;
-        break;
-    }
-    vector<float> data(element_size);
+  switch (this->meta.input_format) {
+  case GL_RGBA:
+    element_size *= 4;
+    break;
+  case GL_RGB:
+    element_size *= 3;
+    break;
+  case GL_RG:
+    element_size *= 2;
+    break;
+  case GL_RED:
+    element_size *= 1;
+    break;
+  }
+  vector<float> data(element_size);
 
-    glBindTexture(GL_TEXTURE_2D, this->id);
-    glGetTexImage(GL_TEXTURE_2D, 0, this->meta.input_format, this->meta.input_type, data.data());
-    glBindTexture(GL_TEXTURE_2D, 0);
+  glBindTexture(GL_TEXTURE_2D, this->id);
+  glGetTexImage(GL_TEXTURE_2D, 0, this->meta.input_format,
+                this->meta.input_type, data.data());
+  glBindTexture(GL_TEXTURE_2D, 0);
 
-    return data;
+  return data;
 }
 
-void Texture::dump_data_to_file(string path)
-{
-    auto data = this->retrieve_data_from_gpu();
-    ofstream out_file(path);
-    if (out_file.is_open())
-    {
-        int ctr = 0;
-        for (int i = 0; i < meta.height; ++i)
-        {
-            for (int j = 0; j < meta.width; ++j)
-            {
-                if (meta.input_format == GL_RGBA)
-                {
-                    out_file << "(" << data[ctr] << "," << data[ctr + 1] << "," << data[ctr + 2] << "," << data[ctr + 3] << ") ";
-                    ctr += 4;
-                }
-                else if (meta.input_format == GL_RED)
-                {
-                    out_file << data[ctr] << " ";
-                    ctr += 1;
-                }
-                else
-                {
-                    throw new TextureException("format not yet supported");
-                }
-            }
-            out_file << "\n";
+void Texture::dump_data_to_file(string path) {
+  auto data = this->retrieve_data_from_gpu();
+  ofstream out_file(path);
+  if (out_file.is_open()) {
+    int ctr = 0;
+    for (int i = 0; i < meta.height; ++i) {
+      for (int j = 0; j < meta.width; ++j) {
+        if (meta.input_format == GL_RGBA) {
+          out_file << "(" << data[ctr] << "," << data[ctr + 1] << ","
+                   << data[ctr + 2] << "," << data[ctr + 3] << ") ";
+          ctr += 4;
+        } else if (meta.input_format == GL_RED) {
+          out_file << data[ctr] << " ";
+          ctr += 1;
+        } else {
+          throw new TextureException("format not yet supported");
         }
+      }
+      out_file << "\n";
     }
-    out_file.close();
+  }
+  out_file.close();
 }
 
-Texture3D::Texture3D(Meta meta, vector<float> &data) : meta(meta)
-{
-    glGenTextures(1, &this->id);
-    glBindTexture(GL_TEXTURE_3D, this->id);
-    if (!data.empty())
-    {
-        glTexImage3D(GL_TEXTURE_3D, 0, meta.internal_format,
-                     meta.width, meta.height, meta.depth, 0, meta.input_format, meta.input_type, data.data());
-    }
-    else
-    {
-        vector<vec4> empty_pixel(meta.width * meta.height * meta.depth, vec4(0.0));
-        glTexImage3D(GL_TEXTURE_3D, 0, meta.internal_format,
-                     meta.width, meta.height, meta.depth, 0, meta.input_format, meta.input_type, empty_pixel.data());
-    }
+Texture3D::Texture3D(Meta meta, vector<float> &data) : meta(meta) {
+  glGenTextures(1, &this->id);
+  glBindTexture(GL_TEXTURE_3D, this->id);
+  if (!data.empty()) {
+    glTexImage3D(GL_TEXTURE_3D, 0, meta.internal_format, meta.width,
+                 meta.height, meta.depth, 0, meta.input_format, meta.input_type,
+                 data.data());
+  } else {
+    vector<vec4> empty_pixel(meta.width * meta.height * meta.depth, vec4(0.0));
+    glTexImage3D(GL_TEXTURE_3D, 0, meta.internal_format, meta.width,
+                 meta.height, meta.depth, 0, meta.input_format, meta.input_type,
+                 empty_pixel.data());
+  }
 
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glBindTexture(GL_TEXTURE_3D, 0);
+  glBindTexture(GL_TEXTURE_3D, 0);
 }
 
-Texture3D::~Texture3D()
-{
-    // glDeleteTextures(1, &id);
+Texture3D::~Texture3D() {
+  // glDeleteTextures(1, &id);
 }
 
-vector<float> Texture3D::retrieve_data_from_gpu()
-{
-    unsigned long long element_size = this->meta.width * this->meta.height * this->meta.depth;
+vector<float> Texture3D::retrieve_data_from_gpu() {
+  unsigned long long element_size =
+      this->meta.width * this->meta.height * this->meta.depth;
 
-    switch (this->meta.input_format)
-    {
-    case GL_RGBA:
-        element_size *= 4;
-        break;
-    case GL_RGB:
-        element_size *= 3;
-        break;
-    case GL_RG:
-        element_size *= 2;
-        break;
-    case GL_RED:
-        element_size *= 1;
-        break;
-    }
-    vector<float> data(element_size);
+  switch (this->meta.input_format) {
+  case GL_RGBA:
+    element_size *= 4;
+    break;
+  case GL_RGB:
+    element_size *= 3;
+    break;
+  case GL_RG:
+    element_size *= 2;
+    break;
+  case GL_RED:
+    element_size *= 1;
+    break;
+  }
+  vector<float> data(element_size);
 
-    glBindTexture(GL_TEXTURE_3D, this->id);
-    glGetTexImage(GL_TEXTURE_3D, 0, this->meta.input_format, this->meta.input_type, data.data());
-    glBindTexture(GL_TEXTURE_3D, 0);
+  glBindTexture(GL_TEXTURE_3D, this->id);
+  glGetTexImage(GL_TEXTURE_3D, 0, this->meta.input_format,
+                this->meta.input_type, data.data());
+  glBindTexture(GL_TEXTURE_3D, 0);
 
-    return data;
+  return data;
 }
 
-void Texture3D::save(string name)
-{
-    string path = "resources/" + name + ".bin";
-    ofstream out_file(afs::root(path), std::ios::out | std::ios::binary);
-    if (!out_file.is_open())
-    {
-        throw TextureException("unable to create file: " + path);
-    }
+void Texture3D::save(string name) {
+  string path = "resources/" + name + ".bin";
+  ofstream out_file(afs::root(path), std::ios::out | std::ios::binary);
+  if (!out_file.is_open()) {
+    throw TextureException("unable to create file: " + path);
+  }
 
+  auto pixels = this->retrieve_data_from_gpu();
+  auto pixels_size = pixels.size();
+
+  out_file.write(reinterpret_cast<const char *>(&meta), sizeof(meta));
+  out_file.write(reinterpret_cast<const char *>(&pixels_size),
+                 sizeof(pixels_size));
+  out_file.write(reinterpret_cast<const char *>(pixels.data()),
+                 pixels_size * sizeof(float));
+  out_file.close();
+}
+
+void Texture3D::save_textfile(string name) {
+  string path = "resources/" + name + ".txt";
+  ofstream out_file(afs::root(path), std::ios::out | std::ios::binary);
+  if (out_file.is_open()) {
     auto pixels = this->retrieve_data_from_gpu();
-    auto pixels_size = pixels.size();
-
-    out_file.write(reinterpret_cast<const char *>(&meta), sizeof(meta));
-    out_file.write(reinterpret_cast<const char *>(&pixels_size), sizeof(pixels_size));
-    out_file.write(reinterpret_cast<const char *>(pixels.data()), pixels_size * sizeof(float));
-    out_file.close();
-}
-
-void Texture3D::save_textfile(string name)
-{
-    string path = "resources/" + name + ".txt";
-    ofstream out_file(afs::root(path), std::ios::out | std::ios::binary);
-    if (out_file.is_open())
-    {
-        auto pixels = this->retrieve_data_from_gpu();
-        int ctr = 0;
-        for (int i = 0; i < meta.width; ++i)
-        {
-            out_file << "i : " << i << endl;
-            for (int j = 0; j < meta.height; ++j)
-            {
-                for (int k = 0; k < meta.depth; ++k)
-                {
-                    out_file << pixels[ctr] << " ";
-                    ctr++;
-                }
-                out_file << "| j: " << j << endl;
-            }
-            out_file << endl;
+    int ctr = 0;
+    for (int i = 0; i < meta.width; ++i) {
+      out_file << "i : " << i << endl;
+      for (int j = 0; j < meta.height; ++j) {
+        for (int k = 0; k < meta.depth; ++k) {
+          out_file << pixels[ctr] << " ";
+          ctr++;
         }
+        out_file << "| j: " << j << endl;
+      }
+      out_file << endl;
     }
-    out_file.close();
+  }
+  out_file.close();
 }
 
-Texture3D Texture3D::load(string name)
-{
-    string path = "resources/" + name + ".bin";
-    ifstream in_file(afs::root(path), std::ios::binary);
-    if (!in_file.is_open())
-    {
-        throw TextureException("uanble to load file: " + path);
-    }
+Texture3D Texture3D::load(string name) {
+  string path = "resources/" + name + ".bin";
+  ifstream in_file(afs::root(path), std::ios::binary);
+  if (!in_file.is_open()) {
+    throw TextureException("uanble to load file: " + path);
+  }
 
-    Meta meta;
-    size_t pixels_size;
-    vector<float> pixels;
+  Meta meta;
+  size_t pixels_size;
+  vector<float> pixels;
 
-    in_file.read(reinterpret_cast<char *>(&meta), sizeof(meta));
-    in_file.read(reinterpret_cast<char *>(&pixels_size), sizeof(size_t));
-    pixels.resize(pixels_size);
-    in_file.read(reinterpret_cast<char *>(pixels.data()), pixels_size * sizeof(float));
-    in_file.close();
+  in_file.read(reinterpret_cast<char *>(&meta), sizeof(meta));
+  in_file.read(reinterpret_cast<char *>(&pixels_size), sizeof(size_t));
+  pixels.resize(pixels_size);
+  in_file.read(reinterpret_cast<char *>(pixels.data()),
+               pixels_size * sizeof(float));
+  in_file.close();
 
-    return move(Texture3D(meta, pixels));
+  return move(Texture3D(meta, pixels));
 }

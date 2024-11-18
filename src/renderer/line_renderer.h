@@ -5,11 +5,11 @@
 #ifndef ALETHERENGINE_LINE_RENDERER_H
 #define ALETHERENGINE_LINE_RENDERER_H
 
+#include "../data/shader.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
-#include "../data/shader.h"
-#include <vector>
 #include <utility>
+#include <vector>
 
 using namespace glm;
 using namespace std;
@@ -24,33 +24,31 @@ class BoundingBox;
 
 class LineRenderer {
 private:
-    struct Data {
-        vec3 startPos;
-        vec3 color;
-    };
-    Shader lineShader;
-    unsigned int linesVAO, linesVBO;
-    vector<Data> lineData;
+  struct Data {
+    vec3 startPos;
+    vec3 color;
+  };
+  Shader lineShader;
+  unsigned int linesVAO, linesVBO;
+  vector<Data> lineData;
 
-    Shader boxShader;
-    unsigned int boxVAO, boxVBO, boxInstanceVBO;
-    vector<vec3> boxData;
-
+  Shader boxShader;
+  unsigned int boxVAO, boxVBO, boxInstanceVBO;
+  vector<vec3> boxData;
 
 public:
-    LineRenderer();
+  LineRenderer();
 
-    void queueLine(Ray &ray, vec3 color = WHITE);
+  void queueLine(Ray &ray, vec3 color = WHITE);
 
-    void queueLine(vec3 start, vec3 end, vec3 color = WHITE);
+  void queueLine(vec3 start, vec3 end, vec3 color = WHITE);
 
-    void queueBox(Transform transform, BoundingBox bb, vec3 color = WHITE);
+  void queueBox(Transform transform, BoundingBox bb, vec3 color = WHITE);
 
-    void queueUnitCube(Transform transform);
+  void queueUnitCube(Transform transform);
 
-    void render(mat4 projection, mat4 view);
+  void render(mat4 projection, mat4 view);
 };
-}
+} // namespace ale
 
-
-#endif //ALETHERENGINE_LINE_RENDERER_H
+#endif // ALETHERENGINE_LINE_RENDERER_H
