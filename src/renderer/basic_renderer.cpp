@@ -67,7 +67,7 @@ void ale::BasicRenderer::prepare_shadowable_objects(
                                 .internal_format = GL_R32F,
                                 .input_format = GL_RED,
                                 .input_type = GL_FLOAT},
-                  flat_data),
+                                flat_data),
           index);
       index = -1;
     }

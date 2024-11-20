@@ -125,3 +125,17 @@ void ale::ComputeShader::execute_3d_save_to_texture_3d(Texture3D &texture) {
   glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT |
                   GL_TEXTURE_UPDATE_BARRIER_BIT);
 }
+
+ale::ComputeShader::ComputeShader(ale::ComputeShader &&other) : id(other.id) {
+  other.id = 0;
+}
+
+ale::ComputeShader &ale::ComputeShader::operator=(ale::ComputeShader &&other) {
+  if (this != &other) {
+    swap(this->id, other.id);
+  }
+
+  return *this;
+}
+
+ale::ComputeShader::~ComputeShader() { glDeleteProgram(id); }

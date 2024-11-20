@@ -13,6 +13,13 @@ public:
   unsigned int id;
 
   ComputeShader(string path);
+  ~ComputeShader();
+
+  ComputeShader(const ComputeShader &other) = delete;
+  ComputeShader &operator=(const ComputeShader &other) = delete;
+
+  ComputeShader(ComputeShader &&other);
+  ComputeShader &operator=(ComputeShader &&other);
 
   void execute_2d_save_to_texture_2d(Texture &texture);
 

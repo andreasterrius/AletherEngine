@@ -92,7 +92,7 @@ SdfModel::SdfModel(Model &model, int cubeCount)
 }
 
 ale::SdfModel::SdfModel(Model &model, Texture3D texture3D, int cubeCount)
-    : texture3D(texture3D), cubeCount(cubeCount),
+    : texture3D(std::move(texture3D)), cubeCount(cubeCount),
       outerBB(model.meshes[0].boundingBox), bb(model.meshes[0].boundingBox) {
   Transform scaleBB{
       .scale = vec3(1.1, 1.1, 1.1),

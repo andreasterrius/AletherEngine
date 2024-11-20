@@ -5,91 +5,97 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include <vector>
-#include <glm/glm.hpp>
 #include "data/shader.h"
+#include <glm/glm.hpp>
+#include <vector>
 
 using namespace std;
 using namespace glm;
 
-class TextureException final : public runtime_error
-{
+class TextureException final : public runtime_error {
 public:
-    explicit TextureException(const string &msg) : runtime_error(msg)
-    {
-    }
+  explicit TextureException(const string &msg) : runtime_error(msg) {}
 };
 
-class Texture
-{
+class Texture {
 public:
-    struct Meta
-    {
-        int width = 0;
-        int height = 0;
-        int internal_format = GL_RGBA;
-        int input_format = GL_RGBA;
-        int input_type = GL_FLOAT;
-    };
+  struct Meta {
+    int width = 0;
+    int height = 0;
+    int internal_format = GL_RGBA;
+    int input_format = GL_RGBA;
+    int input_type = GL_FLOAT;
+  };
 
-    Meta meta;
-    unsigned int id;
+  Meta meta;
+  unsigned int id;
 
-    Texture(Meta meta, vector<float> &data);
-    ~Texture();
+  Texture(Meta meta, vector<float> &data);
+  ~Texture();
 
-    Texture(const Texture &other) = delete;
-    Texture& operator=(const Texture &other) = delete;
+  Texture(const Texture &other) = delete;
+  Texture &operator=(const Texture &other) = delete;
 
+  Texture(Texture &&other);
+  Texture &operator=(Texture &&other);
 
-    void replaceData(vector<vector<vec4>> &colorData);
+  void replaceData(vector<vector<vec4>> &colorData);
 
-    void replaceData(vector<vec4> &flatColorData);
+  void replaceData(vector<vec4> &flatColorData);
 
-    vector<float> retrieve_data_from_gpu();
+  vector<float> retrieve_data_from_gpu();
 
-    void dump_data_to_file(string path);
+  void dump_data_to_file(string path);
 };
 
-class Texture3D
-{
+class Texture3D {
 public:
-    struct Meta
-    {
-        int width = 0;
-        int height = 0;
-        int depth = 0;
-        int internal_format = GL_RGBA;
-        int input_format = GL_RGBA;
-        int input_type = GL_FLOAT;
-    };
+  struct Meta {
+    int width = 0;
+    int height = 0;
+    int depth = 0;
+    int internal_format = GL_RGBA;
+    int input_format = GL_RGBA;
+    int input_type = GL_FLOAT;
+  };
 
-    Meta meta;
-    unsigned int id = 0;
+  Meta meta;
+  unsigned int id = 0;
 
-    // initialize a texture, empty data is possible
-    Texture3D(Meta meta, vector<float> &data);
-    ~Texture3D();
+  // initialize a texture, empty data is possible
+  Texture3D(Meta meta, vector<float> &data);
+  ~Texture3D();
 
-    vector<float> retrieve_data_from_gpu();
+  Texture3D(const Texture3D &other) = delete;
+  Texture &operator=(const Texture &other) = delete;
 
-    void save(string name);
+  Texture3D(Texture3D &&other);
+  Texture3D &operator=(Texture3D &&other);
 
-    void save_textfile(string name);
+  vector<float> retrieve_data_from_gpu();
 
-    static Texture3D load(string name);
+  void save(string name);
+
+  void save_textfile(string name);
+
+  static Texture3D load(string name);
 };
 
-class TextureRenderer
-{
+class TextureRenderer {
 public:
-    unsigned int vao, vbo, ebo;
-    Shader shader;
+  unsigned int vao, vbo, ebo;
+  Shader shader;
 
-    TextureRenderer();
-    ~TextureRenderer();
+  TextureRenderer();
+  ~TextureRenderer();
 
-    void render(Texture &texture);
+  TextureRenderer(const TextureRenderer &other) = delete;
+  TextureRenderer &operator=(const TextureRenderer &other) = delete;
+
+  TextureRenderer(TextureRenderer &&other);
+  TextureRenderer &operator=(TextureRenderer &&other);
+
+  void render(Texture &texture);
 };
 
 #endif // TEXTURE_H

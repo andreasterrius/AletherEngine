@@ -52,6 +52,22 @@ TextureRenderer::~TextureRenderer() {
   glDeleteBuffers(1, &ebo);
 }
 
+TextureRenderer::TextureRenderer(TextureRenderer &&other)
+    : vao(other.vao), vbo(other.vbo), shader(other.shader) {
+  other.vao = 0;
+  other.vbo = 0;
+}
+
+TextureRenderer &TextureRenderer::operator=(TextureRenderer &&other) {
+  if (this != &other) {
+    swap(this->vao, other.vao);
+    swap(this->vbo, other.vbo);
+    this->shader = std::move(other.shader);
+  }
+
+  return *this;
+}
+
 void TextureRenderer::render(Texture &texture) {
   shader.use();
   shader.setInt("texture1", 0);
@@ -77,9 +93,7 @@ Texture::Texture(Meta meta, vector<float> &pixels) : meta(meta) {
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-Texture::~Texture() {
-  // glDeleteBuffers(1, &this->id);
-}
+Texture::~Texture() { glDeleteBuffers(1, &this->id); }
 
 void Texture::replaceData(vector<vector<vec4>> &colorData) {
   // Flatten the 2D vector to a 1D array
@@ -149,6 +163,19 @@ void Texture::dump_data_to_file(string path) {
   out_file.close();
 }
 
+Texture::Texture(Texture &&other) : meta(std::move(other.meta)), id(other.id) {
+  other.id = 0;
+}
+
+Texture &Texture::operator=(Texture &&other) {
+  if (this != &other) {
+    swap(this->id, other.id);
+    swap(this->meta, other.meta);
+  }
+
+  return *this;
+}
+
 Texture3D::Texture3D(Meta meta, vector<float> &data) : meta(meta) {
   glGenTextures(1, &this->id);
   glBindTexture(GL_TEXTURE_3D, this->id);
@@ -172,9 +199,7 @@ Texture3D::Texture3D(Meta meta, vector<float> &data) : meta(meta) {
   glBindTexture(GL_TEXTURE_3D, 0);
 }
 
-Texture3D::~Texture3D() {
-  // glDeleteTextures(1, &id);
-}
+Texture3D::~Texture3D() { glDeleteTextures(1, &id); }
 
 vector<float> Texture3D::retrieve_data_from_gpu() {
   unsigned long long element_size =
@@ -261,5 +286,19 @@ Texture3D Texture3D::load(string name) {
                pixels_size * sizeof(float));
   in_file.close();
 
-  return move(Texture3D(meta, pixels));
+  return std::move(Texture3D(meta, pixels));
+}
+
+Texture3D::Texture3D(Texture3D &&other)
+    : meta(std::move(other.meta)), id(other.id) {
+  other.id = 0;
+}
+
+Texture3D &Texture3D::operator=(Texture3D &&other) {
+  if (this != &other) {
+    swap(this->id, other.id);
+    swap(this->meta, other.meta);
+  }
+
+  return *this;
 }
