@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22.1)
   
 project(AletherEngine)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 set(CMAKE_CXX_STANDARD 20)
 configure_file(config.in ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 

@@ -1,9 +1,3 @@
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <iostream>
-#include <memory>
-#include <vector>
-
 #include <src/camera.h>
 #include <src/data/boundingbox.h>
 #include <src/data/model.h>
@@ -15,8 +9,15 @@
 #include <src/gizmo/gizmo.h>
 #include <src/renderer/line_renderer.h>
 #include <src/sdf_model.h>
+#include <src/sdf_model_packed.h>
 #include <src/util.h>
 #include <src/window.h>
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+#include <memory>
+#include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -32,14 +33,15 @@ class Raymarcher {
   unsigned int vao, vbo;
   Shader shader;
 
-public:
+ public:
   int screenWidth;
   int screenHeight;
 
-  Raymarcher(int screenWidth, int screenHeight)
-      : screenWidth(screenWidth), screenHeight(screenHeight),
-        shader(afs::root("src/shaders/raymarch.vert").c_str(),
-               afs::root("src/shaders/raymarch.frag").c_str()) {
+  Raymarcher(int screenWidth, int screenHeight, string vertexPath,
+             string fragmentPath)
+      : screenWidth(screenWidth),
+        screenHeight(screenHeight),
+        shader(vertexPath.c_str(), fragmentPath.c_str()) {
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
 
@@ -51,6 +53,13 @@ public:
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float),
                           (void *)0);
     glEnableVertexAttribArray(0);
+  }
+
+  Raymarcher(int screenWidth, int screenHeight)
+      : Raymarcher(screenWidth, screenHeight,
+                   afs::root("src/shaders/raymarch.vert"),
+                   afs::root("src/shaders/raymarch.frag")) {
+    // empty
   }
 
   void draw(Camera &camera, SdfModel &sdfModel, Transform transform) {
@@ -68,6 +77,32 @@ public:
     shader.setMat4("invModelMat", inverse(transform.getModelMatrix()));
 
     sdfModel.bindToShader(shader);
+
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glEnable(GL_CULL_FACE);
+  }
+
+  void draw_packed(Camera &camera, SdfModelPacked &sdfModelPacked,
+                   Transform transform) {
+    glDisable(GL_CULL_FACE);
+
+    shader.use();
+    shader.setFloat("iTime", glfwGetTime());
+    shader.setVec2("iResolution", vec2(screenWidth, screenHeight));
+    shader.setVec3("cameraPos", camera.Position);
+    mat4 invViewProj =
+        inverse(camera.GetProjectionMatrix(screenWidth, screenHeight) *
+                camera.GetViewMatrix());
+    shader.setMat4("invViewProj", invViewProj);
+    shader.setMat4("modelMat", transform.getModelMatrix());
+    shader.setMat4("invModelMat", inverse(transform.getModelMatrix()));
+
+    sdfModelPacked.bind_to_shader(shader);
+    // sdfModel.bindToShader(shader);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -111,6 +146,10 @@ int main() {
       });
 
   Raymarcher raymarcher(windowWidth, windowHeight);
+  Raymarcher raymarcher2d(windowWidth, windowHeight,
+                          afs::root("src/shaders/raymarch.vert"),
+                          afs::root("src/shaders/raymarch.frag"));
+
   window.attach_framebuffer_size_callback([&](int width, int height) {
     raymarcher.screenWidth = width;
     raymarcher.screenHeight = height;
@@ -131,11 +170,13 @@ int main() {
   SdfModel monkeySdfGpu32(monkey, Texture3D::load("monkey32"), 32);
   SdfModel monkeySdfGpu16(monkey, Texture3D::load("monkey16"), 16);
 
+  SdfModelPacked monkeySdfPacked(vector<SdfModel *>{&monkeySdfGpu64});
+
   Transform transform;
   transform.translation = vec3(0.0, 0.0, 0.0);
 
   glm::vec3 eulerAngles = glm::vec3(glm::radians(45.0f), glm::radians(0.0f),
-                                    glm::radians(0.0f)); // Pitch, yaw, roll
+                                    glm::radians(0.0f));  // Pitch, yaw, roll
   transform.rotation = quat(eulerAngles);
 
   int sdfModel = 1;
@@ -169,11 +210,9 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (sdfModel == 1) {
-      raymarcher.draw(camera, monkeySdfGpu16, transform);
-    } else if (sdfModel == 2) {
-      raymarcher.draw(camera, monkeySdfGpu32, transform);
-    } else if (sdfModel == 3) {
       raymarcher.draw(camera, monkeySdfGpu64, Transform{});
+    } else if (sdfModel == 2) {
+      raymarcher2d.draw(camera, monkeySdfGpu64, Transform{});
     }
 
     // trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb)

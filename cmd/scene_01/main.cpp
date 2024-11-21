@@ -1,11 +1,13 @@
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
+
 #include "src/camera.h"
 #include "src/components/renderable.h"
 #include "src/data/model.h"
 #include "src/renderer/basic_renderer.h"
 #include "src/sdf_generator_gpu.h"
+#include "src/sdf_model_packed.h"
 #include "src/window.h"
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -26,19 +28,12 @@ int main() {
   auto lights = vector<Light>{};
 
   auto monkey = Model(afs::root("resources/models/monkey.obj"));
+  auto monkey_sdf = SdfModel(monkey, Texture3D::load("monkey64"), 64);
+
   auto unit_cube = Model(afs::root("resources/models/unit_cube.obj"));
+  auto unit_cube_sdf = SdfModel(unit_cube, 16);
 
-  auto renderables = vector<Renderable>{};
-  renderables.emplace_back(Transform{}, SDFShadowMeta{.resolution = 8},
-                           make_shared<Model>(monkey));
-  renderables.emplace_back(Transform{}, SDFShadowMeta{.resolution = 8},
-                           make_shared<Model>(unit_cube));
-
-  int value;
-  glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &value);
-  cout << "value: " << value << endl;
-
-  basic_renderer.prepare_shadowable_objects(renderables);
+  SdfModelPacked packedSdfModel(vector<SdfModel*>{&monkey_sdf, &unit_cube_sdf});
 
   while (!window.should_close()) {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);

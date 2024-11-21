@@ -6,15 +6,23 @@ uniform vec2 iResolution;
 uniform mat4 invViewProj;
 uniform vec3 cameraPos;
 
-uniform vec3 outerBBMin;
-uniform vec3 outerBBMax;
+struct PackedSdfOffset {
+    mat4 modelMat;
+    mat4 invModelMat;
+    vec4 innerBBMin;
+    vec4 innerBBMax;
+    vec4 outerBBMin;
+    vec4 outerBBMax;
+    int atlasIndex;
+    int atlasCount;
+};
 
-uniform vec3 innerBBMin;
-uniform vec3 innerBBMax;
+layout (std430, binding = 0) buffer PackedSdfOffsetBuffer {
+    PackedSdfOffset offsets[];
+};
 
-uniform sampler3D texture3D;
-uniform mat4 modelMat;
-uniform mat4 invModelMat;
+uniform sampler2D packedSdf[16];
+uniform int packedSdfSize;
 
 vec3 ConvertWorldToTexture(vec3 worldPos, vec3 boxMin, vec3 boxSize)
 {
@@ -22,10 +30,15 @@ vec3 ConvertWorldToTexture(vec3 worldPos, vec3 boxMin, vec3 boxSize)
     return texturePos;
 }
 
-float distance_from_texture3D(vec3 p)
+vec2 convert_3d_to_2d(vec3 uvw_coord) {
+    return vec2(uvw_coord.x + uvw_coord.z*64, (offset*64)+uvw_coord.y);
+}
+
+float distance_from_texture2D(vec3 p) 
 {
     vec3 uvwCoord = ConvertWorldToTexture(p, outerBBMin, outerBBMax-outerBBMin);
-    return texture(texture3D, uvwCoord).r;
+    vec2 uvCoord = Convert3DTo2D(uvwCoord);
+    return texture(texture2D, uvCoord).r; 
 }
 
 float distance_from_sphere(in vec3 p, in vec3 c, float r)

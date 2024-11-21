@@ -18,7 +18,7 @@ class GLFWwindow;
 
 namespace ale {
 class WindowException final : public runtime_error {
-public:
+ public:
   explicit WindowException(const string &msg) : runtime_error(msg) {}
 };
 
@@ -35,9 +35,9 @@ struct Data {
 
   // Cursor Information
   bool is_cursor_enabled = true;
-  double cursor_last_x = 0.0, cursor_last_y = 0.0; // exact coord on window
+  double cursor_last_x = 0.0, cursor_last_y = 0.0;  // exact coord on window
   double cursor_offset_x = 0.0,
-         cursor_offset_y = 0.0; // diff between last input and curr input
+         cursor_offset_y = 0.0;  // diff last x curr input
 
   function<void(int, int, int)> mouse_button_callback = nullptr;
   function<void(double, double, double, double)> cursor_pos_callback = nullptr;
@@ -47,9 +47,9 @@ struct Data {
 
 class Window {
   GLFWwindow *raw_window = nullptr;
-  Data data; // to be passed to callbacks as well.
+  Data data;  // to be passed to callbacks as well.
 
-public:
+ public:
   Window(int width, int height, string caption);
 
   void set_default_inputs(DefaultInputs default_inputs);
@@ -93,6 +93,6 @@ void scroll_callback(GLFWwindow *window, double x_offset, double y_offset);
 void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id,
                               GLenum severity, GLsizei length,
                               const GLchar *message, const void *userParam);
-} // namespace ale
+}  // namespace ale
 
-#endif // ALETHERENGINE_WINDOW_H
+#endif  // ALETHERENGINE_WINDOW_H
