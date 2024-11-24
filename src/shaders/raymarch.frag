@@ -69,7 +69,7 @@ vec3 raymarch(vec3 ro, vec3 rd) {
     const float MINIMUM_HIT_DISTANCE = 0.01;
     const float MAXIMUM_TRACE_DISTANCE = 1000.0;
     const vec3 NO_HIT_COLOR = vec3(0.52, 0.8, 0.92);
-    const vec3 SDF_COLOR =  vec3(0.83, 0.3, 0.05);
+    const vec3 SDF_COLOR =  vec3(0.89, 0.89, 0.56);
 
     // make a light because why not
     const vec3 lightPos = vec3(3.0, 5.0, 5.0);

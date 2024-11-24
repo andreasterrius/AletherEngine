@@ -180,9 +180,9 @@ struct WindowData {
 void processInput(GLFWwindow *window, float deltaTime, Camera &camera);
 
 int main() {
-  int windowWidth = 1024;
-  int windowHeight = 768;
-  Camera camera(ARCBALL, glm::vec3(3.0f, 3.0f, 10.0f));
+  int windowWidth = 800;
+  int windowHeight = 800;
+  Camera camera(ARCBALL, glm::vec3(3.0f, 3.0f, 7.0f));
 
   glfwInit();
   auto window = Window(windowWidth, windowHeight, "Raymarch SDF");

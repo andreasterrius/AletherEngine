@@ -30,16 +30,6 @@ vec2 ConvertWorldToTexture(vec3 worldPos, vec3 boxMin, vec3 boxSize)
     // vec3 texturePos3D = (worldPos - boxMin) / boxSize;
     float textureWidth = 4096;
     float textureHeight = 256;
-    vec3 sdfSize = vec3(1, 1, 1);
-    
-    // // Calculate 2D coordinates
-    // vec2 texturePos2D = vec2(
-    //     (x * sdfSize.x / textureWidth) + (z * sdfSize.z * 64.0 / textureWidth),
-    //     (y * sdfSize.y / textureHeight) // Y coordinate
-    // );
-
-    // // Normalize to 2D texture space ([0, 1])
-    // return texturePos2D;
 
     int cubeCount = 64;
     vec3 texturePos3D = (worldPos - boxMin) / (boxSize / vec3(cubeCount));
@@ -47,10 +37,9 @@ vec2 ConvertWorldToTexture(vec3 worldPos, vec3 boxMin, vec3 boxSize)
     float y = texturePos3D.y;
     float z = floor(texturePos3D.z);
 
-    // vec2 texturePos2D = vec2(texturePos3D.x, texturePos3D.y) / vec2(cubeCount);
     vec2 texturePos2D = vec2(
-        (x * sdfSize.x / textureWidth) + (z * sdfSize.z * 64.0 / textureWidth),
-        (y * sdfSize.y / textureHeight) // Y coordinate
+        (x / textureWidth) + (z * 64.0 / textureWidth),
+        (y / textureHeight) // Y coordinate
     );
 
     return texturePos2D;
@@ -102,7 +91,7 @@ vec3 raymarch(vec3 rayWo, vec3 rayWd) {
     const float MINIMUM_HIT_DISTANCE = 0.01;
     const float MAXIMUM_TRACE_DISTANCE = 10000.0;
     const vec3 NO_HIT_COLOR = vec3(0.52, 0.8, 0.92);
-    const vec3 SDF_COLOR =  vec3(0.83, 0.3, 0.05);
+    const vec3 SDF_COLOR =  vec3(0.89, 0.89, 0.56);
 
     // make a light because why not
     const vec3 lightPos = vec3(3.0, 5.0, 5.0);
@@ -160,7 +149,11 @@ vec3 raymarch(vec3 rayWo, vec3 rayWd) {
         }
         if(closestDist < MINIMUM_HIT_DISTANCE)
         {
-            return vec3(1.0, 0.0, 0.0);
+            vec3 isectPos = rayWo;
+            vec3 innerBBMin = vec3(offsets[closestDistIndex].innerBBMin);
+            vec3 innerBBMax = vec3(offsets[closestDistIndex].innerBBMax);
+            vec3 normal = normalize(isectPos - (innerBBMin + innerBBMax/2.0));
+            return lambertBRDF(normal, normalize(lightPos - isectPos), SDF_COLOR);
             // vec3 normal = normalize(ro - vec3(offsets[closestDistIndex].innerBBMin + offsets[closestDistIndex].innerBBMax/2.0));
             // return lambertBRDF(normal, normalize(lightPos - ro), SDF_COLOR);
         }
