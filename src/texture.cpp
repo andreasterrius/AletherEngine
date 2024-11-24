@@ -3,8 +3,10 @@
 //
 
 #include "texture.h"
-#include "file_system.h"
+
 #include <glad/glad.h>
+
+#include "file_system.h"
 
 using afs = ale::FileSystem;
 
@@ -13,14 +15,14 @@ TextureRenderer::TextureRenderer()
              afs::root("src/shaders/texture2d.fs").c_str()) {
   float vertices[] = {
       // Positions       // Texture Coords
-      -1.0f, 1.0f,  0.0f, 0.0f, 1.0f, // Top-left
-      -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // Bottom-left
-      1.0f,  -1.0f, 0.0f, 1.0f, 0.0f, // Bottom-right
-      1.0f,  1.0f,  0.0f, 1.0f, 1.0f  // Top-right
+      -1.0f, 1.0f,  0.0f, 0.0f, 1.0f,  // Top-left
+      -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,  // Bottom-left
+      1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,  // Bottom-right
+      1.0f,  1.0f,  0.0f, 1.0f, 1.0f   // Top-right
   };
   unsigned int indices[] = {
-      0, 1, 2, // First triangle
-      2, 3, 0  // Second triangle
+      0, 1, 2,  // First triangle
+      2, 3, 0   // Second triangle
   };
 
   glGenVertexArrays(1, &vao);
@@ -71,7 +73,8 @@ TextureRenderer &TextureRenderer::operator=(TextureRenderer &&other) {
 void TextureRenderer::render(Texture &texture) {
   shader.use();
   shader.setInt("texture1", 0);
-  glActiveTexture(GL_TEXTURE0 + 0); // active proper texture unit before binding
+  glActiveTexture(GL_TEXTURE0 +
+                  0);  // active proper texture unit before binding
   glBindTexture(GL_TEXTURE_2D, texture.id);
   glBindVertexArray(vao);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -87,8 +90,8 @@ Texture::Texture(Meta meta, vector<float> &pixels) : meta(meta) {
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, meta.min_filter);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, meta.max_filter);
 
   glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -116,18 +119,18 @@ vector<float> Texture::retrieve_data_from_gpu() {
   unsigned long long element_size = this->meta.width * this->meta.height;
 
   switch (this->meta.input_format) {
-  case GL_RGBA:
-    element_size *= 4;
-    break;
-  case GL_RGB:
-    element_size *= 3;
-    break;
-  case GL_RG:
-    element_size *= 2;
-    break;
-  case GL_RED:
-    element_size *= 1;
-    break;
+    case GL_RGBA:
+      element_size *= 4;
+      break;
+    case GL_RGB:
+      element_size *= 3;
+      break;
+    case GL_RG:
+      element_size *= 2;
+      break;
+    case GL_RED:
+      element_size *= 1;
+      break;
   }
   vector<float> data(element_size);
 
@@ -206,18 +209,18 @@ vector<float> Texture3D::retrieve_data_from_gpu() {
       this->meta.width * this->meta.height * this->meta.depth;
 
   switch (this->meta.input_format) {
-  case GL_RGBA:
-    element_size *= 4;
-    break;
-  case GL_RGB:
-    element_size *= 3;
-    break;
-  case GL_RG:
-    element_size *= 2;
-    break;
-  case GL_RED:
-    element_size *= 1;
-    break;
+    case GL_RGBA:
+      element_size *= 4;
+      break;
+    case GL_RGB:
+      element_size *= 3;
+      break;
+    case GL_RG:
+      element_size *= 2;
+      break;
+    case GL_RED:
+      element_size *= 1;
+      break;
   }
   vector<float> data(element_size);
 
@@ -275,8 +278,8 @@ Texture3D Texture3D::load(string name) {
     throw TextureException("uanble to load file: " + path);
   }
 
-  Meta meta;
-  size_t pixels_size;
+  Meta meta = {0};
+  size_t pixels_size = {0};
   vector<float> pixels;
 
   in_file.read(reinterpret_cast<char *>(&meta), sizeof(meta));

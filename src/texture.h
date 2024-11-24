@@ -5,26 +5,29 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include "data/shader.h"
 #include <glm/glm.hpp>
 #include <vector>
+
+#include "data/shader.h"
 
 using namespace std;
 using namespace glm;
 
 class TextureException final : public runtime_error {
-public:
+ public:
   explicit TextureException(const string &msg) : runtime_error(msg) {}
 };
 
 class Texture {
-public:
+ public:
   struct Meta {
     int width = 0;
     int height = 0;
     int internal_format = GL_RGBA;
     int input_format = GL_RGBA;
     int input_type = GL_FLOAT;
+    int min_filter = GL_LINEAR;
+    int max_filter = GL_LINEAR;
   };
 
   Meta meta;
@@ -49,7 +52,7 @@ public:
 };
 
 class Texture3D {
-public:
+ public:
   struct Meta {
     int width = 0;
     int height = 0;
@@ -82,7 +85,7 @@ public:
 };
 
 class TextureRenderer {
-public:
+ public:
   unsigned int vao, vbo, ebo;
   Shader shader;
 
@@ -98,4 +101,4 @@ public:
   void render(Texture &texture);
 };
 
-#endif // TEXTURE_H
+#endif  // TEXTURE_H

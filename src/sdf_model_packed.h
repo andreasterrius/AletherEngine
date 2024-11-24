@@ -18,8 +18,8 @@ constexpr int ATLAS_HEIGHT = 4096;
 constexpr int SINGLE_TEXTURE_SIZE_Y = 64;
 
 class SdfModelPacked {
- private:
-  struct SdfModelPackedMeta {
+ public:
+  struct Meta {
     ivec3 size;
     BoundingBox inner_bb;
     BoundingBox outer_bb;
@@ -27,8 +27,9 @@ class SdfModelPacked {
     int atlas_count;  // index of texture number in atlas
   };
 
+ private:
   vector<Texture> texture_atlas;
-  vector<SdfModelPackedMeta> offsets;
+  vector<Meta> offsets;
   bool debug_mode;
 
   void pack_sdf_models(vector<SdfModel *> sdf_models);
@@ -44,6 +45,9 @@ class SdfModelPacked {
   SdfModelPacked &operator=(SdfModelPacked &&other);
 
   void bind_to_shader(Shader &shader);
+
+  vector<Meta> &get_offsets();
+  vector<Texture> &get_texture_atlas();
 };
 
 }  // namespace ale

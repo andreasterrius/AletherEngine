@@ -1,5 +1,7 @@
-#include <GLFW/glfw3.h>
+// clang-format off
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
+// clang-format on
 
 #include "src/camera.h"
 #include "src/components/renderable.h"
@@ -39,7 +41,7 @@ int main() {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    basic_renderer.render(camera, lights, renderables);
+    // basic_renderer.render(camera, lights, renderables);
 
     window.swap_buffer_and_poll_inputs();
   }

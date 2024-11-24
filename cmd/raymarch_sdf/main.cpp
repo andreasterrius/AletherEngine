@@ -31,6 +31,7 @@ using afs = ale::FileSystem;
 
 class Raymarcher {
   unsigned int vao, vbo;
+  unsigned int packed_ssbo = 0;
   Shader shader;
 
  public:
@@ -86,9 +87,60 @@ class Raymarcher {
     glEnable(GL_CULL_FACE);
   }
 
+  struct PackedSdfOffsetDetail {
+    alignas(16) mat4 modelMat;
+    alignas(16) mat4 invModelMat;
+    alignas(16) vec4 innerBBMin;
+    alignas(16) vec4 innerBBMax;
+    alignas(16) vec4 outerBBMin;
+    alignas(16) vec4 outerBBMax;
+    int atlasIndex;
+    int atlasCount;
+    int _1 = 0;  // padding
+    int _2 = 0;  // padding
+  };
+
   void draw_packed(Camera &camera, SdfModelPacked &sdfModelPacked,
                    Transform transform) {
     glDisable(GL_CULL_FACE);
+
+    if (packed_ssbo == 0) {
+      // TODO : Refactor this on creation, not on render
+      vector<PackedSdfOffsetDetail> details;
+      for (auto &p : sdfModelPacked.get_offsets()) {
+        details.push_back(PackedSdfOffsetDetail{
+            .modelMat = glm::mat4(1.0),
+            .invModelMat = glm::mat4(1.0),
+            .innerBBMin = vec4(p.inner_bb.min, 0.0),
+            .innerBBMax = vec4(p.inner_bb.max, 0.0),
+            .outerBBMin = vec4(p.outer_bb.min, 0.0),
+            .outerBBMax = vec4(p.outer_bb.max, 0.0),
+            .atlasIndex = p.atlas_index,
+            .atlasCount = p.atlas_count,
+            ._1 = 0,
+            ._2 = 0,
+        });
+      }
+      int details_size = details.size();
+
+      cout << "stride: " << sizeof(PackedSdfOffsetDetail) << std::endl;
+
+      // ssbo for packed sdf
+      glGenBuffers(1, &packed_ssbo);
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, packed_ssbo);
+      glBufferData(
+          GL_SHADER_STORAGE_BUFFER,
+          sizeof(unsigned int) * 4 + sizeof(PackedSdfOffsetDetail) *
+                                         sdfModelPacked.get_offsets().size(),
+          nullptr, GL_STATIC_DRAW);
+      glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(unsigned int) * 4,
+                      &details_size);  // pass size
+      glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(unsigned int) * 4,
+                      details.size() * sizeof(PackedSdfOffsetDetail),
+                      details.data());
+    }
+    // bind ssbo
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, this->packed_ssbo);
 
     shader.use();
     shader.setFloat("iTime", glfwGetTime());
@@ -98,11 +150,10 @@ class Raymarcher {
         inverse(camera.GetProjectionMatrix(screenWidth, screenHeight) *
                 camera.GetViewMatrix());
     shader.setMat4("invViewProj", invViewProj);
-    shader.setMat4("modelMat", transform.getModelMatrix());
-    shader.setMat4("invModelMat", inverse(transform.getModelMatrix()));
 
+    // binds texture2D atlas[16];
+    // binds int atlasSize;
     sdfModelPacked.bind_to_shader(shader);
-    // sdfModel.bindToShader(shader);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -148,7 +199,7 @@ int main() {
   Raymarcher raymarcher(windowWidth, windowHeight);
   Raymarcher raymarcher2d(windowWidth, windowHeight,
                           afs::root("src/shaders/raymarch.vert"),
-                          afs::root("src/shaders/raymarch.frag"));
+                          afs::root("src/shaders/raymarch_atlas.frag"));
 
   window.attach_framebuffer_size_callback([&](int width, int height) {
     raymarcher.screenWidth = width;
@@ -162,6 +213,7 @@ int main() {
                      afs::root("src/shaders/point_shadows.fs").c_str());
   // load some random mesh
   Model monkey(afs::root("resources/models/monkey.obj"));
+  Model unitCube(afs::root("resources/models/unit_cube.obj"));
 
   LineRenderer lineRenderer;
 
@@ -169,6 +221,8 @@ int main() {
   SdfModel monkeySdfGpu64(monkey, Texture3D::load("monkey64"), 64);
   SdfModel monkeySdfGpu32(monkey, Texture3D::load("monkey32"), 32);
   SdfModel monkeySdfGpu16(monkey, Texture3D::load("monkey16"), 16);
+
+  SdfModel unitCubeSdfGpu32(unitCube, Texture3D::load("unit_cube32"), 32);
 
   SdfModelPacked monkeySdfPacked(vector<SdfModel *>{&monkeySdfGpu64});
 
@@ -210,15 +264,10 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (sdfModel == 1) {
-      raymarcher.draw(camera, monkeySdfGpu64, Transform{});
+      raymarcher.draw(camera, monkeySdfGpu32, Transform{});
     } else if (sdfModel == 2) {
-      raymarcher2d.draw(camera, monkeySdfGpu64, Transform{});
+      raymarcher2d.draw_packed(camera, monkeySdfPacked, Transform{});
     }
-
-    // trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb)
-    //                         { lineRenderer.queueBox(Transform{}, bb); });
-    // lineRenderer.render(camera.GetProjectionMatrix(windowWidth,
-    // windowHeight), camera.GetViewMatrix());
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
     // etc.)
