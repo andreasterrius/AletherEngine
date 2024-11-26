@@ -223,9 +223,10 @@ int main() {
   SdfModel monkeySdfGpu16(monkey, Texture3D::load("monkey16"), 16);
 
   SdfModel unitCubeSdfGpu64(unitCube, Texture3D::load("unit_cube64"), 64);
+  SdfModel unitCubeSdfGpu32(unitCube, Texture3D::load("unit_cube32"), 64);
 
   SdfModelPacked packedSdfs(
-      vector<SdfModel *>{&monkeySdfGpu64, &unitCubeSdfGpu64});
+      vector<SdfModel *>{&monkeySdfGpu64, &unitCubeSdfGpu32});
   vector<Transform> packedSdfTransforms{
       Transform{}, Transform{.translation = vec3(-2.0, 0.0, 0.0)}};
 
