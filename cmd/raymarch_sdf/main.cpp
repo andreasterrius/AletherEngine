@@ -101,16 +101,18 @@ class Raymarcher {
   };
 
   void draw_packed(Camera &camera, SdfModelPacked &sdfModelPacked,
-                   Transform transform) {
+                   vector<Transform> &transform) {
     glDisable(GL_CULL_FACE);
 
     if (packed_ssbo == 0) {
       // TODO : Refactor this on creation, not on render
       vector<PackedSdfOffsetDetail> details;
-      for (auto &p : sdfModelPacked.get_offsets()) {
+      for (int i = 0; i < sdfModelPacked.get_offsets().size(); ++i) {
+        auto &p = sdfModelPacked.get_offsets()[i];
+        auto &t = transform[i];
         details.push_back(PackedSdfOffsetDetail{
-            .modelMat = glm::mat4(1.0),
-            .invModelMat = glm::mat4(1.0),
+            .modelMat = t.getModelMatrix(),
+            .invModelMat = inverse(t.getModelMatrix()),
             .innerBBMin = vec4(p.inner_bb.min, 0.0),
             .innerBBMax = vec4(p.inner_bb.max, 0.0),
             .outerBBMin = vec4(p.outer_bb.min, 0.0),
@@ -122,8 +124,6 @@ class Raymarcher {
         });
       }
       int details_size = details.size();
-
-      cout << "stride: " << sizeof(PackedSdfOffsetDetail) << std::endl;
 
       // ssbo for packed sdf
       glGenBuffers(1, &packed_ssbo);
@@ -222,9 +222,12 @@ int main() {
   SdfModel monkeySdfGpu32(monkey, Texture3D::load("monkey32"), 32);
   SdfModel monkeySdfGpu16(monkey, Texture3D::load("monkey16"), 16);
 
-  SdfModel unitCubeSdfGpu32(unitCube, Texture3D::load("unit_cube32"), 32);
+  SdfModel unitCubeSdfGpu64(unitCube, Texture3D::load("unit_cube64"), 64);
 
-  SdfModelPacked monkeySdfPacked(vector<SdfModel *>{&monkeySdfGpu64});
+  SdfModelPacked packedSdfs(
+      vector<SdfModel *>{&monkeySdfGpu64, &unitCubeSdfGpu64});
+  vector<Transform> packedSdfTransforms{
+      Transform{}, Transform{.translation = vec3(-2.0, 0.0, 0.0)}};
 
   Transform transform;
   transform.translation = vec3(0.0, 0.0, 0.0);
@@ -266,7 +269,7 @@ int main() {
     if (sdfModel == 1) {
       raymarcher.draw(camera, monkeySdfGpu32, Transform{});
     } else if (sdfModel == 2) {
-      raymarcher2d.draw_packed(camera, monkeySdfPacked, Transform{});
+      raymarcher2d.draw_packed(camera, packedSdfs, packedSdfTransforms);
     }
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved

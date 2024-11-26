@@ -25,7 +25,7 @@ layout (std430, binding = 0) buffer PackedSdfOffsetDetailBuffer {
     PackedSdfOffsetDetail offsets[];
 };
 
-vec2 ConvertWorldToTexture(vec3 worldPos, vec3 boxMin, vec3 boxSize)
+vec2 ConvertWorldToTexture(vec3 worldPos, vec3 boxMin, vec3 boxSize, int atlasOffset)
 {
     // vec3 texturePos3D = (worldPos - boxMin) / boxSize;
     float textureWidth = 4096;
@@ -39,7 +39,7 @@ vec2 ConvertWorldToTexture(vec3 worldPos, vec3 boxMin, vec3 boxSize)
 
     vec2 texturePos2D = vec2(
         (x / textureWidth) + (z * 64.0 / textureWidth),
-        (y / textureHeight) // Y coordinate
+        (y / textureHeight) + (atlasOffset * 64.0 / textureHeight)// Y coordinate
     );
 
     return texturePos2D;
@@ -49,7 +49,7 @@ float distance_from_texture3D(vec3 p, int atlasIndex, int atlasOffset, vec3 oute
 {
     // vec3 uvwCoord = ConvertWorldToTexture(p, outerBBMin, outerBBMax-outerBBMin);
     // vec2 uvCoord = vec2(uvwCoord.x + uvwCoord.z*64, (atlasOffset*64)+(uvwCoord.y/256.0));
-    vec2 uvCoord = ConvertWorldToTexture(p, outerBBMin, outerBBMax-outerBBMin);
+    vec2 uvCoord = ConvertWorldToTexture(p, outerBBMin, outerBBMax-outerBBMin, atlasOffset);
     return texture(atlas[atlasIndex], uvCoord).r;
 }  
 
@@ -87,7 +87,7 @@ vec3 lambertBRDF(vec3 normal, vec3 lightDir, vec3 albedo) {
 
 vec3 raymarch(vec3 rayWo, vec3 rayWd) {
     float total_distance_traveled = 0.0;
-    const int NUMBER_OF_STEPS = 64;
+    const int NUMBER_OF_STEPS = 50;
     const float MINIMUM_HIT_DISTANCE = 0.01;
     const float MAXIMUM_TRACE_DISTANCE = 10000.0;
     const vec3 NO_HIT_COLOR = vec3(0.52, 0.8, 0.92);
@@ -101,8 +101,8 @@ vec3 raymarch(vec3 rayWo, vec3 rayWd) {
     {
         float closestDist = 1000000; 
         int closestDistIndex = -1;
-        vec3 rayLo = vec3(0.0);
-        vec3 rayLd = vec3(0.0);
+        vec3 closestRayLo = vec3(0.0);
+        vec3 closestRayLd = vec3(0.0);
         for(int j = 0; j < offsetSize; ++j)
         {
             mat4 invModelMat = offsets[j].invModelMat;
@@ -113,8 +113,8 @@ vec3 raymarch(vec3 rayWo, vec3 rayWd) {
             int atlasIndex = offsets[j].atlasIndex;
             int atlasOffset = offsets[j].atlasOffset;
 
-            rayLo = vec3(invModelMat * vec4(rayWo, 1.0));
-            rayLd = vec3(normalize(invModelMat * vec4(rayWd, 0.0)));
+            vec3 rayLo = vec3(invModelMat * vec4(rayWo, 1.0));
+            vec3 rayLd = vec3(normalize(invModelMat * vec4(rayWd, 0.0)));
 
             float dist = distance_from_box_minmax(rayLo, innerBBMin, innerBBMax);
             float outerDist = distance_from_box_minmax(rayLo, outerBBMin, outerBBMax);
@@ -141,9 +141,11 @@ vec3 raymarch(vec3 rayWo, vec3 rayWd) {
             if(dist < closestDist) {
                 closestDist = dist;
                 closestDistIndex = j;
+                closestRayLo = rayLo;
+                closestRayLd = rayLd;
             }
         }
-        rayWo = vec3(offsets[closestDistIndex].modelMat * vec4(rayLo+rayLd*closestDist, 1.0));
+        rayWo = vec3(offsets[closestDistIndex].modelMat * vec4(closestRayLo+closestRayLd*closestDist, 1.0));
         if(closestDist > MAXIMUM_TRACE_DISTANCE) {
             return NO_HIT_COLOR;
         }

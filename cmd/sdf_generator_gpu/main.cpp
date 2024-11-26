@@ -28,6 +28,7 @@ int main() {
   sdfgen.add_mesh("monkey32", sample.meshes[0], 32, 32, 32);
   sdfgen.add_mesh("monkey16", sample.meshes[0], 16, 16, 16);
   sdfgen.add_mesh("unit_cube32", unit_cube.meshes[0], 32, 32, 32);
+  sdfgen.add_mesh("unit_cube64", unit_cube.meshes[0], 64, 64, 64);
   sdfgen.generate_all();
 
   TextureRenderer texture_renderer;
@@ -45,6 +46,7 @@ int main() {
   sdfgen.at("monkey32").save("monkey32");
   sdfgen.at("monkey16").save("monkey16");
   sdfgen.at("unit_cube32").save("unit_cube32");
+  sdfgen.at("unit_cube64").save("unit_cube64");
 
   sdfgen.dump_textfile("monkey64");
 
