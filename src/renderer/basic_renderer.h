@@ -1,17 +1,19 @@
 #ifndef BASIC_RENDERER_H
 #define BASIC_RENDERER_H
 
+#include <entt/entt.hpp>
 #include <string>
 
 #include "../camera.h"
-#include "../components/renderable.h"
 #include "../data/shader.h"
 #include "../sdf_generator_gpu.h"
 #include "../sdf_model_packed.h"
 
 namespace ale {
 
-struct Light {};
+struct Light {
+  vec3 position;
+};
 
 class BasicRenderer {
  private:
@@ -22,8 +24,7 @@ class BasicRenderer {
  public:
   BasicRenderer();
 
-  void render(Camera &camera, vector<Light> &lights,
-              SdfModelPacked &sdf_model_packed);
+  void render(Camera &camera, vector<Light> &lights, entt::registry &world);
 };
 }  // namespace ale
 

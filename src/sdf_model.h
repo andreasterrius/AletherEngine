@@ -29,7 +29,6 @@ class SdfModel {
  private:
   vec3 cubeSize;
   int cubeCount;  // for 1 dimension
-  bool shouldFlatten;
 
  public:
   optional<Texture3D> texture3D;

@@ -3,59 +3,38 @@
 #define SHADER_H
 
 #include <glad/glad.h>
-#include <glm/glm.hpp>
 
 #include <fstream>
+#include <glm/glm.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 class Shader {
-public:
+ public:
+  struct IncludeDirective {
+    std::string filename;
+    std::vector<int> bindings;
+  };
+
   unsigned int ID;
+
   // constructor generates the shader on the fly
   // ------------------------------------------------------------------------
   Shader(const char *vertexPath, const char *fragmentPath,
          const char *geometryPath = nullptr) {
     // 1. retrieve the vertex/fragment source code from filePath
-    std::string vertexCode;
-    std::string fragmentCode;
-    std::string geometryCode;
-    std::ifstream vShaderFile;
-    std::ifstream fShaderFile;
-    std::ifstream gShaderFile;
-    // ensure ifstream objects can throw exceptions:
-    vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    try {
-      // open files
-      vShaderFile.open(vertexPath);
-      fShaderFile.open(fragmentPath);
-      std::stringstream vShaderStream, fShaderStream;
-      // read file's buffer contents into streams
-      vShaderStream << vShaderFile.rdbuf();
-      fShaderStream << fShaderFile.rdbuf();
-      // close file handlers
-      vShaderFile.close();
-      fShaderFile.close();
-      // convert stream into string
-      vertexCode = vShaderStream.str();
-      fragmentCode = fShaderStream.str();
-      // if geometry shader path is present, also load a geometry shader
-      if (geometryPath != nullptr) {
-        gShaderFile.open(geometryPath);
-        std::stringstream gShaderStream;
-        gShaderStream << gShaderFile.rdbuf();
-        gShaderFile.close();
-        geometryCode = gShaderStream.str();
-      }
-    } catch (std::ifstream::failure &e) {
-      std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what()
-                << std::endl;
-    }
+    std::string vertexCode =
+        this->load_file_with_include(IncludeDirective{vertexPath});
+    std::string fragmentCode =
+        this->load_file_with_include(IncludeDirective{fragmentPath});
     const char *vShaderCode = vertexCode.c_str();
     const char *fShaderCode = fragmentCode.c_str();
+
+    // std::cout << "Vertex Code: \n" << vertexCode << std::endl;
+    // std::cout << "Fragment Code: \n" << fragmentCode << std::endl;
+
     // 2. compile shaders
     unsigned int vertex, fragment;
     // vertex shader
@@ -71,6 +50,8 @@ public:
     // if geometry shader is given, compile geometry shader
     unsigned int geometry;
     if (geometryPath != nullptr) {
+      std::string geometryCode =
+          this->load_file_with_include(IncludeDirective{geometryPath});
       const char *gShaderCode = geometryCode.c_str();
       geometry = glCreateShader(GL_GEOMETRY_SHADER);
       glShaderSource(geometry, 1, &gShaderCode, NULL);
@@ -81,16 +62,14 @@ public:
     ID = glCreateProgram();
     glAttachShader(ID, vertex);
     glAttachShader(ID, fragment);
-    if (geometryPath != nullptr)
-      glAttachShader(ID, geometry);
+    if (geometryPath != nullptr) glAttachShader(ID, geometry);
     glLinkProgram(ID);
     checkCompileErrors(ID, "PROGRAM", "");
     // delete the shaders as they're linked into our program now and no longer
     // necessary
     glDeleteShader(vertex);
     glDeleteShader(fragment);
-    if (geometryPath != nullptr)
-      glDeleteShader(geometry);
+    if (geometryPath != nullptr) glDeleteShader(geometry);
   }
   // activate the shader
   // ------------------------------------------------------------------------
@@ -145,7 +124,7 @@ public:
                        &mat[0][0]);
   }
 
-private:
+ private:
   // utility function for checking shader compilation/linking errors.
   // ------------------------------------------------------------------------
   void checkCompileErrors(GLuint shader, std::string type, std::string path) {
@@ -175,5 +154,7 @@ private:
       }
     }
   }
+
+  std::string load_file_with_include(IncludeDirective include_directive);
 };
 #endif

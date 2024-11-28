@@ -15,6 +15,7 @@ add_subdirectory(external/assimp)
 
 add_subdirectory(external/glfw)
 add_subdirectory(external/glm)
+add_subdirectory(external/entt)
 
 #file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
 file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
@@ -41,7 +42,7 @@ function(create_exe name folder_name)
             external/glfw/include
             ${CMAKE_BINARY_DIR}/external/assimp/include
     )
-    target_link_libraries(${name} glfw glm::glm assimp::assimp)
+    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT)
 endfunction()
 
 create_exe(AletherEngine editor)

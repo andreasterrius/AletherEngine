@@ -50,11 +50,14 @@ class Camera {
   float MouseSensitivity;
   float Zoom;
 
+  int Width;
+  int Height;
+
   Camera_InputType inputType;
   Camera_ArcballInput arcballInput;
 
   // constructor with vectors
-  Camera(Camera_InputType inputType,
+  Camera(Camera_InputType inputType, int width, int height,
          glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
          glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW,
          float pitch = PITCH)
@@ -62,7 +65,9 @@ class Camera {
         MovementSpeed(SPEED),
         MouseSensitivity(SENSITIVITY),
         Zoom(ZOOM),
-        inputType(inputType) {
+        inputType(inputType),
+        Width(width),
+        Height(height) {
     Position = position;
     WorldUp = up;
     Yaw = yaw;
@@ -93,6 +98,10 @@ class Camera {
   glm::mat4 GetProjectionMatrix(float screenWidth, float screenHeight) {
     return glm::perspective(glm::radians(Zoom), screenWidth / screenHeight,
                             0.1f, 100.0f);
+  }
+
+  glm::mat4 GetProjectionMatrix() {
+    return GetProjectionMatrix(this->Width, this->Height);
   }
 
   // processes input received from any keyboard-like input system. Accepts input

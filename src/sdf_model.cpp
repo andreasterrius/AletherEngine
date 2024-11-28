@@ -3,15 +3,16 @@
 //
 
 #include "sdf_model.h"
+
+#include <fstream>
+#include <functional>
+#include <iostream>
+
 #include "data/model.h"
 #include "src/data/boundingbox.h"
 #include "src/data/shader.h"
 #include "src/data/transform.h"
 #include "src/file_system.h"
-#include <fstream>
-#include <functional>
-#include <iostream>
-
 #include "texture.h"
 #include "util.h"
 
@@ -19,12 +20,13 @@ using namespace ale;
 using afs = ale::FileSystem;
 
 SdfModel::SdfModel(Model &model, int cubeCount)
-    : cubeCount(cubeCount), outerBB(model.meshes[0].boundingBox),
+    : cubeCount(cubeCount),
+      outerBB(model.meshes[0].boundingBox),
       bb(model.meshes[0].boundingBox) {
   // explode the bounding box a little bit
   Transform scaleBB{
       .scale = vec3(1.1, 1.1, 1.1),
-  }; // make it a bit bigger
+  };  // make it a bit bigger
   this->outerBB = this->outerBB.applyTransform(scaleBB);
 
   cubeSize = vec3((outerBB.max.x - outerBB.min.x) / cubeCount,
@@ -92,11 +94,13 @@ SdfModel::SdfModel(Model &model, int cubeCount)
 }
 
 ale::SdfModel::SdfModel(Model &model, Texture3D texture3D, int cubeCount)
-    : texture3D(std::move(texture3D)), cubeCount(cubeCount),
-      outerBB(model.meshes[0].boundingBox), bb(model.meshes[0].boundingBox) {
+    : texture3D(std::move(texture3D)),
+      cubeCount(cubeCount),
+      outerBB(model.meshes[0].boundingBox),
+      bb(model.meshes[0].boundingBox) {
   Transform scaleBB{
       .scale = vec3(1.1, 1.1, 1.1),
-  }; // make it a bit bigger
+  };  // make it a bit bigger
   this->outerBB = this->outerBB.applyTransform(scaleBB);
 
   cubeSize = vec3((outerBB.max.x - outerBB.min.x) / cubeCount,
