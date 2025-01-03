@@ -182,7 +182,8 @@ void processInput(GLFWwindow *window, float deltaTime, Camera &camera);
 int main() {
   int windowWidth = 800;
   int windowHeight = 800;
-  Camera camera(ARCBALL, glm::vec3(3.0f, 3.0f, 7.0f));
+  Camera camera(ARCBALL, windowWidth, windowHeight,
+                glm::vec3(3.0f, 3.0f, 7.0f));
 
   glfwInit();
   auto window = Window(windowWidth, windowHeight, "Raymarch SDF");
@@ -219,16 +220,16 @@ int main() {
 
   // SdfModel trophySdf(*objects[0].model.get(), 16);
   SdfModel monkeySdfGpu64(monkey, Texture3D::load("monkey64"), 64);
-  SdfModel monkeySdfGpu32(monkey, Texture3D::load("monkey32"), 32);
+  SdfModel monkeySdfGpu32(monkey, Texture3D::load("monkey64_b"), 64);
   SdfModel monkeySdfGpu16(monkey, Texture3D::load("monkey16"), 16);
 
   SdfModel unitCubeSdfGpu64(unitCube, Texture3D::load("unit_cube64"), 64);
   SdfModel unitCubeSdfGpu32(unitCube, Texture3D::load("unit_cube32"), 64);
 
-  SdfModelPacked packedSdfs(
-      vector<SdfModel *>{&monkeySdfGpu64, &unitCubeSdfGpu32});
-  vector<Transform> packedSdfTransforms{
-      Transform{}, Transform{.translation = vec3(-2.0, 0.0, 0.0)}};
+  // SdfModelPacked packedSdfs(
+  //     vector<SdfModel *>{&monkeySdfGpu64, &unitCubeSdfGpu32});
+  // vector<Transform> packedSdfTransforms{
+  //     Transform{}, Transform{.translation = vec3(-2.0, 0.0, 0.0)}};
 
   Transform transform;
   transform.translation = vec3(0.0, 0.0, 0.0);
@@ -270,7 +271,9 @@ int main() {
     if (sdfModel == 1) {
       raymarcher.draw(camera, monkeySdfGpu32, Transform{});
     } else if (sdfModel == 2) {
-      raymarcher2d.draw_packed(camera, packedSdfs, packedSdfTransforms);
+      raymarcher.draw(camera, monkeySdfGpu64, Transform{});
+    } else if (sdfModel == 3) {
+      // raymarcher2d.draw_packed(camera, packedSdfs, packedSdfTransforms);
     }
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved

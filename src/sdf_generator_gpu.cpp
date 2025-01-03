@@ -3,11 +3,13 @@
 //
 
 #include "sdf_generator_gpu.h"
+
+#include <filesystem>
+#include <fstream>
+
 #include "data/mesh.h"
 #include "file_system.h"
 #include "sdf_model.h"
-#include <filesystem>
-#include <fstream>
 
 using afs = ale::FileSystem;
 
@@ -21,12 +23,6 @@ SDFGeneratorGPU::~SDFGeneratorGPU() {
     glDeleteBuffers(1, &v.index_ssbo);
     glDeleteBuffers(1, &v.vertex_ssbo);
     glDeleteBuffers(1, &v.bb_ubo);
-  }
-
-  for (auto &[k, v] : this->debug_result) {
-  }
-
-  for (auto &[k, v] : this->result) {
   }
 }
 
@@ -43,20 +39,20 @@ void SDFGeneratorGPU::add_mesh(string name, Mesh &mesh, int width, int height,
                nullptr, GL_STATIC_DRAW);
 
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 4 * sizeof(unsigned int),
-                  &vertices_size); // pass size
+                  &vertices_size);  // pass size
   glBufferSubData(GL_SHADER_STORAGE_BUFFER,
-                  4 * sizeof(unsigned int), // account for padding
+                  4 * sizeof(unsigned int),  // account for padding
                   mesh.vertices.size() * sizeof(Vertex), mesh.vertices.data());
 
   glGenBuffers(1, &sdf_info.index_ssbo);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, sdf_info.index_ssbo);
-  glBufferData(GL_SHADER_STORAGE_BUFFER,
-               sizeof(unsigned int) +
-                   mesh.indices.size() * sizeof(unsigned int),
-               nullptr, GL_STATIC_DRAW);
+  glBufferData(
+      GL_SHADER_STORAGE_BUFFER,
+      sizeof(unsigned int) + mesh.indices.size() * sizeof(unsigned int),
+      nullptr, GL_STATIC_DRAW);
 
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(unsigned int),
-                  &indices_size); // pass size
+                  &indices_size);  // pass size
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(unsigned int),
                   mesh.indices.size() * sizeof(unsigned int),
                   mesh.indices.data());
@@ -75,6 +71,19 @@ void SDFGeneratorGPU::add_mesh(string name, Mesh &mesh, int width, int height,
   };
   glBufferData(GL_UNIFORM_BUFFER, sizeof(GPUBoundingBox), &gpu_bb,
                GL_STATIC_DRAW);
+
+  // cout << "BB: " << gpu_bb.inner_bb_min.x << " " << gpu_bb.inner_bb_min.y <<
+  // " "
+  //      << gpu_bb.inner_bb_min.z;
+  // cout << " | " << gpu_bb.inner_bb_max.x << " " << gpu_bb.inner_bb_max.y << "
+  // "
+  //      << gpu_bb.inner_bb_max.z << endl;
+  // cout << "BB: " << gpu_bb.outer_bb_min.x << " " << gpu_bb.outer_bb_min.y <<
+  // " "
+  //      << gpu_bb.outer_bb_min.z;
+  // cout << " | " << gpu_bb.outer_bb_max.x << " " << gpu_bb.outer_bb_max.y << "
+  // "
+  //      << gpu_bb.outer_bb_max.z << endl;
 
   sdf_info.depth = depth;
   sdf_info.height = height;
@@ -124,8 +133,7 @@ void ale::SDFGeneratorGPU::dump_textfile(string name, string filename) {
   auto result3d = this->result.at(name).retrieve_data_from_gpu();
   auto debug_result = this->debug_result.at(name).retrieve_data_from_gpu();
 
-  if (filename == "")
-    filename = name;
+  if (filename == "") filename = name;
 
   ofstream out_file(afs::root("resources/sdfgen/" + filename + ".txt"));
 

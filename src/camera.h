@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <iostream>
 
 namespace ale {
 
@@ -147,6 +148,8 @@ class Camera {
       glm::vec3 pivotToPosition =
           this->Position - this->arcballInput.ArcballTarget;
       this->Position = combined * pivotToPosition;
+      std::cout << Position.x << " " << Position.y << " " << Position.z
+                << std::endl;
     }
 
     // update Front, Right and Up Vectors using the updated Euler angles

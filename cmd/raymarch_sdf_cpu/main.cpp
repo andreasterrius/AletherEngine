@@ -1,9 +1,3 @@
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <iostream>
-#include <memory>
-#include <vector>
-
 #include <src/camera.h>
 #include <src/data/boundingbox.h>
 #include <src/data/model.h>
@@ -17,6 +11,12 @@
 #include <src/sdf_model.h>
 #include <src/util.h>
 #include <src/window.h>
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+#include <memory>
+#include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -116,12 +116,16 @@ void processInput(GLFWwindow *window, float deltaTime, Camera &camera,
                   bool &shadows, bool &shadowsKeyPressed);
 
 int main() {
-  Camera camera(ARCBALL, glm::vec3(3.0f, 3.0f, 10.0f));
+  int screenWidth = 800;
+  int screenHeight = 800;
+
+  Camera camera(ARCBALL, screenWidth, screenHeight,
+                glm::vec3(3.0f, 3.0f, 10.0f));
 
   WindowData wd{.camera = &camera,
                 .firstMouse = true,
-                .screenWidth = 800,
-                .screenHeight = 800,
+                .screenWidth = screenWidth,
+                .screenHeight = screenHeight,
                 .isCursorDisabled = false};
 
   glfwInit();
@@ -364,7 +368,7 @@ int main() {
     colorShader.setVec3("viewPos", camera.Position);
     colorShader.setInt(
         "shadows",
-        shadows ? 1 : 0); // enable/disable shadows by pressing 'SPACE'
+        shadows ? 1 : 0);  // enable/disable shadows by pressing 'SPACE'
     colorShader.setFloat("far_plane", far_plane);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, woodTexture);

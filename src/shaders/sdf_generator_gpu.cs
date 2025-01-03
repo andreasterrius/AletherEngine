@@ -1,4 +1,6 @@
 #version 430 core
+precision highp float;
+
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout (r32f, binding = 0) uniform image3D imgOutput;
@@ -139,9 +141,9 @@ void main() {
     uint debug_index = gl_GlobalInvocationID.x + 
                         gl_GlobalInvocationID.y * gl_NumWorkGroups.x + 
                         gl_GlobalInvocationID.z * gl_NumWorkGroups.x * gl_NumWorkGroups.y;
-    // if(debug_index < vertices_size) {
-    //     debug_color = vec3(vertices[debug_index].normal.xyz);
-    // }
+     if(debug_index < vertices_size) {
+         debug_color = vec3(vertices[debug_index].position.xyz);
+     }
     imageStore(debugResult, ivec2(debug_index, 0), vec4(debug_color, 1.0));
 
     // texel_coord.x = image_size.x - texel_coord.x;
