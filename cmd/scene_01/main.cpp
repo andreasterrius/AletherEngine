@@ -28,6 +28,15 @@ int main() {
   auto window = Window(screen_size.x, screen_size.y, "Scene 01");
   auto camera = Camera(ARCBALL, screen_size.x, screen_size.y,
                        glm::vec3(3.0f, 5.0f, -7.0f));
+
+  window.attach_cursor_pos_callback(
+      [&](double xpos, double ypos, double xoffset, double yoffset) {
+        camera.ProcessMouseMovement(xoffset, yoffset);
+      });
+  window.attach_scroll_callback([&](double xoffset, double yoffset) {
+    camera.ProcessMouseScroll(yoffset);
+  });
+
   auto lights = vector<Light>{Light{vec3(5.0f, 5.0f, 5.0f)}};
   auto basic_renderer = BasicRenderer();
 
@@ -46,8 +55,8 @@ int main() {
   {
     const auto entity = world.create();
     world.emplace<Transform>(entity, Transform{});
-    world.emplace<StaticMesh>(
-        entity, StaticMesh(monkey_model, make_pair(sdf_model_packed, 0)));
+    world.emplace<StaticMesh>(entity,
+                              StaticMesh(monkey_model, sdf_model_packed, 0));
   }
   {
     const auto entity = world.create();
@@ -55,7 +64,7 @@ int main() {
                                          .translation = vec3(0.0, -5.0, 0.0),
                                      });
     world.emplace<StaticMesh>(
-        entity, StaticMesh(floor_cube_model, make_pair(sdf_model_packed, 1)));
+        entity, StaticMesh(floor_cube_model, sdf_model_packed, 1));
   }
 
   while (!window.should_close()) {
@@ -63,6 +72,11 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     basic_renderer.render(camera, lights, world);
+
+    if (glfwGetKey(window.get(), GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+      camera.ProcessKeyboardArcball(true);
+    else if (glfwGetKey(window.get(), GLFW_KEY_LEFT_ALT) == GLFW_RELEASE)
+      camera.ProcessKeyboardArcball(false);
 
     window.swap_buffer_and_poll_inputs();
   }

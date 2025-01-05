@@ -4,7 +4,7 @@
 #include "../file_system.h"
 
 using afs = ale::FileSystem;
-using namespace ale;
+// using namespace ale;
 
 BasicRenderer::BasicRenderer()
     : basicShader(afs::root("src/renderer/basic_renderer.vs").c_str(),
@@ -12,8 +12,8 @@ BasicRenderer::BasicRenderer()
   glEnable(GL_CULL_FACE);
 }
 
-void ale::BasicRenderer::render(Camera &camera, vector<Light> &lights,
-                                entt::registry &world) {
+void BasicRenderer::render(Camera &camera, vector<Light> &lights,
+                           entt::registry &world) {
   basicShader.use();
   basicShader.setMat4("projection", camera.GetProjectionMatrix());
   basicShader.setMat4("view", camera.GetViewMatrix());
@@ -24,20 +24,23 @@ void ale::BasicRenderer::render(Camera &camera, vector<Light> &lights,
   else
     basicShader.setVec3("lightPos", vec3());
 
-  // Handle shadows
+  // Handle shadows, can only handle 1 sdf model packed for now.
   auto sdf_model_packed = std::shared_ptr<SdfModelPacked>(nullptr);
   auto entries = vector<pair<Transform, unsigned int>>();
   auto shadow_view = world.view<Transform, StaticMesh>();
   for (auto [entity, transform, static_mesh] : shadow_view.each()) {
-    if (!static_mesh.get_sdf_shadow().has_value()) {
-      continue;
+    auto [sm_sdf_model_packed, sm_sdf_model_packed_index] =
+        static_mesh.get_model_shadow();
+    if (sm_sdf_model_packed != nullptr) {
+      if (sdf_model_packed != nullptr &&
+          sdf_model_packed.get() != sm_sdf_model_packed.get()) {
+        throw BasicRendererException("multiple different sdf model packed on "
+                                     "basic renderer not supported");
+      }
+      sdf_model_packed = sm_sdf_model_packed;
+      entries.emplace_back(transform, sm_sdf_model_packed_index);
     }
-    if (sdf_model_packed == nullptr) {
-      sdf_model_packed = static_mesh.get_sdf_shadow()->first;
-    }
-    entries.emplace_back(transform, static_mesh.get_sdf_shadow()->second);
   }
-
   if (sdf_model_packed != nullptr) {
     sdf_model_packed->bind_to_shader(basicShader, entries);
   }

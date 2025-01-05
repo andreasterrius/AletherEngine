@@ -103,8 +103,8 @@ public:
 
     // unbind textures
     for (unsigned int i = 0; i < textures.size(); i++) {
-      glActiveTexture(GL_TEXTURE0 +
-                      i); // active proper texture unit before binding
+      // active proper texture unit before binding
+      glActiveTexture(GL_TEXTURE0 + i);
       glBindTexture(GL_TEXTURE_2D, 0);
     }
 

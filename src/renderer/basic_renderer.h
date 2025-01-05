@@ -11,21 +11,26 @@
 
 namespace ale {
 
+class BasicRendererException final : public runtime_error {
+public:
+  explicit BasicRendererException(const string &msg) : runtime_error(msg) {}
+};
+
 struct Light {
   vec3 position;
 };
 
 class BasicRenderer {
- private:
+private:
   Shader basicShader;
 
   bool debug_mode = true;
 
- public:
+public:
   BasicRenderer();
 
   void render(Camera &camera, vector<Light> &lights, entt::registry &world);
 };
-}  // namespace ale
+} // namespace ale
 
-#endif  // BASIC_RENDERER_H
+#endif // BASIC_RENDERER_H
