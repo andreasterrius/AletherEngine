@@ -53,7 +53,7 @@ class SdfModel {
   // returns small cubes that creates the sdf
   void loopOverCubes(function<void(int, int, int, BoundingBox)> func);
 
-  void bindToShader(Shader shader);
+  void bind_to_shader(Shader shader);
 
   void writeToFile(string path);
 

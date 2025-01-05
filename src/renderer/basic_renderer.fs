@@ -13,10 +13,17 @@ uniform vec4 diffuseColor;
 
 #include "src/shaders/partial/sdf_atlas.fs" 0
 
-float ShadowCalculation(vec3 fragPos)
+float ShadowCalculation(vec3 fragPos, vec3 normalDir)
 {
-    float shadow = 0.0;
-    return shadow;
+    vec3 lightDir = normalize(lightPos - fs_in.FragPos);
+    vec3 isectPos = vec3(0.0);
+    vec3 boxCenter = vec3(0.0);
+    bool occluded = raymarch(fragPos + normalDir, lightDir, distance(lightPos, fragPos), isectPos, boxCenter);
+
+    if (occluded) {
+        return 1.0;
+    }
+    return 0.0;
 }
 
 void main()
@@ -40,7 +47,7 @@ void main()
     spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
     vec3 specular = spec * lightColor;
     // calculate shadow
-    float shadow = ShadowCalculation(fs_in.FragPos);
+    float shadow = ShadowCalculation(fs_in.FragPos, normal);
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
 
     FragColor = vec4(lighting, 1.0);

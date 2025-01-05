@@ -1,24 +1,25 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include <filesystem>
 #include <glad/glad.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <stb_image.h>
 
-#include "boundingbox.h"
-#include "mesh.h"
-
+#include <assimp/Importer.hpp>
+#include <filesystem>
 #include <fstream>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <map>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "boundingbox.h"
+#include "mesh.h"
 
 using namespace std;
 using namespace ale;
@@ -32,12 +33,14 @@ class Model {
 public:
   // model data
   vector<LoadedTexture>
-      textures_loaded; // stores all the textures loaded so far, optimization to
-                       // make sure textures aren't loaded more than once.
+      textures_loaded; // stores all the textures loaded so far, optimization
+                       // to make sure textures aren't loaded more than once.
   vector<Mesh> meshes;
   string directory;
   std::filesystem::path path;
   bool gammaCorrection;
+
+  optional<unsigned int> shadowIndex;
 
   // constructor, expects a filepath to a 3D model.
   Model(string const &path, bool gamma = false);

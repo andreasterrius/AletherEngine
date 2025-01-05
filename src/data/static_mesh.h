@@ -8,18 +8,20 @@
 #include "../sdf_model_packed.h"
 #include "model.h"
 
+using namespace std;
+using ShadowEntry = pair<shared_ptr<SdfModelPacked>, unsigned int>;
+
 namespace ale {
 class StaticMesh {
  private:
-  std::shared_ptr<Model> model;
-  std::shared_ptr<SdfModel> sdf_model;
-  std::shared_ptr<SdfModelPacked> sdf_model_packed;
+  shared_ptr<Model> model;
+  optional<ShadowEntry> sdf_shadow;
 
  public:
-  StaticMesh(std::shared_ptr<Model> model, std::shared_ptr<SdfModel> sdf_model,
-             std::shared_ptr<SdfModelPacked> sdf_model_packed);
+  StaticMesh(shared_ptr<Model> model, optional<ShadowEntry> sdf_shadow);
 
-  std::shared_ptr<Model> &get_model();
+  shared_ptr<Model> get_model();
+  optional<ShadowEntry> &get_sdf_shadow();
 };
 };  // namespace ale
 

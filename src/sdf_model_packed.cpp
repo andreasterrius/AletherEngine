@@ -1,12 +1,13 @@
 #include "sdf_model_packed.h"
 
 #include "file_system.h"
-
 using afs = ale::FileSystem;
 
-void ale::SdfModelPacked::pack_sdf_models(vector<SdfModel *> sdf_models) {
+vector<unsigned int>
+ale::SdfModelPacked::pack_sdf_models(vector<SdfModel *> sdf_models) {
   auto flat_data = vector<float>(ATLAS_WIDTH * ATLAS_HEIGHT, 0.0f);
-  auto packed_count = 0;  // how many texture is packed inside an atlas
+  auto packed_count = 0; // how many texture is packed inside an atlas
+  auto entries = vector<unsigned int>{};
 
   for (auto &it : sdf_models) {
     auto sdf_data = it->texture3D->retrieve_data_from_gpu();
@@ -29,6 +30,7 @@ void ale::SdfModelPacked::pack_sdf_models(vector<SdfModel *> sdf_models) {
       flat_data[flat_index] = sdf_data[i];
     }
 
+    entries.push_back(offsets.size());
     offsets.push_back(SdfModelPacked::Meta{
         .size = size,
         .inner_bb = it->bb,
@@ -42,8 +44,8 @@ void ale::SdfModelPacked::pack_sdf_models(vector<SdfModel *> sdf_models) {
       // we has filled in this texture, push and create a new one
       texture_atlas.emplace_back(
           Texture::Meta{
-              .width = 4096,
-              .height = 256,
+              .width = ATLAS_WIDTH,
+              .height = ATLAS_HEIGHT,
               .internal_format = GL_R32F,
               .input_format = GL_RED,
               .input_type = GL_FLOAT,
@@ -55,12 +57,23 @@ void ale::SdfModelPacked::pack_sdf_models(vector<SdfModel *> sdf_models) {
     }
   }
 
+  unsigned int ssbo = 0;
+  glGenBuffers(1, &ssbo);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+  glBufferData(
+      GL_SHADER_STORAGE_BUFFER,
+      (sizeof(unsigned int) * 4 + sizeof(GPUObject) * OBJECTS_MAX_SIZE),
+      nullptr, GL_STATIC_DRAW);
+  this->ssbo = ssbo;
+
   if (debug_mode) {
     for (int i = 0; i < texture_atlas.size(); ++i) {
       texture_atlas[i].dump_data_to_file(
           afs::root("resources/sdfgen/atlas_" + to_string(i) + ".txt"));
     }
   }
+
+  return entries;
 }
 
 ale::SdfModelPacked::SdfModelPacked(vector<SdfModel *> sdf_models,
@@ -71,8 +84,7 @@ ale::SdfModelPacked::SdfModelPacked(vector<SdfModel *> sdf_models,
 
 ale::SdfModelPacked::SdfModelPacked(SdfModelPacked &&other)
     : texture_atlas(std::move(other.texture_atlas)),
-      offsets(std::move(other.offsets)),
-      debug_mode(other.debug_mode) {}
+      offsets(std::move(other.offsets)), debug_mode(other.debug_mode) {}
 
 ale::SdfModelPacked &ale::SdfModelPacked::operator=(SdfModelPacked &&other) {
   if (this != &other) {
@@ -84,7 +96,37 @@ ale::SdfModelPacked &ale::SdfModelPacked::operator=(SdfModelPacked &&other) {
   return *this;
 }
 
-void ale::SdfModelPacked::bind_to_shader(Shader &shader) {
+void ale::SdfModelPacked::bind_to_shader(
+    Shader &shader, vector<pair<Transform, unsigned int>> &entries) {
+  glDisable(GL_CULL_FACE);
+
+  auto details = vector<GPUObject>();
+  for (auto [transform, shadow_index] : entries) {
+    auto &p = offsets[shadow_index];
+    mat4 model = transform.getModelMatrix();
+    details.push_back(GPUObject{
+        .model_mat = model,
+        .inv_model_mat = inverse(model),
+        .inner_bbmin = vec4(p.inner_bb.min, 0.0),
+        .inner_bbmax = vec4(p.inner_bb.max, 0.0),
+        .outer_bbmin = vec4(p.outer_bb.min, 0.0),
+        .outer_bbmax = vec4(p.outer_bb.max, 0.0),
+        .atlas_index = p.atlas_index,
+        .atlas_count = p.atlas_count,
+    });
+  }
+  int details_size = details.size();
+
+  // ssbo for packed sdf
+  glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, (sizeof(unsigned int) * 4),
+                  &details_size); // pass size
+  glBufferSubData(GL_SHADER_STORAGE_BUFFER, (sizeof(unsigned int) * 4),
+                  (details.size() * sizeof(GPUObject)), details.data());
+
+  // bind ssbo
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
+
+  shader.use();
   shader.setInt("atlasSize", this->texture_atlas.size());
   if (this->texture_atlas.empty()) {
     return;

@@ -1,8 +1,11 @@
 #include "static_mesh.h"
 
-ale::StaticMesh::StaticMesh(std::shared_ptr<Model> model,
-                            std::shared_ptr<SdfModel> sdf_model,
-                            std::shared_ptr<SdfModelPacked> sdf_model_packed)
-    : model(model), sdf_model(sdf_model), sdf_model_packed(sdf_model_packed) {}
+#include <utility>
 
-std::shared_ptr<Model> &ale::StaticMesh::get_model() { return model; }
+ale::StaticMesh::StaticMesh(shared_ptr<Model> model,
+                            optional<ShadowEntry> sdf_shadow)
+    : model(std::move(model)), sdf_shadow(std::move(sdf_shadow)) {}
+
+shared_ptr<Model> ale::StaticMesh::get_model() { return model; }
+
+optional<ShadowEntry> &ale::StaticMesh::get_sdf_shadow() { return sdf_shadow; }

@@ -34,14 +34,13 @@ class Raymarcher {
   unsigned int packed_ssbo = 0;
   Shader shader;
 
- public:
+public:
   int screenWidth;
   int screenHeight;
 
   Raymarcher(int screenWidth, int screenHeight, string vertexPath,
              string fragmentPath)
-      : screenWidth(screenWidth),
-        screenHeight(screenHeight),
+      : screenWidth(screenWidth), screenHeight(screenHeight),
         shader(vertexPath.c_str(), fragmentPath.c_str()) {
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -77,7 +76,7 @@ class Raymarcher {
     shader.setMat4("modelMat", transform.getModelMatrix());
     shader.setMat4("invModelMat", inverse(transform.getModelMatrix()));
 
-    sdfModel.bindToShader(shader);
+    sdfModel.bind_to_shader(shader);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -96,8 +95,8 @@ class Raymarcher {
     alignas(16) vec4 outerBBMax;
     int atlasIndex;
     int atlasCount;
-    int _1 = 0;  // padding
-    int _2 = 0;  // padding
+    int _1 = 0; // padding
+    int _2 = 0; // padding
   };
 
   void draw_packed(Camera &camera, SdfModelPacked &sdfModelPacked,
@@ -128,13 +127,13 @@ class Raymarcher {
       // ssbo for packed sdf
       glGenBuffers(1, &packed_ssbo);
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, packed_ssbo);
-      glBufferData(
-          GL_SHADER_STORAGE_BUFFER,
-          sizeof(unsigned int) * 4 + sizeof(PackedSdfOffsetDetail) *
-                                         sdfModelPacked.get_offsets().size(),
-          nullptr, GL_STATIC_DRAW);
+      glBufferData(GL_SHADER_STORAGE_BUFFER,
+                   sizeof(unsigned int) * 4 +
+                       sizeof(PackedSdfOffsetDetail) *
+                           sdfModelPacked.get_offsets().size(),
+                   nullptr, GL_STATIC_DRAW);
       glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(unsigned int) * 4,
-                      &details_size);  // pass size
+                      &details_size); // pass size
       glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(unsigned int) * 4,
                       details.size() * sizeof(PackedSdfOffsetDetail),
                       details.data());
@@ -235,7 +234,7 @@ int main() {
   transform.translation = vec3(0.0, 0.0, 0.0);
 
   glm::vec3 eulerAngles = glm::vec3(glm::radians(45.0f), glm::radians(0.0f),
-                                    glm::radians(0.0f));  // Pitch, yaw, roll
+                                    glm::radians(0.0f)); // Pitch, yaw, roll
   transform.rotation = quat(eulerAngles);
 
   int sdfModel = 1;

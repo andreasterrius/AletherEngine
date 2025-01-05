@@ -149,7 +149,7 @@ void mouseCallback(GLFWwindow *window, double xposIn, double yposIn) {
 }
 
 int main() {
-  Camera camera(ARCBALL, glm::vec3(0.0f, 0.0f, 10.0f));
+  Camera camera(ARCBALL, 800, 800, glm::vec3(0.0f, 0.0f, 10.0f));
 
   WindowData wd{.camera = &camera,
                 .firstMouse = true,

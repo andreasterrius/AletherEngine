@@ -17,7 +17,7 @@ struct Light {
 
 class BasicRenderer {
  private:
-  Shader basic_shader;
+  Shader basicShader;
 
   bool debug_mode = true;
 
