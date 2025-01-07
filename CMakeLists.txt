@@ -16,9 +16,31 @@ add_subdirectory(external/glfw)
 add_subdirectory(external/glm)
 add_subdirectory(external/entt)
 
-## Imgui doesn't have it's own cmake
-## So I asked chatgpt to make me for this repo.
-add_subdirectory(external/imgui)
+## according to imgui guide, it is recommended that you follow those steps
+## and not attempt to build Dear ImGui as a static or shared library!
+# Add source files for Dear ImGui
+set(IMGUI_SOURCE
+        external/imgui/imgui.cpp
+        external/imgui/imgui_draw.cpp
+        external/imgui/imgui_tables.cpp
+        external/imgui/imgui_widgets.cpp
+        external/imgui/imgui_demo.cpp
+        external/imgui/backends/imgui_impl_glfw.cpp  # Use GLFW backend
+        external/imgui/backends/imgui_impl_opengl3.cpp  # Use OpenGL3 backend
+)
+
+# Add header files for Dear ImGui (optional for IDEs to index them)
+set(IMGUI_HEADER
+        external/imgui/imgui.h
+        external/imgui/imgui_internal.h
+        external/imgui/imgui_demo.cpp
+        external/imgui/imconfig.h
+        external/imgui/imstb_rectpack.h
+        external/imgui/imstb_textedit.h
+        external/imgui/imstb_truetype.h
+        external/imgui/backends/imgui_impl_glfw.h
+        external/imgui/backends/imgui_impl_opengl3.h
+)
 
 #file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
 file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
@@ -35,6 +57,8 @@ function(create_exe name folder_name)
             ${${folder_name}_HEADER}
             ${ENGINE_HEADER}
             ${ENGINE_SOURCE}
+            ${IMGUI_SOURCE}
+            ${IMGUI_HEADER}
     )
     target_include_directories(${name} PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}
@@ -43,9 +67,11 @@ function(create_exe name folder_name)
             external/glad/include
             external/assimp/include
             external/glfw/include
-            ${CMAKE_BINARY_DIR}/external/assimp/include
+            ${CMAKE_BINARY_DIR}/external/assimp/includea
+            external/imgui
+            external/imgui/backends
     )
-    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT imgui)
+    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT)
 endfunction()
 
 create_exe(AletherEngine editor)
@@ -53,3 +79,4 @@ create_exe(RaymarchSdfCpu raymarch_sdf_cpu)
 create_exe(RaymarchSdf raymarch_sdf)
 create_exe(SdfGenerator sdf_generator_gpu)
 create_exe(Scene01 scene_01)
+create_exe(HelloImgui hello_imgui)
