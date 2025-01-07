@@ -40,31 +40,36 @@ int main() {
   auto lights = vector<Light>{Light{vec3(5.0f, 5.0f, 5.0f)}};
   auto basic_renderer = BasicRenderer();
 
-  auto monkey_model =
-      make_shared<Model>(afs::root("resources/models/monkey.obj"));
-  auto floor_cube_model =
-      make_shared<Model>(afs::root("resources/models/floor_cube.obj"));
+  // auto monkey_model =
+  //     make_shared<Model>(afs::root("resources/models/monkey.obj"));
+  // auto floor_cube_model =
+  //     make_shared<Model>(afs::root("resources/models/floor_cube.obj"));
+  //
+  // auto monkey_sdf =
+  //     SdfModel(monkey_model->meshes[0], Texture3D::load("monkey64"), 64);
+  // auto unit_cube_sdf = SdfModel(floor_cube_model->meshes[0], 64);
+  //
+  // auto sdf_model_packed =
+  //     make_shared<SdfModelPacked>(vector{&monkey_sdf, &unit_cube_sdf});
 
-  auto monkey_sdf = SdfModel(*monkey_model, Texture3D::load("monkey64"), 64);
-  auto unit_cube_sdf = SdfModel(*floor_cube_model, 64);
-
-  auto sdf_model_packed =
-      make_shared<SdfModelPacked>(vector{&monkey_sdf, &unit_cube_sdf});
+  auto sm_loader = StaticMeshLoader();
+  auto sm_monkey =
+      sm_loader.load_static_mesh(afs::root("resources/models/monkey.obj"));
+  auto sm_floor =
+      sm_loader.load_static_mesh(afs::root("resources/models/floor_cube.obj"));
 
   auto world = entt::registry{};
   {
     const auto entity = world.create();
     world.emplace<Transform>(entity, Transform{});
-    world.emplace<StaticMesh>(entity,
-                              StaticMesh(monkey_model, sdf_model_packed, 0));
+    world.emplace<StaticMesh>(entity, sm_monkey);
   }
   {
     const auto entity = world.create();
     world.emplace<Transform>(entity, Transform{
                                          .translation = vec3(0.0, -5.0, 0.0),
                                      });
-    world.emplace<StaticMesh>(
-        entity, StaticMesh(floor_cube_model, sdf_model_packed, 1));
+    world.emplace<StaticMesh>(entity, sm_floor);
   }
 
   while (!window.should_close()) {

@@ -104,7 +104,6 @@ public:
     glDisable(GL_CULL_FACE);
 
     if (packed_ssbo == 0) {
-      // TODO : Refactor this on creation, not on render
       vector<PackedSdfOffsetDetail> details;
       for (int i = 0; i < sdfModelPacked.get_offsets().size(); ++i) {
         auto &p = sdfModelPacked.get_offsets()[i];
@@ -152,7 +151,8 @@ public:
 
     // binds texture2D atlas[16];
     // binds int atlasSize;
-    sdfModelPacked.bind_to_shader(shader);
+    auto entries = {};
+    sdfModelPacked.bind_to_shader(shader, entries);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -218,12 +218,14 @@ int main() {
   LineRenderer lineRenderer;
 
   // SdfModel trophySdf(*objects[0].model.get(), 16);
-  SdfModel monkeySdfGpu64(monkey, Texture3D::load("monkey64"), 64);
-  SdfModel monkeySdfGpu32(monkey, Texture3D::load("monkey64_b"), 64);
-  SdfModel monkeySdfGpu16(monkey, Texture3D::load("monkey16"), 16);
+  SdfModel monkeySdfGpu64(monkey.meshes[0], Texture3D::load("monkey64"), 64);
+  SdfModel monkeySdfGpu32(monkey.meshes[0], Texture3D::load("monkey64_b"), 64);
+  SdfModel monkeySdfGpu16(monkey.meshes[0], Texture3D::load("monkey16"), 16);
 
-  SdfModel unitCubeSdfGpu64(unitCube, Texture3D::load("unit_cube64"), 64);
-  SdfModel unitCubeSdfGpu32(unitCube, Texture3D::load("unit_cube32"), 64);
+  SdfModel unitCubeSdfGpu64(unitCube.meshes[0], Texture3D::load("unit_cube64"),
+                            64);
+  SdfModel unitCubeSdfGpu32(unitCube.meshes[0], Texture3D::load("unit_cube32"),
+                            64);
 
   // SdfModelPacked packedSdfs(
   //     vector<SdfModel *>{&monkeySdfGpu64, &unitCubeSdfGpu32});

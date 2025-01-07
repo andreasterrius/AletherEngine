@@ -13,12 +13,12 @@
 
 using afs = ale::FileSystem;
 
-ale::SDFGeneratorGPU::SDFGeneratorGPU()
+ale::SdfGeneratorGPU::SdfGeneratorGPU()
     : compute_shader(afs::root("src/shaders/sdf_generator_gpu.cs")) {
   // test
 }
 
-SDFGeneratorGPU::~SDFGeneratorGPU() {
+SdfGeneratorGPU::~SdfGeneratorGPU() {
   for (auto &[k, v] : this->sdf_infos) {
     glDeleteBuffers(1, &v.index_ssbo);
     glDeleteBuffers(1, &v.vertex_ssbo);
@@ -26,7 +26,7 @@ SDFGeneratorGPU::~SDFGeneratorGPU() {
   }
 }
 
-void SDFGeneratorGPU::add_mesh(string name, Mesh &mesh, int width, int height,
+void SdfGeneratorGPU::add_mesh(string name, Mesh &mesh, int width, int height,
                                int depth) {
   unsigned int vertices_size = mesh.vertices.size();
   unsigned int indices_size = mesh.indices.size();
@@ -39,20 +39,20 @@ void SDFGeneratorGPU::add_mesh(string name, Mesh &mesh, int width, int height,
                nullptr, GL_STATIC_DRAW);
 
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 4 * sizeof(unsigned int),
-                  &vertices_size);  // pass size
+                  &vertices_size); // pass size
   glBufferSubData(GL_SHADER_STORAGE_BUFFER,
-                  4 * sizeof(unsigned int),  // account for padding
+                  4 * sizeof(unsigned int), // account for padding
                   mesh.vertices.size() * sizeof(Vertex), mesh.vertices.data());
 
   glGenBuffers(1, &sdf_info.index_ssbo);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, sdf_info.index_ssbo);
-  glBufferData(
-      GL_SHADER_STORAGE_BUFFER,
-      sizeof(unsigned int) + mesh.indices.size() * sizeof(unsigned int),
-      nullptr, GL_STATIC_DRAW);
+  glBufferData(GL_SHADER_STORAGE_BUFFER,
+               sizeof(unsigned int) +
+                   mesh.indices.size() * sizeof(unsigned int),
+               nullptr, GL_STATIC_DRAW);
 
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(unsigned int),
-                  &indices_size);  // pass size
+                  &indices_size); // pass size
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(unsigned int),
                   mesh.indices.size() * sizeof(unsigned int),
                   mesh.indices.data());
@@ -63,13 +63,13 @@ void SDFGeneratorGPU::add_mesh(string name, Mesh &mesh, int width, int height,
   BoundingBox outer_bb = mesh.boundingBox.applyTransform(Transform{
       .scale = vec3(1.1, 1.1, 1.1),
   });
-  GPUBoundingBox gpu_bb{
+  GpuBoundingBox gpu_bb{
       .inner_bb_min = vec4(mesh.boundingBox.min, 0.0),
       .inner_bb_max = vec4(mesh.boundingBox.max, 0.0),
       .outer_bb_min = vec4(outer_bb.min, 0.0),
       .outer_bb_max = vec4(outer_bb.max, 0.0),
   };
-  glBufferData(GL_UNIFORM_BUFFER, sizeof(GPUBoundingBox), &gpu_bb,
+  glBufferData(GL_UNIFORM_BUFFER, sizeof(GpuBoundingBox), &gpu_bb,
                GL_STATIC_DRAW);
 
   // cout << "BB: " << gpu_bb.inner_bb_min.x << " " << gpu_bb.inner_bb_min.y <<
@@ -109,7 +109,7 @@ void SDFGeneratorGPU::add_mesh(string name, Mesh &mesh, int width, int height,
                     empty));
 }
 
-void SDFGeneratorGPU::generate_all() {
+void SdfGeneratorGPU::generate_all() {
   for (auto &[k, v] : this->sdf_infos) {
     if (!v.has_generated) {
       // base:0 IS bound inside the compute_shader
@@ -125,15 +125,16 @@ void SDFGeneratorGPU::generate_all() {
   }
 }
 
-Texture3D &ale::SDFGeneratorGPU::at(string name) {
+Texture3D &ale::SdfGeneratorGPU::at(string name) {
   return this->result.at(name);
 }
 
-void ale::SDFGeneratorGPU::dump_textfile(string name, string filename) {
+void ale::SdfGeneratorGPU::dump_textfile(string name, string filename) {
   auto result3d = this->result.at(name).retrieve_data_from_gpu();
   auto debug_result = this->debug_result.at(name).retrieve_data_from_gpu();
 
-  if (filename == "") filename = name;
+  if (filename == "")
+    filename = name;
 
   ofstream out_file(afs::root("resources/sdfgen/" + filename + ".txt"));
 

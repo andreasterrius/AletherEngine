@@ -15,14 +15,14 @@ TextureRenderer::TextureRenderer()
              afs::root("src/shaders/texture2d.fs").c_str()) {
   float vertices[] = {
       // Positions       // Texture Coords
-      -1.0f, 1.0f,  0.0f, 0.0f, 1.0f,  // Top-left
-      -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,  // Bottom-left
-      1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,  // Bottom-right
-      1.0f,  1.0f,  0.0f, 1.0f, 1.0f   // Top-right
+      -1.0f, 1.0f,  0.0f, 0.0f, 1.0f, // Top-left
+      -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // Bottom-left
+      1.0f,  -1.0f, 0.0f, 1.0f, 0.0f, // Bottom-right
+      1.0f,  1.0f,  0.0f, 1.0f, 1.0f  // Top-right
   };
   unsigned int indices[] = {
-      0, 1, 2,  // First triangle
-      2, 3, 0   // Second triangle
+      0, 1, 2, // First triangle
+      2, 3, 0  // Second triangle
   };
 
   glGenVertexArrays(1, &vao);
@@ -73,8 +73,7 @@ TextureRenderer &TextureRenderer::operator=(TextureRenderer &&other) {
 void TextureRenderer::render(Texture &texture) {
   shader.use();
   shader.setInt("texture1", 0);
-  glActiveTexture(GL_TEXTURE0 +
-                  0);  // active proper texture unit before binding
+  glActiveTexture(GL_TEXTURE0 + 0); // active proper texture unit before binding
   glBindTexture(GL_TEXTURE_2D, texture.id);
   glBindVertexArray(vao);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -98,20 +97,28 @@ Texture::Texture(Meta meta, vector<float> &pixels) : meta(meta) {
 
 Texture::~Texture() { glDeleteBuffers(1, &this->id); }
 
-void Texture::replaceData(vector<vector<vec4>> &colorData) {
+void Texture::replace_data(vector<vector<vec4>> &color_data) {
   // Flatten the 2D vector to a 1D array
   std::vector<glm::vec4> flattenedData;
-  for (const auto &row : colorData) {
+  for (const auto &row : color_data) {
     flattenedData.insert(flattenedData.end(), row.begin(), row.end());
   }
 
-  this->replaceData(flattenedData);
+  this->replace_data(flattenedData);
 }
 
-void Texture::replaceData(vector<vec4> &flatColorData) {
+void Texture::replace_data(vector<vec4> &flat_color_data) {
   glBindTexture(GL_TEXTURE_2D, this->id);
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, meta.width, meta.height,
-                  meta.input_format, meta.input_type, flatColorData.data());
+                  meta.input_format, meta.input_type, flat_color_data.data());
+  glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Texture::partial_replace_data_f32(int xoffset, int yoffset, int width,
+                                       int height, vector<float> &color_data) {
+  glBindTexture(GL_TEXTURE_2D, this->id);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, width, height,
+                  meta.input_format, meta.input_type, color_data.data());
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -119,18 +126,18 @@ vector<float> Texture::retrieve_data_from_gpu() {
   unsigned long long element_size = this->meta.width * this->meta.height;
 
   switch (this->meta.input_format) {
-    case GL_RGBA:
-      element_size *= 4;
-      break;
-    case GL_RGB:
-      element_size *= 3;
-      break;
-    case GL_RG:
-      element_size *= 2;
-      break;
-    case GL_RED:
-      element_size *= 1;
-      break;
+  case GL_RGBA:
+    element_size *= 4;
+    break;
+  case GL_RGB:
+    element_size *= 3;
+    break;
+  case GL_RG:
+    element_size *= 2;
+    break;
+  case GL_RED:
+    element_size *= 1;
+    break;
   }
   vector<float> data(element_size);
 
@@ -209,18 +216,18 @@ vector<float> Texture3D::retrieve_data_from_gpu() {
       this->meta.width * this->meta.height * this->meta.depth;
 
   switch (this->meta.input_format) {
-    case GL_RGBA:
-      element_size *= 4;
-      break;
-    case GL_RGB:
-      element_size *= 3;
-      break;
-    case GL_RG:
-      element_size *= 2;
-      break;
-    case GL_RED:
-      element_size *= 1;
-      break;
+  case GL_RGBA:
+    element_size *= 4;
+    break;
+  case GL_RGB:
+    element_size *= 3;
+    break;
+  case GL_RG:
+    element_size *= 2;
+    break;
+  case GL_RED:
+    element_size *= 1;
+    break;
   }
   vector<float> data(element_size);
 

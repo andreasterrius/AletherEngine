@@ -28,16 +28,6 @@ using namespace ale;
 
 using afs = ale::FileSystem;
 
-// TODO:
-// 1. Create an arcball camera control (DONE)
-// 2. Insert a triangle the scene (DONE)
-// 3. Generate the SDF cube view for a sphere
-// 3.1 generate the points first and visualize them in the viewport (DONE)
-// 3.2 loop over all the triangles that exist in the scene (DONE)
-// 3.3 make the loop parallel for every n triangle (where n is number of
-// thread/spread algorithm) 3.4 calculate the distance with barycentry
-// coordinage from each of the triangle to specific points in the 3d array.
-
 // should hold non owning datas
 struct WindowData {
   Camera *camera;
@@ -255,7 +245,7 @@ int main() {
   });
 
   // SdfModel robotSdf(robot, 4);
-  SdfModel trophySdf(*objects[1].model.get(), 32);
+  SdfModel trophySdf(*objects[1].model->meshes[0], 32);
   auto size = trophySdf.outerBB.getSize();
   cout << size.x << " " << size.y << " " << size.z << endl;
 

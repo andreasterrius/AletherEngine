@@ -26,19 +26,18 @@ void BasicRenderer::render(Camera &camera, vector<Light> &lights,
 
   // Handle shadows, can only handle 1 sdf model packed for now.
   auto sdf_model_packed = std::shared_ptr<SdfModelPacked>(nullptr);
-  auto entries = vector<pair<Transform, unsigned int>>();
+  auto entries = vector<pair<Transform, vector<unsigned int>>>();
   auto shadow_view = world.view<Transform, StaticMesh>();
   for (auto [entity, transform, static_mesh] : shadow_view.each()) {
-    auto [sm_sdf_model_packed, sm_sdf_model_packed_index] =
-        static_mesh.get_model_shadow();
-    if (sm_sdf_model_packed != nullptr) {
+    auto [packed, packed_index] = static_mesh.get_model_shadow();
+    if (packed != nullptr) {
       if (sdf_model_packed != nullptr &&
-          sdf_model_packed.get() != sm_sdf_model_packed.get()) {
+          sdf_model_packed.get() != packed.get()) {
         throw BasicRendererException("multiple different sdf model packed on "
                                      "basic renderer not supported");
       }
-      sdf_model_packed = sm_sdf_model_packed;
-      entries.emplace_back(transform, sm_sdf_model_packed_index);
+      sdf_model_packed = packed;
+      entries.emplace_back(transform, packed_index);
     }
   }
   if (sdf_model_packed != nullptr) {

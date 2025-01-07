@@ -24,7 +24,7 @@ int main() {
   Model sample(afs::root("resources/models/monkey.obj"));
   Model unit_cube(afs::root("resources/models/unit_cube.obj"));
 
-  SDFGeneratorGPU sdfgen;
+  SdfGeneratorGPU sdfgen;
   // sdfgen.add_mesh("monkey64", sample.meshes[0], 64, 64, 64);
   // sdfgen.add_mesh("monkey32", sample.meshes[0], 32, 32, 32);
   sdfgen.add_mesh("monkey16", sample.meshes[0], 16, 16, 16);
@@ -32,7 +32,7 @@ int main() {
   // sdfgen.add_mesh("unit_cube64", unit_cube.meshes[0], 64, 64, 64);
   sdfgen.generate_all();
 
-  auto s = SdfModel(sample, 16);
+  auto s = SdfModel(sample.meshes[0], 16);
 
   TextureRenderer texture_renderer;
 

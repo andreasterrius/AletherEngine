@@ -5,7 +5,7 @@ using afs = ale::FileSystem;
 
 vector<unsigned int>
 ale::SdfModelPacked::pack_sdf_models(vector<SdfModel *> sdf_models) {
-  auto flat_data = vector<float>(ATLAS_WIDTH * ATLAS_HEIGHT, 0.0f);
+  auto flat_data = vector(ATLAS_WIDTH * ATLAS_HEIGHT, 0.0f);
   auto packed_count = 0; // how many texture is packed inside an atlas
   auto entries = vector<unsigned int>{};
 
@@ -97,23 +97,27 @@ ale::SdfModelPacked &ale::SdfModelPacked::operator=(SdfModelPacked &&other) {
 }
 
 void ale::SdfModelPacked::bind_to_shader(
-    Shader &shader, vector<pair<Transform, unsigned int>> &entries) {
+    Shader &shader, vector<pair<Transform, vector<unsigned int>>> &entries) {
   glDisable(GL_CULL_FACE);
 
   auto details = vector<GPUObject>();
-  for (auto [transform, shadow_index] : entries) {
-    auto &p = offsets[shadow_index];
-    mat4 model = transform.getModelMatrix();
-    details.push_back(GPUObject{
-        .model_mat = model,
-        .inv_model_mat = inverse(model),
-        .inner_bbmin = vec4(p.inner_bb.min, 0.0),
-        .inner_bbmax = vec4(p.inner_bb.max, 0.0),
-        .outer_bbmin = vec4(p.outer_bb.min, 0.0),
-        .outer_bbmax = vec4(p.outer_bb.max, 0.0),
-        .atlas_index = p.atlas_index,
-        .atlas_count = p.atlas_count,
-    });
+  // TODO: no need to do this every frame, only when a change occur
+  // TODO: shader supports 1 MESH = 1 SDF, not 1 MODEL = 1 SDF
+  for (auto [transform, shadow_indices] : entries) {
+    for (auto shadow_index : shadow_indices) {
+      auto &p = offsets[shadow_index];
+      mat4 model = transform.getModelMatrix();
+      details.push_back(GPUObject{
+          .model_mat = model,
+          .inv_model_mat = inverse(model),
+          .inner_bbmin = vec4(p.inner_bb.min, 0.0),
+          .inner_bbmax = vec4(p.inner_bb.max, 0.0),
+          .outer_bbmin = vec4(p.outer_bb.min, 0.0),
+          .outer_bbmax = vec4(p.outer_bb.max, 0.0),
+          .atlas_index = p.atlas_index,
+          .atlas_count = p.atlas_count,
+      });
+    }
   }
   int details_size = details.size();
 
@@ -143,6 +147,66 @@ void ale::SdfModelPacked::bind_to_shader(
     glActiveTexture(GL_TEXTURE0 + i);
     glBindTexture(GL_TEXTURE_2D, this->texture_atlas[i].id);
   }
+}
+unsigned int SdfModelPacked::add(SdfModel &sdf_model) {
+  auto [latest_index, latest_count] =
+      offsets.empty() ? make_pair(0, 0)
+                      : make_pair(offsets.back().atlas_index,
+                                  offsets.back().atlas_count + 1);
+
+  // 1 texture can only hold 64 models
+  if (latest_count >= 64) {
+    latest_index += 1;
+    latest_count = 0;
+  }
+
+  // if count = 0, then we need to create a new texture
+  if (latest_count == 0) {
+    auto empty = vector<float>();
+    texture_atlas.emplace_back(
+        Texture::Meta{
+            .width = ATLAS_WIDTH,
+            .height = ATLAS_HEIGHT,
+            .internal_format = GL_R32F,
+            .input_format = GL_RED,
+            .input_type = GL_FLOAT,
+            .min_filter = GL_LINEAR,
+            .max_filter = GL_LINEAR,
+        },
+        empty);
+  }
+
+  auto sdf_data = sdf_model.texture3D->retrieve_data_from_gpu();
+  auto meta = sdf_model.texture3D->meta;
+
+  auto flat_data = vector(ATLAS_WIDTH * SINGLE_TEXTURE_SIZE_Y, 0.0f);
+  auto size = ivec3(meta.width, meta.height, meta.depth);
+  auto size2d = ivec3(64, 64, 64);
+  for (int i = 0; i < sdf_data.size(); ++i) {
+    unsigned int z = i / (size.x * size.y);
+    unsigned int y = (i % (size.x * size.y) / size.x);
+    unsigned int x = i % size.x;
+
+    unsigned int flat_index = x + (y * size2d.x * size2d.z) + (z * size2d.x);
+
+    // finish the remapping
+    // cout << x << " " << y << " " << z << " | " << flat_index << "\n";
+    flat_data[flat_index] = sdf_data[i];
+  }
+
+  texture_atlas.back().partial_replace_data_f32(
+      0, latest_count * SINGLE_TEXTURE_SIZE_Y, ATLAS_WIDTH,
+      SINGLE_TEXTURE_SIZE_Y, flat_data);
+
+  offsets.push_back(Meta{
+      .size = size,
+      .inner_bb = sdf_model.bb,
+      .outer_bb = sdf_model.outerBB,
+      .atlas_index = latest_index,
+      .atlas_count = latest_count,
+  });
+
+  return offsets.size() - 1;
 }
 
 vector<ale::SdfModelPacked::Meta> &ale::SdfModelPacked::get_offsets() {

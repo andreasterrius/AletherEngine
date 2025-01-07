@@ -40,8 +40,6 @@ public:
   std::filesystem::path path;
   bool gammaCorrection;
 
-  optional<unsigned int> shadowIndex;
-
   // constructor, expects a filepath to a 3D model.
   Model(string const &path, bool gamma = false);
 

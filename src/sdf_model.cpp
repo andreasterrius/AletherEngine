@@ -19,14 +19,12 @@
 using namespace ale;
 using afs = ale::FileSystem;
 
-SdfModel::SdfModel(Model &model, int cubeCount)
-    : cubeCount(cubeCount),
-      outerBB(model.meshes[0].boundingBox),
-      bb(model.meshes[0].boundingBox) {
+SdfModel::SdfModel(Mesh &mesh, int cubeCount)
+    : cubeCount(cubeCount), outerBB(mesh.boundingBox), bb(mesh.boundingBox) {
   // explode the bounding box a little bit
   Transform scaleBB{
       .scale = vec3(1.1, 1.1, 1.1),
-  };  // make it a bit bigger
+  }; // make it a bit bigger
   this->outerBB = this->outerBB.applyTransform(scaleBB);
 
   cubeSize = vec3((outerBB.max.x - outerBB.min.x) / cubeCount,
@@ -37,10 +35,10 @@ SdfModel::SdfModel(Model &model, int cubeCount)
 
   this->loopOverCubes([&](int k, int j, int i, BoundingBox bb) {
     vector<vec3> isectPoint;
-    for (int tri = 0; tri + 2 < model.meshes[0].indices.size(); tri += 3) {
-      Vertex a = model.meshes[0].vertices[model.meshes[0].indices[tri]];
-      Vertex b = model.meshes[0].vertices[model.meshes[0].indices[tri + 1]];
-      Vertex c = model.meshes[0].vertices[model.meshes[0].indices[tri + 2]];
+    for (int tri = 0; tri + 2 < mesh.indices.size(); tri += 3) {
+      Vertex a = mesh.vertices[mesh.indices[tri]];
+      Vertex b = mesh.vertices[mesh.indices[tri + 1]];
+      Vertex c = mesh.vertices[mesh.indices[tri + 2]];
 
       float tIsect;
       if (Util::rayTriangleIntersect(bb.center, normalize(vec3(0.0, 1.0, 0.0)),
@@ -93,14 +91,12 @@ SdfModel::SdfModel(Model &model, int cubeCount)
                               distances1D);
 }
 
-ale::SdfModel::SdfModel(Model &model, Texture3D texture3D, int cubeCount)
-    : texture3D(std::move(texture3D)),
-      cubeCount(cubeCount),
-      outerBB(model.meshes[0].boundingBox),
-      bb(model.meshes[0].boundingBox) {
+ale::SdfModel::SdfModel(Mesh &mesh, Texture3D texture3D, int cubeCount)
+    : texture3D(std::move(texture3D)), cubeCount(cubeCount),
+      outerBB(mesh.boundingBox), bb(mesh.boundingBox) {
   Transform scaleBB{
       .scale = vec3(1.1, 1.1, 1.1),
-  };  // make it a bit bigger
+  }; // make it a bit bigger
   this->outerBB = this->outerBB.applyTransform(scaleBB);
 
   cubeSize = vec3((outerBB.max.x - outerBB.min.x) / cubeCount,

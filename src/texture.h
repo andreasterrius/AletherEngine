@@ -14,12 +14,12 @@ using namespace std;
 using namespace glm;
 
 class TextureException final : public runtime_error {
- public:
+public:
   explicit TextureException(const string &msg) : runtime_error(msg) {}
 };
 
 class Texture {
- public:
+public:
   struct Meta {
     int width = 0;
     int height = 0;
@@ -42,9 +42,12 @@ class Texture {
   Texture(Texture &&other);
   Texture &operator=(Texture &&other);
 
-  void replaceData(vector<vector<vec4>> &colorData);
+  void replace_data(vector<vector<vec4>> &color_data);
 
-  void replaceData(vector<vec4> &flatColorData);
+  void replace_data(vector<vec4> &flat_color_data);
+
+  void partial_replace_data_f32(int xoffset, int yoffset, int width, int height,
+                                vector<float> &color_data);
 
   vector<float> retrieve_data_from_gpu();
 
@@ -52,7 +55,7 @@ class Texture {
 };
 
 class Texture3D {
- public:
+public:
   struct Meta {
     int width = 0;
     int height = 0;
@@ -85,7 +88,7 @@ class Texture3D {
 };
 
 class TextureRenderer {
- public:
+public:
   unsigned int vao, vbo, ebo;
   Shader shader;
 
@@ -101,4 +104,4 @@ class TextureRenderer {
   void render(Texture &texture);
 };
 
-#endif  // TEXTURE_H
+#endif // TEXTURE_H

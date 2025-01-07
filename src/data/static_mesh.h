@@ -13,29 +13,33 @@ using namespace std;
 
 namespace ale {
 
+// This class is safe to be copied.
 class StaticMesh {
 private:
   shared_ptr<Model> model;
 
   // shadow
   shared_ptr<SdfModelPacked> sdf_model_packed;
-  unsigned int sdf_model_packed_index;
+  vector<unsigned int> sdf_model_packed_index;
 
 public:
   StaticMesh(shared_ptr<Model> model,
              shared_ptr<SdfModelPacked> sdf_model_packed = nullptr,
-             unsigned int sdf_model_packed_index = 0);
+             vector<unsigned int> sdf_model_packed_index = {});
 
   shared_ptr<Model> get_model();
-  pair<shared_ptr<SdfModelPacked>, unsigned int> get_model_shadow();
+  pair<shared_ptr<SdfModelPacked>, vector<unsigned int>> get_model_shadow();
 };
 
-// class StaticMeshLoader {
-//   SDFGeneratorGPU sdf_generator_gpu;
-//
-// public:
-//   StaticMesh load_static_mesh(string path);
-// };
+class StaticMeshLoader {
+  SdfGeneratorGPU sdf_generator_gpu;
+  shared_ptr<SdfModelPacked> packed;
+
+public:
+  StaticMeshLoader();
+
+  StaticMesh load_static_mesh(string path);
+};
 
 }; // namespace ale
 

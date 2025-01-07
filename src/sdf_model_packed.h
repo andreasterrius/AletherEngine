@@ -60,7 +60,10 @@ public:
   SdfModelPacked &operator=(SdfModelPacked &&other);
 
   void bind_to_shader(Shader &shader,
-                      vector<pair<Transform, unsigned int>> &entries);
+                      // transform -> shadow mesh index
+                      vector<pair<Transform, vector<unsigned int>>> &entries);
+
+  unsigned int add(SdfModel &sdf_model);
 
   vector<Meta> &get_offsets();
   vector<Texture> &get_texture_atlas();

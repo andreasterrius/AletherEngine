@@ -13,10 +13,10 @@ namespace ale {
 const int DEBUG_TEXTURE_WIDTH = 1024;
 const int DEBUG_TEXTURE_HEIGHT = 1;
 
-class SDFGeneratorGPU {
+class SdfGeneratorGPU {
 public:
   // Passed as UBO
-  struct GPUBoundingBox {
+  struct GpuBoundingBox {
     vec4 inner_bb_min;
     vec4 inner_bb_max;
     vec4 outer_bb_min;
@@ -43,8 +43,8 @@ public:
 
   unordered_map<string, Texture> debug_result;
 
-  SDFGeneratorGPU();
-  ~SDFGeneratorGPU();
+  SdfGeneratorGPU();
+  ~SdfGeneratorGPU();
 
   void add_mesh(string name, Mesh &mesh, int width, int height, int depth);
 

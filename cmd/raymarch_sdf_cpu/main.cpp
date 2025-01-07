@@ -227,7 +227,7 @@ int main() {
   });
 
   // SdfModel robotSdf(robot, 4);
-  SdfModel trophySdf(*objects[1].model.get(), 32);
+  SdfModel trophySdf(*objects[1].model.get()->meshes[0], 32);
   auto size = trophySdf.outerBB.getSize();
   cout << size.x << " " << size.y << " " << size.z << endl;
 
@@ -289,7 +289,7 @@ int main() {
       vector<Ray> initialRays =
           shootRaymarchRay(wd.screenWidth, wd.screenHeight, camera);
       vector<vec4> color = raymarch(initialRays, trophySdf);
-      raymarchResult.replaceData(color);
+      raymarchResult.replace_data(color);
       std::cout << "Shooting raymarching rays done." << endl;
     }
     if (glfwGetKey(window.get(), GLFW_KEY_M) == GLFW_PRESS) {
@@ -368,7 +368,7 @@ int main() {
     colorShader.setVec3("viewPos", camera.Position);
     colorShader.setInt(
         "shadows",
-        shadows ? 1 : 0);  // enable/disable shadows by pressing 'SPACE'
+        shadows ? 1 : 0); // enable/disable shadows by pressing 'SPACE'
     colorShader.setFloat("far_plane", far_plane);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, woodTexture);
