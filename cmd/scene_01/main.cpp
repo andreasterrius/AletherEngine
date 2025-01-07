@@ -24,7 +24,7 @@ using afs = ale::FileSystem;
 int main() {
   glfwInit();
 
-  auto screen_size = ivec2(800, 600);
+  auto screen_size = ivec2(1200, 800);
   auto window = Window(screen_size.x, screen_size.y, "Scene 01");
   auto camera = Camera(ARCBALL, screen_size.x, screen_size.y,
                        glm::vec3(3.0f, 5.0f, -7.0f));
@@ -39,18 +39,6 @@ int main() {
 
   auto lights = vector<Light>{Light{vec3(5.0f, 5.0f, 5.0f)}};
   auto basic_renderer = BasicRenderer();
-
-  // auto monkey_model =
-  //     make_shared<Model>(afs::root("resources/models/monkey.obj"));
-  // auto floor_cube_model =
-  //     make_shared<Model>(afs::root("resources/models/floor_cube.obj"));
-  //
-  // auto monkey_sdf =
-  //     SdfModel(monkey_model->meshes[0], Texture3D::load("monkey64"), 64);
-  // auto unit_cube_sdf = SdfModel(floor_cube_model->meshes[0], 64);
-  //
-  // auto sdf_model_packed =
-  //     make_shared<SdfModelPacked>(vector{&monkey_sdf, &unit_cube_sdf});
 
   auto sm_loader = StaticMeshLoader();
   auto sm_monkey =
