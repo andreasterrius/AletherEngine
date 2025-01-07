@@ -39,6 +39,9 @@ Window::Window(int width, int height, string caption) {
   glfwSetCursorPosCallback(this->raw_window, cursor_pos_callback);
   glfwSetFramebufferSizeCallback(this->raw_window, framebuffer_size_callback);
   glfwSetScrollCallback(this->raw_window, scroll_callback);
+
+  this->imgui =
+      make_unique<ImguiIntegration>(this->raw_window, get_content_scale());
 }
 
 void Window::set_default_inputs(DefaultInputs default_inputs) {
@@ -68,6 +71,13 @@ void Window::swap_buffer_and_poll_inputs() {
 int Window::get_width() { return data.width; }
 
 int Window::get_height() { return data.height; }
+
+float Window::get_content_scale() {
+  float x = 0.0f;
+  float y = 0.0f;
+  glfwGetWindowContentScale((GLFWwindow *)raw_window, &x, &y);
+  return x;
+}
 
 void Window::attach_mouse_button_callback(
     const function<void(int, int, int)> &func) {
@@ -156,6 +166,18 @@ void ale::scroll_callback(GLFWwindow *window, double x_offset,
 
   if (d->scroll_callback != nullptr) {
     d->scroll_callback(x_offset, y_offset);
+  }
+}
+
+void Window::start_frame() {
+  if (imgui != nullptr) {
+    imgui->start_frame();
+  }
+}
+
+void Window::end_frame() {
+  if (imgui != nullptr) {
+    imgui->end_frame();
   }
 }
 

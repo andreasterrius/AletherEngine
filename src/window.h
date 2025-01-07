@@ -9,7 +9,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
+#include "renderer/ui/imgui_integration.h"
 #include <functional>
+#include <memory>
 #include <stdexcept>
 #include <string>
 
@@ -18,7 +20,7 @@ class GLFWwindow;
 
 namespace ale {
 class WindowException final : public runtime_error {
- public:
+public:
   explicit WindowException(const string &msg) : runtime_error(msg) {}
 };
 
@@ -35,9 +37,9 @@ struct Data {
 
   // Cursor Information
   bool is_cursor_enabled = true;
-  double cursor_last_x = 0.0, cursor_last_y = 0.0;  // exact coord on window
+  double cursor_last_x = 0.0, cursor_last_y = 0.0; // exact coord on window
   double cursor_offset_x = 0.0,
-         cursor_offset_y = 0.0;  // diff last x curr input
+         cursor_offset_y = 0.0; // diff last x curr input
 
   function<void(int, int, int)> mouse_button_callback = nullptr;
   function<void(double, double, double, double)> cursor_pos_callback = nullptr;
@@ -47,9 +49,12 @@ struct Data {
 
 class Window {
   GLFWwindow *raw_window = nullptr;
-  Data data;  // to be passed to callbacks as well.
+  unique_ptr<ImguiIntegration> imgui;
+  Data data; // to be passed to callbacks as well.
 
- public:
+  static bool first_window_init;
+
+public:
   Window(int width, int height, string caption);
 
   void set_default_inputs(DefaultInputs default_inputs);
@@ -64,6 +69,9 @@ class Window {
 
   int get_height();
 
+  // take x since x/y most likely be equal
+  float get_content_scale();
+
   // input callbacks
   void attach_mouse_button_callback(const function<void(int, int, int)> &func);
 
@@ -73,6 +81,10 @@ class Window {
   void attach_framebuffer_size_callback(const function<void(int, int)> &func);
 
   void attach_scroll_callback(const function<void(double, double)> &func);
+
+  void start_frame();
+
+  void end_frame();
 
   // TODO: Remove
   GLFWwindow *get() { return raw_window; }
@@ -93,6 +105,6 @@ void scroll_callback(GLFWwindow *window, double x_offset, double y_offset);
 void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id,
                               GLenum severity, GLsizei length,
                               const GLchar *message, const void *userParam);
-}  // namespace ale
+} // namespace ale
 
-#endif  // ALETHERENGINE_WINDOW_H
+#endif // ALETHERENGINE_WINDOW_H
