@@ -13,3 +13,6 @@
 [submodule "external/entt"]
 	path = external/entt
 	url = git@github.com:skypjack/entt.git
+[submodule "external/imgui"]
+	path = external/imgui
+	url = git@github.com:ocornut/imgui.git

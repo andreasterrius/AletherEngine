@@ -245,7 +245,7 @@ int main() {
   });
 
   // SdfModel robotSdf(robot, 4);
-  SdfModel trophySdf(*objects[1].model->meshes[0], 32);
+  SdfModel trophySdf(objects[1].model->meshes[0], 32);
   auto size = trophySdf.outerBB.getSize();
   cout << size.x << " " << size.y << " " << size.z << endl;
 

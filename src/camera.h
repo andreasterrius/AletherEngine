@@ -36,7 +36,7 @@ const float ZOOM = 45.0f;
 // An abstract camera class that processes input and calculates the
 // corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera {
- public:
+public:
   // camera Attributes
   glm::vec3 Position;
   glm::vec3 Front;
@@ -62,13 +62,9 @@ class Camera {
          glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
          glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW,
          float pitch = PITCH)
-      : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
-        MovementSpeed(SPEED),
-        MouseSensitivity(SENSITIVITY),
-        Zoom(ZOOM),
-        inputType(inputType),
-        Width(width),
-        Height(height) {
+      : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED),
+        MouseSensitivity(SENSITIVITY), Zoom(ZOOM), inputType(inputType),
+        Width(width), Height(height) {
     Position = position;
     WorldUp = up;
     Yaw = yaw;
@@ -79,11 +75,8 @@ class Camera {
   // constructor with scalar values
   Camera(float posX, float posY, float posZ, float upX, float upY, float upZ,
          float yaw, float pitch)
-      : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
-        MovementSpeed(SPEED),
-        MouseSensitivity(SENSITIVITY),
-        Zoom(ZOOM),
-        inputType(FPS) {
+      : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED),
+        MouseSensitivity(SENSITIVITY), Zoom(ZOOM), inputType(FPS) {
     Position = glm::vec3(posX, posY, posZ);
     WorldUp = glm::vec3(upX, upY, upZ);
     Yaw = yaw;
@@ -111,10 +104,14 @@ class Camera {
   void ProcessKeyboardFPS(Camera_Movement direction, float deltaTime) {
     if (this->inputType == FPS) {
       float velocity = MovementSpeed * deltaTime;
-      if (direction == FORWARD) Position += Front * velocity;
-      if (direction == BACKWARD) Position -= Front * velocity;
-      if (direction == LEFT) Position -= Right * velocity;
-      if (direction == RIGHT) Position += Right * velocity;
+      if (direction == FORWARD)
+        Position += Front * velocity;
+      if (direction == BACKWARD)
+        Position -= Front * velocity;
+      if (direction == LEFT)
+        Position -= Right * velocity;
+      if (direction == RIGHT)
+        Position += Right * velocity;
     }
   }
 
@@ -137,8 +134,10 @@ class Camera {
 
       // make sure that when pitch is out of bounds, screen doesn't get flipped
       if (constrainPitch) {
-        if (Pitch > 89.0f) Pitch = 89.0f;
-        if (Pitch < -89.0f) Pitch = -89.0f;
+        if (Pitch > 89.0f)
+          Pitch = 89.0f;
+        if (Pitch < -89.0f)
+          Pitch = -89.0f;
       }
     } else if (this->inputType == ARCBALL && this->arcballInput.ShouldOrbit) {
       glm::qua goUp = glm::angleAxis(glm::radians(yoffset), this->Right);
@@ -148,8 +147,8 @@ class Camera {
       glm::vec3 pivotToPosition =
           this->Position - this->arcballInput.ArcballTarget;
       this->Position = combined * pivotToPosition;
-      std::cout << Position.x << " " << Position.y << " " << Position.z
-                << std::endl;
+      // std::cout << Position.x << " " << Position.y << " " << Position.z
+      //           << std::endl;
     }
 
     // update Front, Right and Up Vectors using the updated Euler angles
@@ -168,7 +167,7 @@ class Camera {
     this->Position = this->Position - this->Front * yoffset;
   }
 
- private:
+private:
   // calculates the front vector from the Camera's (updated) Euler Angles
   void updateCameraVectors() {
     if (this->inputType == FPS) {
@@ -181,21 +180,21 @@ class Camera {
       // also re-calculate the Right and Up vector
       Right = glm::normalize(
           glm::cross(Front,
-                     WorldUp));  // normalize the vectors, because their length
-                                 // gets closer to 0 the more you look up or
-                                 // down which results in slower movement.
+                     WorldUp)); // normalize the vectors, because their length
+                                // gets closer to 0 the more you look up or
+                                // down which results in slower movement.
       Up = glm::normalize(glm::cross(Right, Front));
     } else if (this->inputType == ARCBALL) {
       this->Front =
           glm::normalize(this->arcballInput.ArcballTarget - this->Position);
       this->Right = glm::normalize(
           glm::cross(Front,
-                     WorldUp));  // normalize the vectors, because their length
-                                 // gets closer to 0 the more you look up or
-                                 // down which results in slower movement.
+                     WorldUp)); // normalize the vectors, because their length
+                                // gets closer to 0 the more you look up or
+                                // down which results in slower movement.
       this->Up = glm::normalize(glm::cross(Right, Front));
     }
   }
 };
-}  // namespace ale
+} // namespace ale
 #endif

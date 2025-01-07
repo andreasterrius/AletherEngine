@@ -16,6 +16,10 @@ add_subdirectory(external/glfw)
 add_subdirectory(external/glm)
 add_subdirectory(external/entt)
 
+## Imgui doesn't have it's own cmake
+## So I asked chatgpt to make me for this repo.
+add_subdirectory(external/imgui)
+
 #file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
 file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
 file(GLOB_RECURSE ENGINE_HEADER ./src/*.h)
@@ -41,7 +45,7 @@ function(create_exe name folder_name)
             external/glfw/include
             ${CMAKE_BINARY_DIR}/external/assimp/include
     )
-    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT)
+    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT imgui)
 endfunction()
 
 create_exe(AletherEngine editor)
