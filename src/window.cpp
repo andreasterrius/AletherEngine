@@ -68,6 +68,18 @@ void Window::swap_buffer_and_poll_inputs() {
   glfwPollEvents();
 }
 
+pair<int, int> Window::get_position() {
+  int x = 0, y = 0;
+  glfwGetWindowPos(raw_window, &x, &y);
+  return make_pair(x, y);
+}
+
+pair<int, int> Window::get_size() {
+  int x = 0, y = 0;
+  glfwGetWindowSize(raw_window, &x, &y);
+  return make_pair(x, y);
+}
+
 int Window::get_width() { return data.width; }
 
 int Window::get_height() { return data.height; }

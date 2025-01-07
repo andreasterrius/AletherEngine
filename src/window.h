@@ -65,6 +65,10 @@ public:
 
   void swap_buffer_and_poll_inputs();
 
+  pair<int, int> get_position();
+
+  pair<int, int> get_size();
+
   int get_width();
 
   int get_height();
