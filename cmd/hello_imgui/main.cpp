@@ -40,7 +40,6 @@ int main() {
       ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
-  AdjustImGuiForDPI(dpiScale);
 
   ImGui_ImplGlfw_InitForOpenGL(
       window.get(), true); // Second param install_callback=true will install
