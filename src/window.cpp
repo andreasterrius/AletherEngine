@@ -86,6 +86,12 @@ pair<int, int> Window::get_size() {
   glfwGetWindowSize(raw_window, &x, &y);
   return make_pair(x, y);
 }
+pair<double, double> Window::get_cursor_pos_from_top_left() {
+  auto [x, y] = get_cursor_pos();
+  int wx, wy;
+  glfwGetWindowPos(raw_window, &wx, &wy);
+  return make_pair(x + wx, y + wy);
+}
 
 pair<double, double> Window::get_cursor_pos() {
   double mouseX, mouseY;

@@ -10,6 +10,8 @@ namespace ale::ui {
 class SceneViewport {
 private:
   Framebuffer framebuffer;
+
+public:
   // Last known pos and size during draw
   ivec2 last_pos = ivec2();
   ivec2 last_size = ivec2();
@@ -25,6 +27,9 @@ public:
   void end_frame();
 
   void draw();
+
+  // returns <-1, -1> if the world_pos is outside the viewport window
+  ivec2 convert_to_local_pos(ivec2 world_pos);
 };
 } // namespace ale::ui
 

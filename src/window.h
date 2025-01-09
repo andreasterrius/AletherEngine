@@ -72,6 +72,8 @@ public:
 
   pair<int, int> get_size();
 
+  pair<double, double> get_cursor_pos_from_top_left();
+
   pair<double, double> get_cursor_pos();
 
   // take x since x/y most likely be equal

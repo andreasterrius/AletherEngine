@@ -8,6 +8,7 @@
 #include "src/gizmo/gizmo.h"
 #include "src/renderer/thumbnail_generator.h"
 #include "src/renderer/ui/content_browser.h"
+#include "src/renderer/ui/editor_root_layout.h"
 #include "src/renderer/ui/scene_viewport.h"
 #include "src/window.h"
 #include <glm/glm.hpp>
@@ -60,6 +61,7 @@ int main() {
       ui::ContentBrowser(sm_loader, afs::root("resources/content_browser"));
   auto scene_viewport_ui = ui::SceneViewport(
       ivec2(window.get_size().first, window.get_size().second));
+  auto editor_root_layout_ui = ui::EditorRootLayout{};
 
   // Attach event listeners here
   window.attach_cursor_pos_callback(
@@ -83,53 +85,17 @@ int main() {
     // Render Scene
     {
       scene_viewport_ui.start_frame();
-
       basic_renderer.render(camera, lights, world);
-
       scene_viewport_ui.end_frame();
     }
 
     // Render UI
     {
       window.start_ui_frame();
-
-      auto [x, y] = window.get_position();
-      auto [size_x, size_y] = window.get_size();
-      ImGui::SetNextWindowPos(ImVec2(x, y)); // always at the window origin
-      ImGui::SetNextWindowSize(ImVec2(size_x, size_y));
-      ImGuiWindowFlags windowFlags =
-          ImGuiWindowFlags_NoBringToFrontOnFocus | // we just want to use this
-                                                   // window as a host for the
-                                                   // menubar and docking
-          ImGuiWindowFlags_NoNavFocus | // so turn off everything that would
-                                        // make it act like a window
-          ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
-          ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar |
-          ImGuiWindowFlags_NoBackground; // we want our game content to show
-                                         // through this window, so turn off the
-                                         // background.
-
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
-                          ImVec2(0, 0)); // we don't want any padding for
-                                         // windows docked to this window frame
-      bool show_menubar =
-          (ImGui::Begin("Main", NULL, windowFlags)); // show the "window"
-      ImGui::PopStyleVar(); // restore the style so inner windows have fames
-
-      ImGui::DockSpace(ImGui::GetID("Dockspace"), ImVec2(0.0f, 0.0f),
-                       ImGuiDockNodeFlags_PassthruCentralNode);
-      if (show_menubar) {
-        // Do a menu bar with an exit menu
-        if (ImGui::BeginMenuBar()) {
-          if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("Exit"))
-              window.set_should_close(true);
-
-            ImGui::EndMenu();
-          }
-          ImGui::EndMenuBar();
-        }
+      auto events =
+          editor_root_layout_ui.start(window.get_position(), window.get_size());
+      if (events.is_exit_clicked) {
+        window.set_should_close(true);
       }
 
       // Show and handle content browser
@@ -143,10 +109,18 @@ int main() {
       // Show the scene
       scene_viewport_ui.draw();
 
-      ImGui::End();
-
+      editor_root_layout_ui.end();
       window.end_ui_frame();
     }
+
+    auto cursor_pos = window.get_cursor_pos_from_top_left();
+    auto local_cursor_pos = scene_viewport_ui.convert_to_local_pos(
+        ivec2(cursor_pos.first, cursor_pos.second));
+
+    // cout << cursor_pos.first << " " << cursor_pos.second << " | "
+    //      << scene_viewport_ui.last_pos.x << " " <<
+    //      scene_viewport_ui.last_pos.y
+    //      << " | " << local_cursor_pos.x << " " << local_cursor_pos.y << endl;
 
     window.swap_buffer_and_poll_inputs();
   }
