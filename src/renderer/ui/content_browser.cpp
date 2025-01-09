@@ -29,21 +29,37 @@ void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
         // generate thumbnail
         auto thumbnail = thumbnail_generator.generate(static_mesh);
 
-        entries.emplace(file_meta.full_path,
-                        ContentBrowserEntry{file_meta, thumbnail});
+        auto entry = Entry{};
+        entry.file_meta = file_meta;
+        entry.thumbnail = thumbnail;
+        entry.static_mesh = static_mesh;
+
+        entries.emplace(file_meta.full_path, entry);
       }
     }
   }
 }
 
-void ale::ui::ContentBrowser::draw() {
-  // TODO: for now we put the logic to get the stuff here.
+optional<ui::ContentBrowser::Entry>
+ui::ContentBrowser::draw_and_handle_clicks() {
+  optional<Entry> clicked = nullopt;
 
   ImGui::Begin("ContentBrowser");
   for (auto &[key, entry] : entries) {
+    if (ImGui::Selectable(("##cb-" + key).c_str(), false,
+                          ImGuiSelectableFlags_SpanAllColumns,
+                          ImVec2(0, 100))) {
+      clicked = entry;
+    }
+    ImGui::SameLine();
     ImGui::Image(entry.thumbnail->id, ImVec2(100, 100), ImVec2(0, 1),
                  ImVec2(1, 0));
+    ImGui::SameLine();
     ImGui::Text(entry.file_meta.file_name.c_str());
+
+    ImGui::Spacing();
   }
   ImGui::End();
+
+  return clicked;
 }

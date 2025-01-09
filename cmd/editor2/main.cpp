@@ -31,7 +31,6 @@ int main() {
 
   // Declare a basic scene
   auto basic_renderer = BasicRenderer();
-  auto texture_renderer = TextureRenderer();
   auto lights = vector{Light{vec3(5.0f, 5.0f, 5.0f)}};
   auto sm_loader = StaticMeshLoader();
   auto sm_monkey =
@@ -59,6 +58,21 @@ int main() {
       ui::ContentBrowser(sm_loader, afs::root("resources/content_browser"));
   auto framebuffer = Framebuffer(
       Framebuffer::Meta{window.get_size().first, window.get_size().second});
+
+  // Attach event listeners here
+  window.attach_cursor_pos_callback(
+      [&](double xpos, double ypos, double xoffset, double yoffset) {
+        camera.ProcessMouseMovement(xoffset, yoffset);
+      });
+  window.attach_scroll_callback([&](double xoffset, double yoffset) {
+    camera.ProcessMouseScroll(yoffset);
+  });
+  window.attach_key_callback([&](int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_LEFT_ALT && action == GLFW_PRESS)
+      camera.ProcessKeyboardArcball(true);
+    else if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE)
+      camera.ProcessKeyboardArcball(false);
+  });
 
   while (!window.should_close()) {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
@@ -116,15 +130,20 @@ int main() {
         }
       }
 
-      content_browser_ui.draw();
+      // Show and handle content browser
+      auto clicked = content_browser_ui.draw_and_handle_clicks();
+      if (clicked.has_value() && clicked->static_mesh.has_value()) {
+        const auto entity = world.create();
+        world.emplace<Transform>(entity, Transform{});
+        world.emplace<StaticMesh>(entity, *clicked->static_mesh);
+      }
 
+      // Show the scene
       {
         ImGui::Begin("Scene Viewport");
-
         ImVec2 window_size = ImGui::GetContentRegionAvail();
         ImGui::Image((GLuint)framebuffer.get_color_attachment0()->id,
                      window_size, ImVec2(0, 1), ImVec2(1, 0));
-
         ImGui::End();
       }
 

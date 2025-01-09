@@ -41,6 +41,7 @@ Window::Window(int width, int height, string caption) {
   glfwSetCursorPosCallback(this->raw_window, cursor_pos_callback);
   glfwSetFramebufferSizeCallback(this->raw_window, framebuffer_size_callback);
   glfwSetScrollCallback(this->raw_window, scroll_callback);
+  glfwSetKeyCallback(this->raw_window, key_callback);
 
   this->imgui =
       make_unique<ImguiIntegration>(this->raw_window, get_content_scale());
@@ -112,6 +113,10 @@ void Window::attach_scroll_callback(
     const function<void(double, double)> &func) {
   this->data.scroll_callback = func;
 }
+void Window::attach_key_callback(
+    const function<void(int, int, int, int)> &func) {
+  this->data.key_callback = func;
+}
 
 Window::~Window() { glfwDestroyWindow(raw_window); }
 
@@ -180,6 +185,14 @@ void ale::scroll_callback(GLFWwindow *window, double x_offset,
 
   if (d->scroll_callback != nullptr) {
     d->scroll_callback(x_offset, y_offset);
+  }
+}
+void ale::key_callback(GLFWwindow *window, int key, int scancode, int action,
+                       int mods) {
+  auto *d = (Data *)glfwGetWindowUserPointer(window);
+
+  if (d->key_callback != nullptr) {
+    d->key_callback(key, scancode, action, mods);
   }
 }
 

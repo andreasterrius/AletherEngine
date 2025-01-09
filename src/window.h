@@ -45,6 +45,7 @@ struct Data {
   function<void(double, double, double, double)> cursor_pos_callback = nullptr;
   function<void(int, int)> framebuffer_size_callback = nullptr;
   function<void(double, double)> scroll_callback = nullptr;
+  function<void(int, int, int, int)> key_callback = nullptr;
 };
 
 class Window {
@@ -84,6 +85,8 @@ public:
 
   void attach_scroll_callback(const function<void(double, double)> &func);
 
+  void attach_key_callback(const function<void(int, int, int, int)> &func);
+
   void start_ui_frame();
 
   void end_ui_frame();
@@ -103,6 +106,9 @@ void cursor_pos_callback(GLFWwindow *window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 void scroll_callback(GLFWwindow *window, double x_offset, double y_offset);
+
+void key_callback(GLFWwindow *window, int key, int scancode, int action,
+                  int mods);
 
 void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id,
                               GLenum severity, GLsizei length,

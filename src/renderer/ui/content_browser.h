@@ -19,22 +19,27 @@ namespace ale::ui {
 // But I am not sure how to refactor this right now
 class ContentBrowser {
 
-  struct ContentBrowserEntry {
+public:
+  struct Entry {
     FileMeta file_meta;
     shared_ptr<Texture> thumbnail;
+
+    // if file contains a static mesh;
+    optional<StaticMesh> static_mesh;
   };
 
+private:
   string browse_path;
   ThumbnailGenerator thumbnail_generator;
 
 public:
-  unordered_map<string, ContentBrowserEntry> entries; // temporary for debugging
+  unordered_map<string, Entry> entries; // temporary for debugging
   ContentBrowser(StaticMeshLoader &sm_loader,
                  string browse_path = afs::root("resources"));
 
   void refresh_files(StaticMeshLoader &sm_loader);
 
-  void draw();
+  optional<Entry> draw_and_handle_clicks();
 };
 } // namespace ale::ui
 
