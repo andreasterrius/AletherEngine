@@ -13,6 +13,8 @@ Window::Window(int width, int height, string caption) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+
 #ifdef __APPLE__
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
@@ -61,6 +63,10 @@ void Window::set_debug(bool flag) {
 
 bool Window::should_close() { return glfwWindowShouldClose(this->raw_window); }
 
+void Window::set_should_close(bool flag) {
+  glfwSetWindowShouldClose(raw_window, flag);
+}
+
 void Window::swap_buffer_and_poll_inputs() {
   // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
   // etc.)
@@ -79,10 +85,6 @@ pair<int, int> Window::get_size() {
   glfwGetWindowSize(raw_window, &x, &y);
   return make_pair(x, y);
 }
-
-int Window::get_width() { return data.width; }
-
-int Window::get_height() { return data.height; }
 
 float Window::get_content_scale() {
   float x = 0.0f;

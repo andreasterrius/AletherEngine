@@ -63,15 +63,13 @@ public:
 
   bool should_close();
 
+  void set_should_close(bool flag);
+
   void swap_buffer_and_poll_inputs();
 
   pair<int, int> get_position();
 
   pair<int, int> get_size();
-
-  int get_width();
-
-  int get_height();
 
   // take x since x/y most likely be equal
   float get_content_scale();

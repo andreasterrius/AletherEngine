@@ -7,14 +7,23 @@
 
 #include "config.h"
 #include <string>
+#include <vector>
 
 using namespace std;
 
 namespace ale {
+struct FileMeta {
+  string full_path;
+  string file_name;
+  string extension;
+  unsigned int size;
+};
 
 class FileSystem {
 public:
   static string root(const string &path);
+
+  static vector<FileMeta> list(const string &path);
 };
 
 } // namespace ale
