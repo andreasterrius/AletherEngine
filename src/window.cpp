@@ -183,13 +183,13 @@ void ale::scroll_callback(GLFWwindow *window, double x_offset,
   }
 }
 
-void Window::start_frame() {
+void Window::start_ui_frame() {
   if (imgui != nullptr) {
     imgui->start_frame();
   }
 }
 
-void Window::end_frame() {
+void Window::end_ui_frame() {
   if (imgui != nullptr) {
     imgui->end_frame();
   }

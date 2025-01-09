@@ -54,9 +54,11 @@ int main() {
   }
 
   // Declare UI related
-  auto content_browser_ui = ui::ContentBrowser();
+  auto content_browser_ui =
+      ui::ContentBrowser(afs::root("resources/content_browser"));
   auto framebuffer = Framebuffer(
       Framebuffer::Meta{window.get_size().first, window.get_size().second});
+  auto thumbnail_generator = ThumbnailGenerator();
 
   while (!window.should_close()) {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
@@ -64,18 +66,16 @@ int main() {
 
     // Render Scene
     {
-      framebuffer.start_frame();
+      // framebuffer.start_frame();
 
       basic_renderer.render(camera, lights, world);
 
-      framebuffer.end_frame();
+      // framebuffer.end_frame();
     }
 
     // Render UI
     {
-      window.start_frame();
-
-      ImGui::ShowDemoWindow();
+      window.start_ui_frame();
 
       auto [x, y] = window.get_position();
       auto [size_x, size_y] = window.get_size();
@@ -130,7 +130,7 @@ int main() {
 
       ImGui::End();
 
-      window.end_frame();
+      window.end_ui_frame();
     }
 
     window.swap_buffer_and_poll_inputs();

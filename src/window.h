@@ -84,9 +84,9 @@ public:
 
   void attach_scroll_callback(const function<void(double, double)> &func);
 
-  void start_frame();
+  void start_ui_frame();
 
-  void end_frame();
+  void end_ui_frame();
 
   // TODO: Remove
   GLFWwindow *get() { return raw_window; }

@@ -59,11 +59,16 @@ void ale::Framebuffer::start_frame() {
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
 }
 
-void ale::Framebuffer::end_frame() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
+void ale::Framebuffer::end_frame() {
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glViewport(0, 0, start_frame_width, start_frame_height);
+}
 
 shared_ptr<Texture> ale::Framebuffer::get_color_attachment0() {
   return color_attachment0;
 }
+
+ivec2 ale::Framebuffer::get_size() { return ivec2(meta.width, meta.height); }
 
 ale::Framebuffer::~Framebuffer() {
   glDeleteRenderbuffers(1, &depth_renderbuffer_id);

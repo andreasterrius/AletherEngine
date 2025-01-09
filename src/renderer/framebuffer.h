@@ -45,6 +45,8 @@ public:
 
   shared_ptr<Texture> get_color_attachment0();
 
+  ivec2 get_size();
+
 public:
   ~Framebuffer();
 
