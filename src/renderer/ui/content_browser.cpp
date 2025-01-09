@@ -11,20 +11,20 @@
 
 using namespace ale;
 
-ui::ContentBrowser::ContentBrowser(string browse_path)
+ui::ContentBrowser::ContentBrowser(StaticMeshLoader &sm_loader,
+                                   string browse_path)
     : browse_path(browse_path) {
-  refresh_files();
+  refresh_files(sm_loader);
 }
 
-void ui::ContentBrowser::refresh_files() {
+void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
   auto file_metas = afs::list(browse_path);
   for (auto &file_meta : file_metas) {
     if (entries.find(file_meta.full_path) == entries.end()) {
       // STATIC MESH
       if (file_meta.extension == ".obj") {
         // load static_mesh
-        auto static_mesh =
-            static_mesh_loader.load_static_mesh(file_meta.full_path);
+        auto static_mesh = sm_loader.load_static_mesh(file_meta.full_path);
 
         // generate thumbnail
         auto thumbnail = thumbnail_generator.generate(static_mesh);

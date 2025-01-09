@@ -24,16 +24,16 @@ ale::Framebuffer::Framebuffer(Meta meta) : meta(meta) {
 
   glGenRenderbuffers(1, &depth_renderbuffer_id);
   glBindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_id);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, meta.width,
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, meta.width,
                         meta.height);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
                             GL_RENDERBUFFER, depth_renderbuffer_id);
 
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     throw FramebufferException("framebuffer is not complete");
   }
 
-  glBindRenderbuffer(GL_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 shared_ptr<Texture> ale::Framebuffer::create_new_color_attachment0() {
@@ -56,6 +56,7 @@ void ale::Framebuffer::start_frame() {
   glGetIntegerv(GL_VIEWPORT, viewport);
   start_frame_width = viewport[2];
   start_frame_height = viewport[3];
+  glViewport(0, 0, this->meta.width, this->meta.height);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
 }
 
@@ -78,8 +79,9 @@ ale::Framebuffer::~Framebuffer() {
 ale::Framebuffer::Framebuffer(Framebuffer &&other) noexcept
     : framebuffer_id{other.framebuffer_id},
       depth_renderbuffer_id{other.depth_renderbuffer_id},
-      meta{std::move(other.meta)},
-      color_attachment0{std::move(other.color_attachment0)} {
+      color_attachment0{std::move(other.color_attachment0)}, meta(other.meta),
+      start_frame_width(other.start_frame_width),
+      start_frame_height(other.start_frame_height) {
   other.framebuffer_id = 0;
   other.depth_renderbuffer_id = 0;
 }
@@ -90,6 +92,8 @@ ale::Framebuffer &ale::Framebuffer::operator=(Framebuffer &&other) noexcept {
     swap(this->depth_renderbuffer_id, other.depth_renderbuffer_id);
     swap(this->meta, other.meta);
     swap(this->framebuffer_id, other.framebuffer_id);
+    swap(this->start_frame_width, other.start_frame_width);
+    swap(this->start_frame_height, other.start_frame_height);
   }
 
   return *this;

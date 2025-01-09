@@ -14,6 +14,7 @@ ThumbnailGenerator::ThumbnailGenerator(int thumbnail_width,
 shared_ptr<Texture> ThumbnailGenerator::generate(StaticMesh static_mesh) {
   {
     framebuffer.start_frame();
+
     auto lights = vector{Light{vec3(5.0f, 5.0f, 5.0f)}};
     auto camera =
         Camera(ARCBALL, framebuffer.get_size().x, framebuffer.get_size().y,
@@ -29,8 +30,6 @@ shared_ptr<Texture> ThumbnailGenerator::generate(StaticMesh static_mesh) {
 
     framebuffer.end_frame();
   }
-  auto prev = this->framebuffer.get_color_attachment0();
-  this->framebuffer.create_new_color_attachment0();
-  return prev;
+  return this->framebuffer.create_new_color_attachment0();
 }
 } // namespace ale

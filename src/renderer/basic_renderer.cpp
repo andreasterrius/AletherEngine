@@ -14,6 +14,10 @@ BasicRenderer::BasicRenderer()
 
 void BasicRenderer::render(Camera &camera, vector<Light> &lights,
                            entt::registry &world) {
+
+  glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   basicShader.use();
   basicShader.setMat4("projection", camera.GetProjectionMatrix());
   basicShader.setMat4("view", camera.GetViewMatrix());
@@ -48,7 +52,7 @@ void BasicRenderer::render(Camera &camera, vector<Light> &lights,
   auto view = world.view<Transform, StaticMesh>();
   for (auto [entity, transform, static_mesh] : view.each()) {
     basicShader.setMat4("model", transform.getModelMatrix());
-    basicShader.setVec4("diffuseColor", vec4(1.0, 1.0, 0.0, 0.0));
+    basicShader.setVec4("diffuseColor", vec4(1.0, 1.0, 1.0, 0.0));
     static_mesh.get_model()->draw(basicShader);
   }
 }

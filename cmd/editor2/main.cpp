@@ -31,6 +31,7 @@ int main() {
 
   // Declare a basic scene
   auto basic_renderer = BasicRenderer();
+  auto texture_renderer = TextureRenderer();
   auto lights = vector{Light{vec3(5.0f, 5.0f, 5.0f)}};
   auto sm_loader = StaticMeshLoader();
   auto sm_monkey =
@@ -55,10 +56,9 @@ int main() {
 
   // Declare UI related
   auto content_browser_ui =
-      ui::ContentBrowser(afs::root("resources/content_browser"));
+      ui::ContentBrowser(sm_loader, afs::root("resources/content_browser"));
   auto framebuffer = Framebuffer(
       Framebuffer::Meta{window.get_size().first, window.get_size().second});
-  auto thumbnail_generator = ThumbnailGenerator();
 
   while (!window.should_close()) {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
@@ -66,11 +66,11 @@ int main() {
 
     // Render Scene
     {
-      // framebuffer.start_frame();
+      framebuffer.start_frame();
 
       basic_renderer.render(camera, lights, world);
 
-      // framebuffer.end_frame();
+      framebuffer.end_frame();
     }
 
     // Render UI

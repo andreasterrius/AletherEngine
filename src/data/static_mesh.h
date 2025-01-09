@@ -33,7 +33,7 @@ public:
 
 class StaticMeshLoader {
   SdfGeneratorGPU sdf_generator_gpu;
-  shared_ptr<SdfModelPacked> packed;
+  shared_ptr<SdfModelPacked> packed; // OWNING pointer
 
 public:
   StaticMeshLoader();

@@ -25,14 +25,14 @@ class ContentBrowser {
   };
 
   string browse_path;
-  unordered_map<string, ContentBrowserEntry> entries;
   ThumbnailGenerator thumbnail_generator;
-  StaticMeshLoader static_mesh_loader;
 
 public:
-  ContentBrowser(string browse_path = afs::root("resources"));
+  unordered_map<string, ContentBrowserEntry> entries; // temporary for debugging
+  ContentBrowser(StaticMeshLoader &sm_loader,
+                 string browse_path = afs::root("resources"));
 
-  void refresh_files();
+  void refresh_files(StaticMeshLoader &sm_loader);
 
   void draw();
 };
