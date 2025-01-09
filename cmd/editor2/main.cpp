@@ -5,8 +5,10 @@
 
 #include "src/data/static_mesh.h"
 #include "src/file_system.h"
+#include "src/gizmo/gizmo.h"
 #include "src/renderer/thumbnail_generator.h"
 #include "src/renderer/ui/content_browser.h"
+#include "src/renderer/ui/scene_viewport.h"
 #include "src/window.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -28,10 +30,10 @@ int main() {
   auto window = Window(1280, 800, "Editor 2");
   auto camera = Camera(ARCBALL, window.get_size().first,
                        window.get_size().second, glm::vec3(3.0f, 5.0f, -7.0f));
+  auto lights = vector{Light{vec3(5.0f, 5.0f, 5.0f)}};
 
   // Declare a basic scene
   auto basic_renderer = BasicRenderer();
-  auto lights = vector{Light{vec3(5.0f, 5.0f, 5.0f)}};
   auto sm_loader = StaticMeshLoader();
   auto sm_monkey =
       sm_loader.load_static_mesh(afs::root("resources/models/monkey.obj"));
@@ -56,8 +58,8 @@ int main() {
   // Declare UI related
   auto content_browser_ui =
       ui::ContentBrowser(sm_loader, afs::root("resources/content_browser"));
-  auto framebuffer = Framebuffer(
-      Framebuffer::Meta{window.get_size().first, window.get_size().second});
+  auto scene_viewport_ui = ui::SceneViewport(
+      ivec2(window.get_size().first, window.get_size().second));
 
   // Attach event listeners here
   window.attach_cursor_pos_callback(
@@ -80,11 +82,11 @@ int main() {
 
     // Render Scene
     {
-      framebuffer.start_frame();
+      scene_viewport_ui.start_frame();
 
       basic_renderer.render(camera, lights, world);
 
-      framebuffer.end_frame();
+      scene_viewport_ui.end_frame();
     }
 
     // Render UI
@@ -139,13 +141,7 @@ int main() {
       }
 
       // Show the scene
-      {
-        ImGui::Begin("Scene Viewport");
-        ImVec2 window_size = ImGui::GetContentRegionAvail();
-        ImGui::Image((GLuint)framebuffer.get_color_attachment0()->id,
-                     window_size, ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::End();
-      }
+      scene_viewport_ui.draw();
 
       ImGui::End();
 

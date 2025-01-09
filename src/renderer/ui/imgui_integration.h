@@ -4,7 +4,6 @@
 
 #ifndef IMGUI_INTEGRATION_H
 #define IMGUI_INTEGRATION_H
-#include <utility>
 
 struct GLFWwindow;
 

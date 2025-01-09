@@ -3,8 +3,7 @@
 //
 
 #include "content_browser.h"
-
-#include "src/renderer/thumbnail_generator.h"
+#include "../thumbnail_generator.h"
 
 #include <imgui.h>
 #include <vector>

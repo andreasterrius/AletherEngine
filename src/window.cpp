@@ -87,6 +87,12 @@ pair<int, int> Window::get_size() {
   return make_pair(x, y);
 }
 
+pair<double, double> Window::get_cursor_pos() {
+  double mouseX, mouseY;
+  glfwGetCursorPos(raw_window, &mouseX, &mouseY);
+  return make_pair(mouseX, mouseY);
+}
+
 float Window::get_content_scale() {
   float x = 0.0f;
   float y = 0.0f;
