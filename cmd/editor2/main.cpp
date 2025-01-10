@@ -113,17 +113,14 @@ int main() {
       auto [wx, wy] = window.get_size();
       mouse_ray = getMouseRay(logical_cursor_pos, camera.GetProjectionMatrix(),
                               camera.GetViewMatrix());
-
-      // cout << cursor_pos.first << " " << cursor_pos.second << " | "
-      //      << scene_viewport_ui.last_pos.x << " "
-      //      << scene_viewport_ui.last_pos.y << " | " << logical_cursor_pos.x
-      //      << " " << logical_cursor_pos.y << endl;
     }
   });
 
   while (!window.should_close()) {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    gizmo.tryHold();
 
     // Render Scene
     {

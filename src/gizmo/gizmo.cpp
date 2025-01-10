@@ -46,7 +46,7 @@ ale::Gizmo::Gizmo()
       afs::root("resources/gizmo/Ring_YZ.glb")); // Ring_YZ
 }
 
-bool Gizmo::tryHold(Transform *objTransform, Ray ray, Camera camera) {
+bool Gizmo::try_hold(Transform *objTransform, Ray ray, Camera camera) {
   // There's no currently active selected object
   if (objTransform == NULL) {
     this->isHidden = true;
@@ -73,14 +73,14 @@ bool Gizmo::tryHold(Transform *objTransform, Ray ray, Camera camera) {
   if (!this->initialClickInfo.exist) {
     // This is initial click on arrow/plane in gizmo, let's save the initial
     // clickInfo
-    optional<Gizmo_GrabAxis> grabAxisOpt = this->grabAxis(ray);
+    optional<Gizmo_GrabAxis> grabAxisOpt = this->grab_axis(ray);
     if (!grabAxisOpt.has_value()) { // no arrows were clicked
       return false;
     }
     auto grabAxis = grabAxisOpt.value();
 
     // Get a ray to plane intersection.
-    optional<vec3> rayPlaneHit = this->rayPlaneIntersection(
+    optional<vec3> rayPlaneHit = this->ray_plane_intersection(
         ray, grabAxis.activeAxis, this->transform.translation);
     if (!rayPlaneHit.has_value()) {
       return false;
@@ -98,14 +98,14 @@ bool Gizmo::tryHold(Transform *objTransform, Ray ray, Camera camera) {
   }
 
   // This is no longer initial hit, but is a dragging movement
-  optional<vec3> rayPlaneHit = this->rayPlaneIntersection(
+  optional<vec3> rayPlaneHit = this->ray_plane_intersection(
       ray, this->initialClickInfo.activeAxis, this->transform.translation);
 
   // Ignore ray-plane parallel cases
   if (rayPlaneHit.has_value()) {
     if (this->gizmoType == Translate) {
-      vec3 newPos = this->handleTranslate(this->initialClickInfo.activeAxis,
-                                          rayPlaneHit.value());
+      vec3 newPos = this->handle_translate(this->initialClickInfo.activeAxis,
+                                           rayPlaneHit.value());
       this->transform.translation = newPos;
       objTransform->translation = newPos;
     } else if (this->gizmoType == Scale) {
@@ -152,7 +152,7 @@ void Gizmo::scaleAll() {
   // MatrixScale(this->scale, this->scale, this->scale);
 }
 
-optional<Gizmo_GrabAxis> Gizmo::grabAxis(Ray ray) {
+optional<Gizmo_GrabAxis> Gizmo::grab_axis(Ray ray) {
 
   if (this->gizmoType == Translate || this->gizmoType == Scale) {
     auto coll =
@@ -216,8 +216,9 @@ optional<Gizmo_GrabAxis> Gizmo::grabAxis(Ray ray) {
   return nullopt;
 }
 
-optional<vec3> Gizmo::rayPlaneIntersection(Ray ray, Gizmo_ActiveAxis activeAxis,
-                                           vec3 planeCoord) {
+optional<vec3> Gizmo::ray_plane_intersection(Ray ray,
+                                             Gizmo_ActiveAxis activeAxis,
+                                             vec3 planeCoord) {
 
   vec3 activeAxisDir;
   float t = 0.0f;
@@ -291,8 +292,8 @@ void Gizmo::render(Camera camera, vec3 lightPos, vec2 screenSize) {
   }
 }
 
-vec3 Gizmo::handleTranslate(Gizmo_ActiveAxis activeAxis,
-                            vec3 rayPlaneHitPoint) {
+vec3 Gizmo::handle_translate(Gizmo_ActiveAxis activeAxis,
+                             vec3 rayPlaneHitPoint) {
   vec3 initialRayPos = vec3();
   if (activeAxis == X) {
     initialRayPos.x = this->initialClickInfo.firstRayPlaneHitPos.x -

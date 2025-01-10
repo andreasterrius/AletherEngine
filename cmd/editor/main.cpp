@@ -531,7 +531,7 @@ void pickupObject(GLFWwindow *window, WindowData wd,
           camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight),
           camera.GetViewMatrix());
       clickedSomething =
-          gizmo.tryHold(&selectedObject->transform, mouseRay, camera);
+          gizmo.try_hold(&selectedObject->transform, mouseRay, camera);
       lastRay = mouseRay;
     }
 

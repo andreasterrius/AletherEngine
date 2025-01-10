@@ -77,7 +77,7 @@ public:
   /// This usually happens when user press and holding left click (handled by
   /// caller) This function is paired with release() Return bool if it's holding
   /// something
-  bool tryHold(Transform *transform, Ray mouseRay, Camera camera);
+  bool try_hold(Transform *transform, Ray mouseRay, Camera camera);
 
   void release();
 
@@ -88,17 +88,17 @@ public:
 private:
   void scaleAll();
 
-  optional<Gizmo_GrabAxis> grabAxis(Ray ray);
+  optional<Gizmo_GrabAxis> grab_axis(Ray ray);
 
   /// This returns the hit point position of ONLY the activeAxis (all else will
   /// be 0)
-  optional<vec3> rayPlaneIntersection(Ray ray, Gizmo_ActiveAxis activeAxis,
-                                      vec3 planeCoord);
+  optional<vec3> ray_plane_intersection(Ray ray, Gizmo_ActiveAxis activeAxis,
+                                        vec3 planeCoord);
 
   /// This will return the new position (not the delta)
   /// I want it to snap to the where the mouse ray is intersecting the
   /// activeAxis
-  vec3 handleTranslate(Gizmo_ActiveAxis activeAxis, vec3 rayPlaneHitPoint);
+  vec3 handle_translate(Gizmo_ActiveAxis activeAxis, vec3 rayPlaneHitPoint);
 
   /// Unlike translation, this will return the delta instead
   // static void GizmoGetRayplaneHitPosDelta(AleGizmo *self, AleGizmo_ActiveAxis
@@ -108,17 +108,17 @@ private:
   ////    if (activeAxis == XY) {
   ////        initialRayPos.x =
   ////                self->initialClickInfo.firstRayPlaneHitPos.x -
-  ///self->initialClickInfo.initialSelfPos.x; /        initialRayPos.y = /
-  ///self->initialClickInfo.firstRayPlaneHitPos.y -
-  ///self->initialClickInfo.initialSelfPos.y; /    } else if (activeAxis == YZ)
+  /// self->initialClickInfo.initialSelfPos.x; /        initialRayPos.y = /
+  /// self->initialClickInfo.firstRayPlaneHitPos.y -
+  /// self->initialClickInfo.initialSelfPos.y; /    } else if (activeAxis == YZ)
   ///{ /        initialRayPos.z = / self->initialClickInfo.firstRayPlaneHitPos.z
   ///- self->initialClickInfo.initialSelfPos.z; /        initialRayPos.y = /
-  ///self->initialClickInfo.firstRayPlaneHitPos.y -
-  ///self->initialClickInfo.initialSelfPos.y; /    } else if (activeAxis == XZ)
+  /// self->initialClickInfo.firstRayPlaneHitPos.y -
+  /// self->initialClickInfo.initialSelfPos.y; /    } else if (activeAxis == XZ)
   ///{ /        initialRayPos.x = / self->initialClickInfo.firstRayPlaneHitPos.x
   ///- self->initialClickInfo.initialSelfPos.x; /        initialRayPos.z = /
-  ///self->initialClickInfo.firstRayPlaneHitPos.z -
-  ///self->initialClickInfo.initialSelfPos.z; /    }
+  /// self->initialClickInfo.firstRayPlaneHitPos.z -
+  /// self->initialClickInfo.initialSelfPos.z; /    }
   //}
 };
 } // namespace ale
