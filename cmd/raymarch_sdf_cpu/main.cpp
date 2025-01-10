@@ -390,9 +390,9 @@ int main() {
       }
     });
     for (auto &r : rays) {
-      lineRenderer.queueLine(r, WHITE);
+      lineRenderer.queue_line(r, WHITE);
     }
-    lineRenderer.queueLine(raymarchDebugRay, WHITE);
+    lineRenderer.queue_line(raymarchDebugRay, WHITE);
     // int i = 0;
     // vec3 colors[3] = {vec3(1.0,0.0,0.0), vec3(0.0, 1.0, 0.0), vec3(0.0,
     // 0.0, 1.0)}; for (auto &p : trophySdf.isectPoints) {
@@ -407,7 +407,7 @@ int main() {
     // }
 
     for (auto &hitPos : raymarchDebugHitPos) {
-      lineRenderer.queueUnitCube(Transform{
+      lineRenderer.queue_unit_cube(Transform{
           .translation = hitPos,
           // .scale = vec3(0.3f)
       });

@@ -29,7 +29,11 @@ public:
   void draw();
 
   // returns <-1, -1> if the world_pos is outside the viewport window
-  ivec2 convert_to_local_pos(ivec2 world_pos);
+  ivec2 convert_to_viewport_pos(ivec2 world_pos);
+
+  ivec2 convert_to_framebuffer_pos(ivec2 world_pos);
+
+  vec2 convert_to_logical_pos(ivec2 world_pos);
 };
 } // namespace ale::ui
 

@@ -6,6 +6,7 @@
 #include "src/data/static_mesh.h"
 #include "src/file_system.h"
 #include "src/gizmo/gizmo.h"
+#include "src/renderer/line_renderer.h"
 #include "src/renderer/thumbnail_generator.h"
 #include "src/renderer/ui/content_browser.h"
 #include "src/renderer/ui/editor_root_layout.h"
@@ -25,6 +26,28 @@ using namespace ale;
 using namespace glm;
 using afs = ale::FileSystem;
 
+Ray getMouseRay(vec2 logical_pos, mat4 projMat, mat4 viewMat) {
+  vec4 rayStartNdc =
+      vec4((logical_pos.x * 2) - 1, (logical_pos.y * 2) - 1, -1.0f, 1.0f);
+  vec4 rayEndNdc =
+      vec4((logical_pos.x * 2) - 1, (logical_pos.y * 2) - 1, 0.0f, 1.0f);
+
+  // not sure why this has to be inverted.
+  rayStartNdc.y *= -1;
+  rayEndNdc.y *= -1;
+
+  mat4 invViewProj = inverse(projMat * viewMat);
+  vec4 rayStartWorld = invViewProj * rayStartNdc;
+  vec4 rayEndWorld = invViewProj * rayEndNdc;
+
+  rayStartWorld /= rayStartWorld.w;
+  rayEndWorld /= rayEndWorld.w;
+
+  Ray r(rayStartWorld, normalize(rayEndWorld - rayStartWorld));
+
+  return r;
+}
+
 int main() {
   glfwInit();
 
@@ -35,11 +58,14 @@ int main() {
 
   // Declare a basic scene
   auto basic_renderer = BasicRenderer();
+  auto line_renderer = LineRenderer();
+
   auto sm_loader = StaticMeshLoader();
   auto sm_monkey =
       sm_loader.load_static_mesh(afs::root("resources/models/monkey.obj"));
   auto sm_floor =
       sm_loader.load_static_mesh(afs::root("resources/models/floor_cube.obj"));
+  auto gizmo = Gizmo();
 
   // Create world
   auto world = entt::registry{};
@@ -63,6 +89,9 @@ int main() {
       ivec2(window.get_size().first, window.get_size().second));
   auto editor_root_layout_ui = ui::EditorRootLayout{};
 
+  // Mouse
+  auto mouse_ray = Ray(vec3(), vec3(0.0, 0.0, 1.0));
+
   // Attach event listeners here
   window.attach_cursor_pos_callback(
       [&](double xpos, double ypos, double xoffset, double yoffset) {
@@ -76,6 +105,20 @@ int main() {
       camera.ProcessKeyboardArcball(true);
     else if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE)
       camera.ProcessKeyboardArcball(false);
+
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+      auto cursor_pos = window.get_cursor_pos_from_top_left();
+      auto logical_cursor_pos = scene_viewport_ui.convert_to_logical_pos(
+          ivec2(cursor_pos.first, cursor_pos.second));
+      auto [wx, wy] = window.get_size();
+      mouse_ray = getMouseRay(logical_cursor_pos, camera.GetProjectionMatrix(),
+                              camera.GetViewMatrix());
+
+      // cout << cursor_pos.first << " " << cursor_pos.second << " | "
+      //      << scene_viewport_ui.last_pos.x << " "
+      //      << scene_viewport_ui.last_pos.y << " | " << logical_cursor_pos.x
+      //      << " " << logical_cursor_pos.y << endl;
+    }
   });
 
   while (!window.should_close()) {
@@ -86,12 +129,17 @@ int main() {
     {
       scene_viewport_ui.start_frame();
       basic_renderer.render(camera, lights, world);
+
+      line_renderer.queue_line(mouse_ray, WHITE);
+      line_renderer.render(camera.GetProjectionMatrix(),
+                           camera.GetViewMatrix());
       scene_viewport_ui.end_frame();
     }
 
     // Render UI
     {
       window.start_ui_frame();
+
       auto events =
           editor_root_layout_ui.start(window.get_position(), window.get_size());
       if (events.is_exit_clicked) {
@@ -112,15 +160,6 @@ int main() {
       editor_root_layout_ui.end();
       window.end_ui_frame();
     }
-
-    auto cursor_pos = window.get_cursor_pos_from_top_left();
-    auto local_cursor_pos = scene_viewport_ui.convert_to_local_pos(
-        ivec2(cursor_pos.first, cursor_pos.second));
-
-    // cout << cursor_pos.first << " " << cursor_pos.second << " | "
-    //      << scene_viewport_ui.last_pos.x << " " <<
-    //      scene_viewport_ui.last_pos.y
-    //      << " | " << local_cursor_pos.x << " " << local_cursor_pos.y << endl;
 
     window.swap_buffer_and_poll_inputs();
   }

@@ -372,18 +372,18 @@ int main() {
 
     gizmo.render(camera, lightPos, vec2(wd.screenWidth, wd.screenHeight));
 
-    lineRenderer.queueBox(objects[1].transform,
-                          objects[1].model->meshes[0].boundingBox);
+    lineRenderer.queue_box(objects[1].transform,
+                           objects[1].model->meshes[0].boundingBox);
     // trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
     //     lineRenderer.queueBox(Transform{}, bb);
     // });
     for (auto &r : rays) {
-      lineRenderer.queueLine(r, WHITE);
+      lineRenderer.queue_line(r, WHITE);
     }
-    lineRenderer.queueLine(raymarchDebugRay, WHITE);
+    lineRenderer.queue_line(raymarchDebugRay, WHITE);
 
     for (auto &hitPos : raymarchDebugHitPos) {
-      lineRenderer.queueUnitCube(Transform{
+      lineRenderer.queue_unit_cube(Transform{
           .translation = hitPos,
           // .scale = vec3(0.3f)
       });

@@ -103,11 +103,11 @@ LineRenderer::LineRenderer()
   glBindVertexArray(0);
 }
 
-void LineRenderer::queueLine(Ray &ray, vec3 color) {
-  this->queueLine(ray.origin, ray.dir * vec3(1000), color);
+void LineRenderer::queue_line(Ray &ray, vec3 color) {
+  this->queue_line(ray.origin, ray.dir * vec3(1000), color);
 }
 
-void LineRenderer::queueLine(vec3 start, vec3 end, vec3 color) {
+void LineRenderer::queue_line(vec3 start, vec3 end, vec3 color) {
   this->lineData.emplace_back(Data{start, color});
   this->lineData.emplace_back(Data{end, color});
 }
@@ -155,7 +155,7 @@ void LineRenderer::render(mat4 projection, mat4 view) {
   }
 }
 
-void LineRenderer::queueBox(Transform transform, BoundingBox bb, vec3 color) {
+void LineRenderer::queue_box(Transform transform, BoundingBox bb, vec3 color) {
   BoundingBox bbT = bb;
   bbT.min = transform.getModelMatrix() * vec4(bb.min, 1.0);
   bbT.max = transform.getModelMatrix() * vec4(bb.max, 1.0);
@@ -164,7 +164,7 @@ void LineRenderer::queueBox(Transform transform, BoundingBox bb, vec3 color) {
   this->boxData.push_back(color);
 }
 
-void LineRenderer::queueUnitCube(Transform transform) {
+void LineRenderer::queue_unit_cube(Transform transform) {
   BoundingBox bb(vec3(-0.5f), vec3(0.5f));
   bb.min = transform.getModelMatrix() * vec4(bb.min, 1.0);
   bb.max = transform.getModelMatrix() * vec4(bb.max, 1.0);

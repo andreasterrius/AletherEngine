@@ -26,18 +26,24 @@ ale::Gizmo::Gizmo()
   this->isHidden = true;
 
   this->models.reserve(MODELS_LEN);
-  this->models.emplace_back(afs::root("resources/gizmo/Arrow_X+.glb")); // ArrowX
-  this->models.emplace_back(afs::root("resources/gizmo/Arrow_Y+.glb")); // ArrowY
-  this->models.emplace_back(afs::root("resources/gizmo/Arrow_Z+.glb")); // ArrowY
+  this->models.emplace_back(
+      afs::root("resources/gizmo/Arrow_X+.glb")); // ArrowX
+  this->models.emplace_back(
+      afs::root("resources/gizmo/Arrow_Y+.glb")); // ArrowY
+  this->models.emplace_back(
+      afs::root("resources/gizmo/Arrow_Z+.glb")); // ArrowY
   this->models.emplace_back(
       afs::root("resources/gizmo/Plane_XY.glb")); // PlaneXY
   this->models.emplace_back(
       afs::root("resources/gizmo/Plane_XZ.glb")); // PlaneXZ
   this->models.emplace_back(
       afs::root("resources/gizmo/Plane_YZ.glb")); // PlaneYZ
-  this->models.emplace_back(afs::root("resources/gizmo/Ring_XY.glb")); // Ring_XY
-  this->models.emplace_back(afs::root("resources/gizmo/Ring_XZ.glb")); // Ring_XZ
-  this->models.emplace_back(afs::root("resources/gizmo/Ring_YZ.glb")); // Ring_YZ
+  this->models.emplace_back(
+      afs::root("resources/gizmo/Ring_XY.glb")); // Ring_XY
+  this->models.emplace_back(
+      afs::root("resources/gizmo/Ring_XZ.glb")); // Ring_XZ
+  this->models.emplace_back(
+      afs::root("resources/gizmo/Ring_YZ.glb")); // Ring_YZ
 }
 
 bool Gizmo::tryHold(Transform *objTransform, Ray ray, Camera camera) {
@@ -109,17 +115,17 @@ bool Gizmo::tryHold(Transform *objTransform, Ray ray, Camera camera) {
       objTransform->scale = objTransform->scale + delta;
     } else if (this->gizmoType == Rotate) {
       //			vec3 unitVecA = rayPlaneHit.value() -
-      //this->position; 			vec3 unitVecB =
-      //this->initialClickInfo.lastFrameRayPlaneHitPos - this->position;
+      // this->position; 			vec3 unitVecB =
+      // this->initialClickInfo.lastFrameRayPlaneHitPos - this->position;
       //
       //			vec4 delta = QuaternionFromvec3Tovec3(unitVecB,
-      //unitVecA);
+      // unitVecA);
       //			//not commutative, multiply order matters!
       //			// world rotation
       //			transform->rotation = QuaternionMultiply(delta,
-      //transform->rotation);
+      // transform->rotation);
       //			// local rotation :
-      //QuaternionMultiply(transform->rotation, delta);
+      // QuaternionMultiply(transform->rotation, delta);
     }
     this->initialClickInfo.lastFrameRayPlaneHitPos = rayPlaneHit.value();
   }
@@ -131,18 +137,19 @@ void Gizmo::release() { this->initialClickInfo = Gizmo_InitialClickInfo{0}; }
 
 void Gizmo::scaleAll() {
   //	this->models[ArrowX].d.transform = MatrixScale(this->scale, this->scale,
-  //this->scale); 	this->models[ArrowY].d.transform = MatrixScale(this->scale,
-  //this->scale, this->scale); 	this->models[ArrowZ].d.transform =
-  //MatrixScale(this->scale, this->scale, this->scale);
-  //	this->models[PlaneXY].d.transform = MatrixScale(this->scale,
-  //this->scale, this->scale); 	this->models[PlaneXZ].d.transform =
-  //MatrixScale(this->scale, this->scale, this->scale);
+  // this->scale); 	this->models[ArrowY].d.transform =
+  // MatrixScale(this->scale, this->scale, this->scale);
+  // this->models[ArrowZ].d.transform = MatrixScale(this->scale, this->scale,
+  // this->scale); 	this->models[PlaneXY].d.transform =
+  // MatrixScale(this->scale, this->scale, this->scale);
+  // this->models[PlaneXZ].d.transform = MatrixScale(this->scale, this->scale,
+  // this->scale);
   //	this->models[PlaneYZ].d.transform = MatrixScale(this->scale,
-  //this->scale, this->scale); 	this->models[RotationXY].d.transform =
-  //MatrixScale(this->scale, this->scale, this->scale);
+  // this->scale, this->scale); 	this->models[RotationXY].d.transform =
+  // MatrixScale(this->scale, this->scale, this->scale);
   //	this->models[RotationXZ].d.transform = MatrixScale(this->scale,
-  //this->scale, this->scale); 	this->models[RotationYZ].d.transform =
-  //MatrixScale(this->scale, this->scale, this->scale);
+  // this->scale, this->scale); 	this->models[RotationYZ].d.transform =
+  // MatrixScale(this->scale, this->scale, this->scale);
 }
 
 optional<Gizmo_GrabAxis> Gizmo::grabAxis(Ray ray) {
@@ -175,7 +182,6 @@ optional<Gizmo_GrabAxis> Gizmo::grabAxis(Ray ray) {
     }
     coll = ray.tryIntersect(transform,
                             this->models[PlaneXZ].meshes[0].boundingBox);
-    ;
     if (coll.has_value()) {
       return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolveT(coll.value()),
                             .activeAxis = XZ};
@@ -195,14 +201,12 @@ optional<Gizmo_GrabAxis> Gizmo::grabAxis(Ray ray) {
     }
     coll = ray.tryIntersect(transform,
                             this->models[RotationXZ].meshes[0].boundingBox);
-    ;
     if (coll.has_value()) {
       return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolveT(coll.value()),
                             .activeAxis = XZ};
     }
     coll = ray.tryIntersect(transform,
                             this->models[RotationXY].meshes[0].boundingBox);
-    ;
     if (coll.has_value()) {
       return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolveT(coll.value()),
                             .activeAxis = XY};

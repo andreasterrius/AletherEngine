@@ -39,13 +39,13 @@ private:
 public:
   LineRenderer();
 
-  void queueLine(Ray &ray, vec3 color = WHITE);
+  void queue_line(Ray &ray, vec3 color = WHITE);
 
-  void queueLine(vec3 start, vec3 end, vec3 color = WHITE);
+  void queue_line(vec3 start, vec3 end, vec3 color = WHITE);
 
-  void queueBox(Transform transform, BoundingBox bb, vec3 color = WHITE);
+  void queue_box(Transform transform, BoundingBox bb, vec3 color = WHITE);
 
-  void queueUnitCube(Transform transform);
+  void queue_unit_cube(Transform transform);
 
   void render(mat4 projection, mat4 view);
 };

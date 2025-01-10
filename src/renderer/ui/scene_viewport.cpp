@@ -46,7 +46,7 @@ void SceneViewport::draw() {
 }
 
 // world_pos needs to be relative to topleft of the screen
-ivec2 SceneViewport::convert_to_local_pos(ivec2 world_pos) {
+ivec2 SceneViewport::convert_to_viewport_pos(ivec2 world_pos) {
   ivec2 local_pos = ivec2(world_pos.x - last_pos.x, world_pos.y - last_pos.y);
   // local_pos *= framebuffer.get_size() / last_size;
 
@@ -56,6 +56,22 @@ ivec2 SceneViewport::convert_to_local_pos(ivec2 world_pos) {
   }
 
   return local_pos;
+}
+ivec2 SceneViewport::convert_to_framebuffer_pos(ivec2 world_pos) {
+  vec2 logical_pos = convert_to_logical_pos(world_pos);
+
+  // convert to framebuffer pos
+  vec2 framebuffer_pos = logical_pos * vec2(framebuffer.get_size());
+
+  return ivec2(framebuffer_pos);
+}
+vec2 SceneViewport::convert_to_logical_pos(ivec2 world_pos) {
+  ivec2 viewport_pos = convert_to_viewport_pos(world_pos);
+
+  // convert to logical pos
+  vec2 logical_pos = vec2(viewport_pos) / vec2(last_size);
+
+  return logical_pos;
 }
 
 } // namespace ale::ui
