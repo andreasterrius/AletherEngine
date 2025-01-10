@@ -5,6 +5,7 @@
 #ifndef SCENE_VIEWPORT_H
 #define SCENE_VIEWPORT_H
 #include "../framebuffer.h"
+#include "src/data/ray.h"
 
 namespace ale::ui {
 class SceneViewport {
@@ -34,6 +35,11 @@ public:
   ivec2 convert_to_framebuffer_pos(ivec2 world_pos);
 
   vec2 convert_to_logical_pos(ivec2 world_pos);
+
+  bool is_cursor_inside(ivec2 world_pos);
+
+  // only create ray if the mouse cursor is inside the viewport
+  Ray create_mouse_ray(ivec2 global_pos, mat4 proj_mat, mat4 view_mat);
 };
 } // namespace ale::ui
 

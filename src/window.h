@@ -11,11 +11,13 @@
 // clang-format on
 #include "renderer/ui/imgui_integration.h"
 #include <functional>
+#include <glm/glm.hpp>
 #include <memory>
 #include <stdexcept>
 #include <string>
 
 using namespace std;
+using namespace glm;
 class GLFWwindow;
 
 namespace ale {
@@ -68,13 +70,13 @@ public:
 
   void swap_buffer_and_poll_inputs();
 
-  pair<int, int> get_position();
+  ivec2 get_position();
 
-  pair<int, int> get_size();
+  ivec2 get_size();
 
-  pair<double, double> get_cursor_pos_from_top_left();
+  vec2 get_cursor_pos_from_top_left();
 
-  pair<double, double> get_cursor_pos();
+  vec2 get_cursor_pos();
 
   // take x since x/y most likely be equal
   float get_content_scale();

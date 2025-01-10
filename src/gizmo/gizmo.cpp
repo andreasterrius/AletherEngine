@@ -61,11 +61,12 @@ bool Gizmo::try_hold(Transform *objTransform, Ray ray, Camera camera) {
   // TODO: This should not be here, this should be in tick(), but
   // dependentPosition will be weakly owned. Scale the size depending on the
   // size
-  float scale = glm::distance(camera.Position, objTransform->translation) /
-                Gizmo_MaximumDistanceScale;
-  scale = glm::clamp(scale, 0.25f, 1.0f);
-  this->transform.scale = vec3(scale);
-  this->scaleAll();
+  // float scale = glm::distance(camera.Position, objTransform->translation) /
+  //               Gizmo_MaximumDistanceScale;
+  // scale = glm::clamp(scale, 0.25f, 1.0f);
+  // this->transform.scale = vec3(scale);
+  // this->scaleAll();
+  this->transform.scale = vec3(1.0f);
 
   // Try to check which arrow we're hitting
   //	Ray ray = GetMouseRay(mousePos, camera);
@@ -101,6 +102,8 @@ bool Gizmo::try_hold(Transform *objTransform, Ray ray, Camera camera) {
   optional<vec3> rayPlaneHit = this->ray_plane_intersection(
       ray, this->initialClickInfo.activeAxis, this->transform.translation);
 
+  cout << "dragging" << endl;
+
   // Ignore ray-plane parallel cases
   if (rayPlaneHit.has_value()) {
     if (this->gizmoType == Translate) {
@@ -133,23 +136,8 @@ bool Gizmo::try_hold(Transform *objTransform, Ray ray, Camera camera) {
   return true;
 }
 
-void Gizmo::release() { this->initialClickInfo = Gizmo_InitialClickInfo{0}; }
-
-void Gizmo::scaleAll() {
-  //	this->models[ArrowX].d.transform = MatrixScale(this->scale, this->scale,
-  // this->scale); 	this->models[ArrowY].d.transform =
-  // MatrixScale(this->scale, this->scale, this->scale);
-  // this->models[ArrowZ].d.transform = MatrixScale(this->scale, this->scale,
-  // this->scale); 	this->models[PlaneXY].d.transform =
-  // MatrixScale(this->scale, this->scale, this->scale);
-  // this->models[PlaneXZ].d.transform = MatrixScale(this->scale, this->scale,
-  // this->scale);
-  //	this->models[PlaneYZ].d.transform = MatrixScale(this->scale,
-  // this->scale, this->scale); 	this->models[RotationXY].d.transform =
-  // MatrixScale(this->scale, this->scale, this->scale);
-  //	this->models[RotationXZ].d.transform = MatrixScale(this->scale,
-  // this->scale, this->scale); 	this->models[RotationYZ].d.transform =
-  // MatrixScale(this->scale, this->scale, this->scale);
+void Gizmo::release_hold() {
+  this->initialClickInfo = Gizmo_InitialClickInfo{0};
 }
 
 optional<Gizmo_GrabAxis> Gizmo::grab_axis(Ray ray) {
@@ -261,7 +249,7 @@ optional<vec3> Gizmo::ray_plane_intersection(Ray ray,
   return make_optional(intersectionCoord);
 }
 
-void Gizmo::render(Camera camera, vec3 lightPos, vec2 screenSize) {
+void Gizmo::render(Camera camera, vec3 lightPos) {
   if (this->isHidden) {
     return;
   }
@@ -269,13 +257,10 @@ void Gizmo::render(Camera camera, vec3 lightPos, vec2 screenSize) {
   basicColorShader.use();
   basicColorShader.setMat4("model", transform.getModelMatrix());
   basicColorShader.setMat4("view", camera.GetViewMatrix());
-  basicColorShader.setMat4(
-      "projection", camera.GetProjectionMatrix(screenSize.x, screenSize.y));
+  basicColorShader.setMat4("projection", camera.GetProjectionMatrix());
   basicColorShader.setVec3("lightPos", lightPos);
   basicColorShader.setVec3("viewPos", camera.Position);
 
-  // Must be called inside BeginMode3D render
-  // TODO: need to set model mat here
   if (this->gizmoType == Translate || this->gizmoType == Scale) {
     // TODO: need to pass in color as well
     this->models[ArrowX].draw(basicColorShader);

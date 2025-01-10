@@ -7,10 +7,11 @@
 
 namespace ale::ui {
 
-EditorRootLayout::Event EditorRootLayout::start(pair<int, int> pos,
-                                                pair<int, int> size) {
-  auto [x, y] = pos;
-  auto [size_x, size_y] = size;
+EditorRootLayout::Event EditorRootLayout::start(ivec2 pos, ivec2 size) {
+  auto x = pos.x;
+  auto y = pos.y;
+  auto size_x = size.x;
+  auto size_y = size.y;
   ImGui::SetNextWindowPos(ImVec2(x, y)); // always at the window origin
   ImGui::SetNextWindowSize(ImVec2(size_x, size_y));
   ImGuiWindowFlags windowFlags =

@@ -75,28 +75,28 @@ void Window::swap_buffer_and_poll_inputs() {
   glfwPollEvents();
 }
 
-pair<int, int> Window::get_position() {
+ivec2 Window::get_position() {
   int x = 0, y = 0;
   glfwGetWindowPos(raw_window, &x, &y);
-  return make_pair(x, y);
+  return ivec2(x, y);
 }
 
-pair<int, int> Window::get_size() {
+ivec2 Window::get_size() {
   int x = 0, y = 0;
   glfwGetWindowSize(raw_window, &x, &y);
-  return make_pair(x, y);
+  return ivec2(x, y);
 }
-pair<double, double> Window::get_cursor_pos_from_top_left() {
-  auto [x, y] = get_cursor_pos();
+vec2 Window::get_cursor_pos_from_top_left() {
+  auto v = get_cursor_pos();
   int wx, wy;
   glfwGetWindowPos(raw_window, &wx, &wy);
-  return make_pair(x + wx, y + wy);
+  return vec2(v.x + wx, v.y + wy);
 }
 
-pair<double, double> Window::get_cursor_pos() {
+vec2 Window::get_cursor_pos() {
   double mouseX, mouseY;
   glfwGetCursorPos(raw_window, &mouseX, &mouseY);
-  return make_pair(mouseX, mouseY);
+  return vec2(mouseX, mouseY);
 }
 
 float Window::get_content_scale() {

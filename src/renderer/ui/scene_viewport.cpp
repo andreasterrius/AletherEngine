@@ -73,5 +73,36 @@ vec2 SceneViewport::convert_to_logical_pos(ivec2 world_pos) {
 
   return logical_pos;
 }
+bool SceneViewport::is_cursor_inside(ivec2 world_pos) {
+  vec2 l = convert_to_logical_pos(world_pos);
+  if (l.x < 0 || l.x >= last_size.x || l.y < 0 || l.y >= last_size.y) {
+    return false;
+  }
+  return true;
+}
+
+Ray SceneViewport::create_mouse_ray(ivec2 global_pos, mat4 proj_mat,
+                                    mat4 view_mat) {
+  vec2 logical_pos = convert_to_logical_pos(global_pos);
+  vec4 rayStartNdc =
+      vec4((logical_pos.x * 2) - 1, (logical_pos.y * 2) - 1, -1.0f, 1.0f);
+  vec4 rayEndNdc =
+      vec4((logical_pos.x * 2) - 1, (logical_pos.y * 2) - 1, 0.0f, 1.0f);
+
+  // not sure why this has to be inverted.
+  rayStartNdc.y *= -1;
+  rayEndNdc.y *= -1;
+
+  mat4 invViewProj = inverse(proj_mat * view_mat);
+  vec4 rayStartWorld = invViewProj * rayStartNdc;
+  vec4 rayEndWorld = invViewProj * rayEndNdc;
+
+  rayStartWorld /= rayStartWorld.w;
+  rayEndWorld /= rayEndWorld.w;
+
+  Ray r(rayStartWorld, normalize(rayEndWorld - rayStartWorld));
+
+  return r;
+}
 
 } // namespace ale::ui

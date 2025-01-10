@@ -370,7 +370,7 @@ int main() {
     glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
     renderScene(colorShader, objects);
 
-    gizmo.render(camera, lightPos, vec2(wd.screenWidth, wd.screenHeight));
+    gizmo.render(camera, lightPos);
 
     lineRenderer.queue_box(objects[1].transform,
                            objects[1].model->meshes[0].boundingBox);
@@ -566,6 +566,6 @@ void pickupObject(GLFWwindow *window, WindowData wd,
 
   if (!clickedSomething &&
       !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-    gizmo.release();
+    gizmo.release_hold();
   }
 }

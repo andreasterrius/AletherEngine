@@ -16,7 +16,7 @@ public:
   };
 
 public:
-  Event start(pair<int, int> pos, pair<int, int> size);
+  Event start(ivec2 pos, ivec2 size);
 
   void end();
 };

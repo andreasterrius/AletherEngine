@@ -26,34 +26,12 @@ using namespace ale;
 using namespace glm;
 using afs = ale::FileSystem;
 
-Ray getMouseRay(vec2 logical_pos, mat4 projMat, mat4 viewMat) {
-  vec4 rayStartNdc =
-      vec4((logical_pos.x * 2) - 1, (logical_pos.y * 2) - 1, -1.0f, 1.0f);
-  vec4 rayEndNdc =
-      vec4((logical_pos.x * 2) - 1, (logical_pos.y * 2) - 1, 0.0f, 1.0f);
-
-  // not sure why this has to be inverted.
-  rayStartNdc.y *= -1;
-  rayEndNdc.y *= -1;
-
-  mat4 invViewProj = inverse(projMat * viewMat);
-  vec4 rayStartWorld = invViewProj * rayStartNdc;
-  vec4 rayEndWorld = invViewProj * rayEndNdc;
-
-  rayStartWorld /= rayStartWorld.w;
-  rayEndWorld /= rayEndWorld.w;
-
-  Ray r(rayStartWorld, normalize(rayEndWorld - rayStartWorld));
-
-  return r;
-}
-
 int main() {
   glfwInit();
 
   auto window = Window(1280, 800, "Editor 2");
-  auto camera = Camera(ARCBALL, window.get_size().first,
-                       window.get_size().second, glm::vec3(3.0f, 5.0f, -7.0f));
+  auto camera = Camera(ARCBALL, window.get_size().x, window.get_size().y,
+                       glm::vec3(3.0f, 5.0f, -7.0f));
   auto lights = vector{Light{vec3(5.0f, 5.0f, 5.0f)}};
 
   // Declare a basic scene
@@ -74,25 +52,67 @@ int main() {
     world.emplace<Transform>(entity, Transform{});
     world.emplace<StaticMesh>(entity, sm_monkey);
   }
-  {
-    const auto entity = world.create();
-    world.emplace<Transform>(entity, Transform{
-                                         .translation = vec3(0.0, -5.0, 0.0),
-                                     });
-    world.emplace<StaticMesh>(entity, sm_floor);
-  }
+  // {
+  //   const auto entity = world.create();
+  //   world.emplace<Transform>(entity, Transform{
+  //                                        .translation = vec3(0.0, -5.0, 0.0),
+  //                                    });
+  //   world.emplace<StaticMesh>(entity, sm_floor);
+  // }
 
   // Declare UI related
   auto content_browser_ui =
       ui::ContentBrowser(sm_loader, afs::root("resources/content_browser"));
-  auto scene_viewport_ui = ui::SceneViewport(
-      ivec2(window.get_size().first, window.get_size().second));
+  auto scene_viewport_ui =
+      ui::SceneViewport(ivec2(window.get_size().x, window.get_size().y));
   auto editor_root_layout_ui = ui::EditorRootLayout{};
 
-  // Mouse
-  auto mouse_ray = Ray(vec3(), vec3(0.0, 0.0, 1.0));
-
+  auto debug_ray = Ray(vec3(), vec3(0.0, 1.0, 0.0));
+  optional<entt::entity> selected_entity = nullopt;
   // Attach event listeners here
+  window.attach_mouse_button_callback([&](int button, int action, int mods) {
+    // Release if we are holding something
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+      gizmo.release_hold();
+    }
+
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+      bool clicked_something = false;
+
+      Ray ray = scene_viewport_ui.create_mouse_ray(
+          window.get_cursor_pos_from_top_left(), camera.GetProjectionMatrix(),
+          camera.GetViewMatrix());
+      debug_ray = ray;
+
+      // Dragging selected entity if any
+      if (selected_entity != nullopt) {
+        auto transform = world.get<Transform>(*selected_entity);
+        clicked_something = gizmo.try_hold(&transform, ray, camera);
+      }
+
+      // Find some object to click into.
+      if (!clicked_something) {
+        auto view = world.view<Transform, StaticMesh>();
+        float dist = INFINITY;
+        for (auto [entity, transform, static_mesh] : view.each()) {
+          for (auto &mesh : static_mesh.get_model()->meshes) {
+            auto isect_t = ray.tryIntersect(transform, mesh.boundingBox);
+            if (isect_t.has_value() && isect_t < dist) {
+              selected_entity = entity;
+              dist = *isect_t;
+              clicked_something = true;
+            }
+          }
+        }
+      }
+
+      // Clicks nothing, hide the gizmo
+      if (!clicked_something) {
+        selected_entity = nullopt;
+        gizmo.hide();
+      }
+    }
+  });
   window.attach_cursor_pos_callback(
       [&](double xpos, double ypos, double xoffset, double yoffset) {
         camera.ProcessMouseMovement(xoffset, yoffset);
@@ -105,31 +125,27 @@ int main() {
       camera.ProcessKeyboardArcball(true);
     else if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE)
       camera.ProcessKeyboardArcball(false);
-
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-      auto cursor_pos = window.get_cursor_pos_from_top_left();
-      auto logical_cursor_pos = scene_viewport_ui.convert_to_logical_pos(
-          ivec2(cursor_pos.first, cursor_pos.second));
-      auto [wx, wy] = window.get_size();
-      mouse_ray = getMouseRay(logical_cursor_pos, camera.GetProjectionMatrix(),
-                              camera.GetViewMatrix());
-    }
   });
 
   while (!window.should_close()) {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    gizmo.tryHold();
-
     // Render Scene
     {
       scene_viewport_ui.start_frame();
       basic_renderer.render(camera, lights, world);
 
-      line_renderer.queue_line(mouse_ray, WHITE);
+      line_renderer.queue_line(debug_ray, WHITE);
       line_renderer.render(camera.GetProjectionMatrix(),
                            camera.GetViewMatrix());
+
+      gizmo.render(camera, lights[0].position);
+      for (int i = 0; i < 9; ++i) {
+        line_renderer.queue_box(gizmo.transform,
+                                gizmo.models[i].meshes[0].boundingBox, WHITE);
+      }
+
       scene_viewport_ui.end_frame();
     }
 

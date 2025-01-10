@@ -55,6 +55,7 @@ typedef struct Gizmo_GrabAxis {
 
 class Gizmo {
 #define MODELS_LEN 9
+public:
   // Meshes
   std::vector<Model> models;
 
@@ -79,14 +80,14 @@ public:
   /// something
   bool try_hold(Transform *transform, Ray mouseRay, Camera camera);
 
-  void release();
+  void release_hold();
 
-  void render(Camera camera, vec3 lightPos, vec2 screenSize);
+  void render(Camera camera, vec3 lightPos);
 
   void hide();
 
 private:
-  void scaleAll();
+  void scale_all();
 
   optional<Gizmo_GrabAxis> grab_axis(Ray ray);
 
