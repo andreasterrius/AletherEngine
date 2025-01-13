@@ -10,9 +10,10 @@ using namespace std;
 using namespace ale;
 
 // https://tavianator.com/2022/ray_box_boundary.html
-optional<float> Ray::tryIntersect(Transform transform, const BoundingBox &boxR,
-                                  float limitTMin, float limitTMax) {
-  BoundingBox box = boxR.applyTransform(transform);
+optional<float> Ray::intersect(const BoundingBox &boxR, float limitTMin,
+                               float limitTMax) {
+  // BoundingBox box = boxR.apply_scale(transform);
+  BoundingBox box = boxR;
   double tx1 = (box.min.x - origin.x) * invDir.x;
   double tx2 = (box.max.x - origin.x) * invDir.x;
   double tmin = std::min(tx1, tx2);
@@ -38,4 +39,11 @@ optional<float> Ray::tryIntersect(Transform transform, const BoundingBox &boxR,
   return nullopt;
 }
 
-vec3 Ray::resolveT(float t) { return this->origin + t * this->dir; }
+vec3 Ray::resolve(float t) { return this->origin + t * this->dir; }
+
+Ray Ray::apply_transform_inversed(Transform t) {
+  auto inv_mat = inverse(t.getModelMatrix());
+  auto O = inv_mat * vec4(origin, 1.0);
+  auto D = normalize(inv_mat * vec4(dir, 0.0));
+  return Ray(O, D);
+}

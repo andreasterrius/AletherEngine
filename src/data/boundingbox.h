@@ -19,7 +19,7 @@ public:
   vec3 min, max, center;
   BoundingBox(vec3 min, vec3 max);
 
-  BoundingBox applyTransform(Transform t) const;
+  BoundingBox apply_scale(Transform t) const;
 
   vec3 getCenter() const;
 

@@ -41,8 +41,6 @@ int main() {
   auto sm_loader = StaticMeshLoader();
   auto sm_monkey =
       sm_loader.load_static_mesh(afs::root("resources/models/monkey.obj"));
-  auto sm_floor =
-      sm_loader.load_static_mesh(afs::root("resources/models/floor_cube.obj"));
   auto gizmo = Gizmo();
 
   // Create world
@@ -67,50 +65,18 @@ int main() {
       ui::SceneViewport(ivec2(window.get_size().x, window.get_size().y));
   auto editor_root_layout_ui = ui::EditorRootLayout{};
 
-  auto debug_ray = Ray(vec3(), vec3(0.0, 1.0, 0.0));
-  optional<entt::entity> selected_entity = nullopt;
   // Attach event listeners here
   window.attach_mouse_button_callback([&](int button, int action, int mods) {
     // Release if we are holding something
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-      gizmo.release_hold();
+      gizmo.handle_release();
     }
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-      bool clicked_something = false;
-
-      Ray ray = scene_viewport_ui.create_mouse_ray(
+      Ray mouse_ray = scene_viewport_ui.create_mouse_ray(
           window.get_cursor_pos_from_top_left(), camera.GetProjectionMatrix(),
           camera.GetViewMatrix());
-      debug_ray = ray;
-
-      // Dragging selected entity if any
-      if (selected_entity != nullopt) {
-        auto transform = world.get<Transform>(*selected_entity);
-        clicked_something = gizmo.try_hold(&transform, ray, camera);
-      }
-
-      // Find some object to click into.
-      if (!clicked_something) {
-        auto view = world.view<Transform, StaticMesh>();
-        float dist = INFINITY;
-        for (auto [entity, transform, static_mesh] : view.each()) {
-          for (auto &mesh : static_mesh.get_model()->meshes) {
-            auto isect_t = ray.tryIntersect(transform, mesh.boundingBox);
-            if (isect_t.has_value() && isect_t < dist) {
-              selected_entity = entity;
-              dist = *isect_t;
-              clicked_something = true;
-            }
-          }
-        }
-      }
-
-      // Clicks nothing, hide the gizmo
-      if (!clicked_something) {
-        selected_entity = nullopt;
-        gizmo.hide();
-      }
+      gizmo.handle_press(mouse_ray, world);
     }
   });
   window.attach_cursor_pos_callback(
@@ -131,20 +97,28 @@ int main() {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    Ray mouse_ray = scene_viewport_ui.create_mouse_ray(
+        window.get_cursor_pos_from_top_left(), camera.GetProjectionMatrix(),
+        camera.GetViewMatrix());
+    gizmo.tick(mouse_ray, world);
+
     // Render Scene
     {
       scene_viewport_ui.start_frame();
       basic_renderer.render(camera, lights, world);
 
-      line_renderer.queue_line(debug_ray, WHITE);
+      // line_renderer.queue_line(debug_ray, WHITE);
       line_renderer.render(camera.GetProjectionMatrix(),
                            camera.GetViewMatrix());
 
+      glDisable(GL_DEPTH_TEST);
       gizmo.render(camera, lights[0].position);
-      for (int i = 0; i < 9; ++i) {
-        line_renderer.queue_box(gizmo.transform,
-                                gizmo.models[i].meshes[0].boundingBox, WHITE);
-      }
+      glEnable(GL_DEPTH_TEST);
+      // for (int i = 0; i < 9; ++i) {
+      //   line_renderer.queue_box(gizmo.transform,
+      //                           gizmo.models[i].meshes[0].boundingBox,
+      //                           WHITE);
+      // }
 
       scene_viewport_ui.end_frame();
     }

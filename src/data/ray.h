@@ -27,15 +27,18 @@ public:
     this->invDir = vec3(1.0f / dir.x, 1.0f / dir.y, 1.0f / dir.z);
   }
 
-  optional<float> tryIntersect(Transform transform, const BoundingBox &box,
-                               float limitTMin = 0, float limitTMax = INFINITY);
+  optional<float> intersect(const BoundingBox &box, float limitTMin = 0,
+                            float limitTMax = INFINITY);
 
-  vec3 resolveT(float t);
+  vec3 resolve(float t);
 
-  string toString() {
-    return "o:(" + to_string(origin.x) + "." + to_string(origin.y) + "," +
-           to_string(origin.z) + ")" + " | d:(" + to_string(dir.x) + "." +
-           to_string(dir.y) + "," + to_string(dir.z) + ")";
+  Ray apply_transform_inversed(Transform t);
+
+  string to_string() {
+    return "o:(" + std::to_string(origin.x) + "." + std::to_string(origin.y) +
+           "," + std::to_string(origin.z) + ")" + " | d:(" +
+           std::to_string(dir.x) + "." + std::to_string(dir.y) + "," +
+           std::to_string(dir.z) + ")";
   }
 };
 

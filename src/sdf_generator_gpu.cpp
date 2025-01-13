@@ -60,7 +60,7 @@ void SdfGeneratorGPU::add_mesh(string name, Mesh &mesh, int width, int height,
   glGenBuffers(1, &sdf_info.bb_ubo);
   glBindBuffer(GL_UNIFORM_BUFFER, sdf_info.bb_ubo);
 
-  BoundingBox outer_bb = mesh.boundingBox.applyTransform(Transform{
+  BoundingBox outer_bb = mesh.boundingBox.apply_scale(Transform{
       .scale = vec3(1.1, 1.1, 1.1),
   });
   GpuBoundingBox gpu_bb{

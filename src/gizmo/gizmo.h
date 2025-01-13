@@ -3,6 +3,7 @@
 
 #include "../data/shader.h"
 #include "../data/transform.h"
+#include <entt/entt.hpp>
 #include <glm/glm.hpp>
 #include <memory>
 #include <optional>
@@ -60,13 +61,16 @@ public:
   std::vector<Model> models;
 
   // State
-  bool isHidden;
+  bool is_hidden;
+  bool is_dragging;
+
   //    vec3 position;
   //    float scale;
   Transform transform;
+  optional<entt::entity> selected_entity;
 
-  // if not null, then user has selected one of the axis
-  Gizmo_InitialClickInfo initialClickInfo;
+  // if exist = true, then user has selected one of the axis
+  Gizmo_InitialClickInfo initial_click_info;
 
   Shader basicColorShader;
 
@@ -75,16 +79,22 @@ public:
 
   Gizmo();
 
+private:
   /// This usually happens when user press and holding left click (handled by
   /// caller) This function is paired with release() Return bool if it's holding
   /// something
-  bool try_hold(Transform *transform, Ray mouseRay, Camera camera);
+  bool try_hold(Transform *transform, Ray mouseRay);
 
-  void release_hold();
-
-  void render(Camera camera, vec3 lightPos);
+  void show(Transform transform);
 
   void hide();
+
+public:
+  // returns whether the press should be propagated or not
+  bool handle_press(Ray &mouse_ray, entt::registry &world);
+  void handle_release();
+  void tick(const Ray &mouse_ray, entt::registry &world);
+  void render(Camera camera, vec3 lightPos);
 
 private:
   void scale_all();

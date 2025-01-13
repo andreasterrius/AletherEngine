@@ -5,6 +5,7 @@
 #include "../camera.h"
 #include "../data/model.h"
 #include "../data/ray.h"
+#include "../data/static_mesh.h"
 #include "../data/transform.h"
 #include "../file_system.h"
 #include <glm/glm.hpp>
@@ -17,13 +18,13 @@ ale::Gizmo::Gizmo()
 
   // load a flat shader here ?
   // the default raylib shader is flat though
-  this->initialClickInfo = Gizmo_InitialClickInfo{0};
+  this->initial_click_info = Gizmo_InitialClickInfo{0};
   this->transform = Transform{
       .translation = vec3(),
       .scale = vec3(1.0),
   };
   this->gizmoType = Translate;
-  this->isHidden = true;
+  this->is_hidden = true;
 
   this->models.reserve(MODELS_LEN);
   this->models.emplace_back(
@@ -46,17 +47,12 @@ ale::Gizmo::Gizmo()
       afs::root("resources/gizmo/Ring_YZ.glb")); // Ring_YZ
 }
 
-bool Gizmo::try_hold(Transform *objTransform, Ray ray, Camera camera) {
-  // There's no currently active selected object
-  if (objTransform == NULL) {
-    this->isHidden = true;
-    return false;
-  }
+bool Gizmo::try_hold(Transform *transform, Ray ray) {
 
   // There's an active selected object
   // Show & set gizmo position properly
-  this->isHidden = false;
-  this->transform.translation = objTransform->translation;
+  this->is_hidden = false;
+  this->transform.translation = transform->translation;
 
   // TODO: This should not be here, this should be in tick(), but
   // dependentPosition will be weakly owned. Scale the size depending on the
@@ -71,7 +67,7 @@ bool Gizmo::try_hold(Transform *objTransform, Ray ray, Camera camera) {
   // Try to check which arrow we're hitting
   //	Ray ray = GetMouseRay(mousePos, camera);
 
-  if (!this->initialClickInfo.exist) {
+  if (!this->initial_click_info.exist) {
     // This is initial click on arrow/plane in gizmo, let's save the initial
     // clickInfo
     optional<Gizmo_GrabAxis> grabAxisOpt = this->grab_axis(ray);
@@ -83,11 +79,12 @@ bool Gizmo::try_hold(Transform *objTransform, Ray ray, Camera camera) {
     // Get a ray to plane intersection.
     optional<vec3> rayPlaneHit = this->ray_plane_intersection(
         ray, grabAxis.activeAxis, this->transform.translation);
-    if (!rayPlaneHit.has_value()) {
+
+    if (!rayPlaneHit.has_value()) { // no planes were clicked
       return false;
     }
 
-    this->initialClickInfo = Gizmo_InitialClickInfo{
+    this->initial_click_info = Gizmo_InitialClickInfo{
         .exist = true,
         .activeAxis = grabAxis.activeAxis,
         .position = grabAxis.rayCollisionPosition,
@@ -100,22 +97,25 @@ bool Gizmo::try_hold(Transform *objTransform, Ray ray, Camera camera) {
 
   // This is no longer initial hit, but is a dragging movement
   optional<vec3> rayPlaneHit = this->ray_plane_intersection(
-      ray, this->initialClickInfo.activeAxis, this->transform.translation);
-
-  cout << "dragging" << endl;
+      ray, this->initial_click_info.activeAxis, this->transform.translation);
 
   // Ignore ray-plane parallel cases
   if (rayPlaneHit.has_value()) {
     if (this->gizmoType == Translate) {
-      vec3 newPos = this->handle_translate(this->initialClickInfo.activeAxis,
+      vec3 newPos = this->handle_translate(this->initial_click_info.activeAxis,
                                            rayPlaneHit.value());
       this->transform.translation = newPos;
-      objTransform->translation = newPos;
+      transform->translation = newPos;
+
+      // cout << this->transform.translation.x << " "
+      //      << this->transform.translation.y << " "
+      //      << this->transform.translation.z << endl;
+
     } else if (this->gizmoType == Scale) {
       // unlike translate, we just return delta here
-      vec3 delta =
-          rayPlaneHit.value() - this->initialClickInfo.lastFrameRayPlaneHitPos;
-      objTransform->scale = objTransform->scale + delta;
+      vec3 delta = rayPlaneHit.value() -
+                   this->initial_click_info.lastFrameRayPlaneHitPos;
+      transform->scale = transform->scale + delta;
     } else if (this->gizmoType == Rotate) {
       //			vec3 unitVecA = rayPlaneHit.value() -
       // this->position; 			vec3 unitVecB =
@@ -130,73 +130,66 @@ bool Gizmo::try_hold(Transform *objTransform, Ray ray, Camera camera) {
       //			// local rotation :
       // QuaternionMultiply(transform->rotation, delta);
     }
-    this->initialClickInfo.lastFrameRayPlaneHitPos = rayPlaneHit.value();
+    this->initial_click_info.lastFrameRayPlaneHitPos = rayPlaneHit.value();
   }
 
   return true;
 }
 
-void Gizmo::release_hold() {
-  this->initialClickInfo = Gizmo_InitialClickInfo{0};
+void Gizmo::handle_release() {
+  this->initial_click_info = Gizmo_InitialClickInfo{0};
+  this->is_dragging = false;
 }
 
 optional<Gizmo_GrabAxis> Gizmo::grab_axis(Ray ray) {
 
+  auto tray = ray.apply_transform_inversed(transform);
   if (this->gizmoType == Translate || this->gizmoType == Scale) {
-    auto coll =
-        ray.tryIntersect(transform, this->models[ArrowX].meshes[0].boundingBox);
+    auto coll = tray.intersect(this->models[ArrowX].meshes[0].boundingBox);
     if (coll.has_value()) {
-      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolveT(coll.value()),
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = X};
     }
-    coll =
-        ray.tryIntersect(transform, this->models[ArrowY].meshes[0].boundingBox);
+    coll = tray.intersect(this->models[ArrowY].meshes[0].boundingBox);
     ;
     if (coll.has_value()) {
-      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolveT(coll.value()),
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = Y};
     }
-    coll =
-        ray.tryIntersect(transform, this->models[ArrowZ].meshes[0].boundingBox);
+    coll = tray.intersect(this->models[ArrowZ].meshes[0].boundingBox);
     if (coll.has_value()) {
-      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolveT(coll.value()),
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = Z};
     }
-    coll = ray.tryIntersect(transform,
-                            this->models[PlaneYZ].meshes[0].boundingBox);
+    coll = tray.intersect(this->models[PlaneYZ].meshes[0].boundingBox);
     if (coll.has_value()) {
-      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolveT(coll.value()),
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = YZ};
     }
-    coll = ray.tryIntersect(transform,
-                            this->models[PlaneXZ].meshes[0].boundingBox);
+    coll = tray.intersect(this->models[PlaneXZ].meshes[0].boundingBox);
     if (coll.has_value()) {
-      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolveT(coll.value()),
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = XZ};
     }
-    coll = ray.tryIntersect(transform,
-                            this->models[PlaneXY].meshes[0].boundingBox);
+    coll = tray.intersect(this->models[PlaneXY].meshes[0].boundingBox);
     if (coll.has_value()) {
-      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolveT(coll.value()),
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = XY};
     }
   } else if (this->gizmoType == Rotate) {
-    auto coll = ray.tryIntersect(
-        transform, this->models[RotationYZ].meshes[0].boundingBox);
+    auto coll = tray.intersect(this->models[RotationYZ].meshes[0].boundingBox);
     if (coll.has_value()) {
-      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolveT(coll.value()),
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = YZ};
     }
-    coll = ray.tryIntersect(transform,
-                            this->models[RotationXZ].meshes[0].boundingBox);
+    coll = tray.intersect(this->models[RotationXZ].meshes[0].boundingBox);
     if (coll.has_value()) {
-      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolveT(coll.value()),
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = XZ};
     }
-    coll = ray.tryIntersect(transform,
-                            this->models[RotationXY].meshes[0].boundingBox);
+    coll = tray.intersect(this->models[RotationXY].meshes[0].boundingBox);
     if (coll.has_value()) {
-      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolveT(coll.value()),
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = XY};
     }
   }
@@ -250,7 +243,7 @@ optional<vec3> Gizmo::ray_plane_intersection(Ray ray,
 }
 
 void Gizmo::render(Camera camera, vec3 lightPos) {
-  if (this->isHidden) {
+  if (this->is_hidden) {
     return;
   }
 
@@ -281,32 +274,87 @@ vec3 Gizmo::handle_translate(Gizmo_ActiveAxis activeAxis,
                              vec3 rayPlaneHitPoint) {
   vec3 initialRayPos = vec3();
   if (activeAxis == X) {
-    initialRayPos.x = this->initialClickInfo.firstRayPlaneHitPos.x -
-                      this->initialClickInfo.initialSelfPos.x;
+    initialRayPos.x = this->initial_click_info.firstRayPlaneHitPos.x -
+                      this->initial_click_info.initialSelfPos.x;
   } else if (activeAxis == Y) {
-    initialRayPos.y = this->initialClickInfo.firstRayPlaneHitPos.y -
-                      this->initialClickInfo.initialSelfPos.y;
+    initialRayPos.y = this->initial_click_info.firstRayPlaneHitPos.y -
+                      this->initial_click_info.initialSelfPos.y;
   } else if (activeAxis == Z) {
-    initialRayPos.z = this->initialClickInfo.firstRayPlaneHitPos.z -
-                      this->initialClickInfo.initialSelfPos.z;
+    initialRayPos.z = this->initial_click_info.firstRayPlaneHitPos.z -
+                      this->initial_click_info.initialSelfPos.z;
   } else if (activeAxis == XY) {
-    initialRayPos.x = this->initialClickInfo.firstRayPlaneHitPos.x -
-                      this->initialClickInfo.initialSelfPos.x;
-    initialRayPos.y = this->initialClickInfo.firstRayPlaneHitPos.y -
-                      this->initialClickInfo.initialSelfPos.y;
+    initialRayPos.x = this->initial_click_info.firstRayPlaneHitPos.x -
+                      this->initial_click_info.initialSelfPos.x;
+    initialRayPos.y = this->initial_click_info.firstRayPlaneHitPos.y -
+                      this->initial_click_info.initialSelfPos.y;
   } else if (activeAxis == YZ) {
-    initialRayPos.z = this->initialClickInfo.firstRayPlaneHitPos.z -
-                      this->initialClickInfo.initialSelfPos.z;
-    initialRayPos.y = this->initialClickInfo.firstRayPlaneHitPos.y -
-                      this->initialClickInfo.initialSelfPos.y;
+    initialRayPos.z = this->initial_click_info.firstRayPlaneHitPos.z -
+                      this->initial_click_info.initialSelfPos.z;
+    initialRayPos.y = this->initial_click_info.firstRayPlaneHitPos.y -
+                      this->initial_click_info.initialSelfPos.y;
   } else if (activeAxis == XZ) {
-    initialRayPos.x = this->initialClickInfo.firstRayPlaneHitPos.x -
-                      this->initialClickInfo.initialSelfPos.x;
-    initialRayPos.z = this->initialClickInfo.firstRayPlaneHitPos.z -
-                      this->initialClickInfo.initialSelfPos.z;
+    initialRayPos.x = this->initial_click_info.firstRayPlaneHitPos.x -
+                      this->initial_click_info.initialSelfPos.x;
+    initialRayPos.z = this->initial_click_info.firstRayPlaneHitPos.z -
+                      this->initial_click_info.initialSelfPos.z;
   }
 
   return rayPlaneHitPoint - initialRayPos;
 }
 
-void Gizmo::hide() { this->isHidden = true; }
+void Gizmo::show(Transform transform) {
+  this->is_hidden = false;
+  this->transform.translation = transform.translation;
+}
+
+void Gizmo::hide() { this->is_hidden = true; }
+
+void Gizmo::tick(const Ray &mouse_ray, entt::registry &world) {
+  if (selected_entity && is_dragging) {
+    auto &transform = world.get<Transform>(*selected_entity);
+    try_hold(&transform, mouse_ray);
+  }
+}
+
+bool Gizmo::handle_press(Ray &mouse_ray, entt::registry &world) {
+
+  // are we clicking the arrow/plane of the gizmo?
+  if (selected_entity.has_value()) {
+    // means gizmo is showing
+    auto transform = world.get<Transform>(*selected_entity);
+    if (try_hold(&transform, mouse_ray)) {
+      is_dragging = true;
+      // don't propagate this click
+      return false;
+    }
+  }
+
+  // Find some object to click into.
+  selected_entity = nullopt;
+  auto view = world.view<Transform, StaticMesh>();
+  float dist = INFINITY;
+  for (auto [entity, obj_transform, static_mesh] : view.each()) {
+    auto ray = mouse_ray.apply_transform_inversed(obj_transform);
+    for (auto &mesh : static_mesh.get_model()->meshes) {
+      auto isect_t = ray.intersect(mesh.boundingBox);
+      if (isect_t.has_value() && isect_t < dist) {
+        selected_entity = entity;
+        dist = *isect_t;
+      }
+    }
+  }
+
+  // nothing is clicked
+  if (!selected_entity.has_value()) {
+    // Clicks nothing, hide the gizmo
+    selected_entity = nullopt;
+    hide();
+    return true; // propagate click
+  }
+
+  // something is selected
+  auto &transform = world.get<Transform>(*selected_entity);
+  show(transform);
+
+  return false; // don't propagate click
+}

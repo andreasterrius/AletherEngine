@@ -25,7 +25,7 @@ SdfModel::SdfModel(Mesh &mesh, int cubeCount)
   Transform scaleBB{
       .scale = vec3(1.1, 1.1, 1.1),
   }; // make it a bit bigger
-  this->outerBB = this->outerBB.applyTransform(scaleBB);
+  this->outerBB = this->outerBB.apply_scale(scaleBB);
 
   cubeSize = vec3((outerBB.max.x - outerBB.min.x) / cubeCount,
                   (outerBB.max.y - outerBB.min.y) / cubeCount,
@@ -97,7 +97,7 @@ ale::SdfModel::SdfModel(Mesh &mesh, Texture3D texture3D, int cubeCount)
   Transform scaleBB{
       .scale = vec3(1.1, 1.1, 1.1),
   }; // make it a bit bigger
-  this->outerBB = this->outerBB.applyTransform(scaleBB);
+  this->outerBB = this->outerBB.apply_scale(scaleBB);
 
   cubeSize = vec3((outerBB.max.x - outerBB.min.x) / cubeCount,
                   (outerBB.max.y - outerBB.min.y) / cubeCount,
@@ -199,7 +199,7 @@ bool SdfModel::findHitPositions(Ray debugRay, vector<vec3> *debugHitPos) {
       int y = localCoord.y / boxArrSize.y;
       int z = localCoord.z / boxArrSize.z;
       float dist = this->distances[x][y][z];
-      debugRay.origin = debugRay.resolveT(dist);
+      debugRay.origin = debugRay.resolve(dist);
 
       if (dist < 0.01) {
         if (debugHitPos != nullptr) {
@@ -212,7 +212,7 @@ bool SdfModel::findHitPositions(Ray debugRay, vector<vec3> *debugHitPos) {
     } else {
       float dist =
           Util::distanceFromBox(debugRay.origin, this->bb.min, this->bb.max);
-      debugRay.origin = debugRay.resolveT(dist);
+      debugRay.origin = debugRay.resolve(dist);
     }
 
     // first check the box.

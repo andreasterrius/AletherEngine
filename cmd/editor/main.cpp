@@ -531,7 +531,7 @@ void pickupObject(GLFWwindow *window, WindowData wd,
           camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight),
           camera.GetViewMatrix());
       clickedSomething =
-          gizmo.try_hold(&selectedObject->transform, mouseRay, camera);
+          gizmo.try_hold_gizmo(&selectedObject->transform, mouseRay, camera);
       lastRay = mouseRay;
     }
 
@@ -546,9 +546,9 @@ void pickupObject(GLFWwindow *window, WindowData wd,
       float furthestT = INFINITY;
       for (int i = 0; i < objectsToSelect.size(); ++i) {
         // check if we are clicking anything
-        auto isectT = mouseRay.tryIntersect(
-            objectsToSelect[i].transform,
-            objectsToSelect[i].model->meshes[0].boundingBox);
+        auto isectT =
+            mouseRay.intersect(objectsToSelect[i].transform,
+                               objectsToSelect[i].model->meshes[0].boundingBox);
         if (isectT.has_value() && isectT < furthestT) {
           selectedObject = &objectsToSelect[i];
           furthestT = *isectT;
@@ -566,6 +566,6 @@ void pickupObject(GLFWwindow *window, WindowData wd,
 
   if (!clickedSomething &&
       !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-    gizmo.release_hold();
+    gizmo.handle_release();
   }
 }
