@@ -37,46 +37,25 @@ int main() {
   // Declare a basic scene
   auto basic_renderer = BasicRenderer();
   auto line_renderer = LineRenderer();
-
   auto sm_loader = StaticMeshLoader();
-  auto sm_monkey =
-      sm_loader.load_static_mesh(afs::root("resources/models/monkey.obj"));
-  auto gizmo = Gizmo();
 
   // Create world
   auto world = entt::registry{};
-  {
-    const auto entity = world.create();
-    world.emplace<Transform>(entity, Transform{});
-    world.emplace<StaticMesh>(entity, sm_monkey);
-  }
-  // {
-  //   const auto entity = world.create();
-  //   world.emplace<Transform>(entity, Transform{
-  //                                        .translation = vec3(0.0, -5.0, 0.0),
-  //                                    });
-  //   world.emplace<StaticMesh>(entity, sm_floor);
-  // }
 
   // Declare UI related
-  auto content_browser_ui =
-      ui::ContentBrowser(sm_loader, afs::root("resources/content_browser"));
-  auto scene_viewport_ui =
-      ui::SceneViewport(ivec2(window.get_size().x, window.get_size().y));
-  auto editor_root_layout_ui = ui::EditorRootLayout{};
+  auto editor_root_layout_ui =
+      ui::EditorRootLayout(sm_loader, window.get_size());
 
   // Attach event listeners here
   window.attach_mouse_button_callback([&](int button, int action, int mods) {
     // Release if we are holding something
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-      gizmo.handle_release();
+      editor_root_layout_ui.handle_release();
     }
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-      Ray mouse_ray = scene_viewport_ui.create_mouse_ray(
-          window.get_cursor_pos_from_top_left(), camera.GetProjectionMatrix(),
-          camera.GetViewMatrix());
-      gizmo.handle_press(mouse_ray, world);
+      editor_root_layout_ui.handle_press(camera, world,
+                                         window.get_cursor_pos_from_top_left());
     }
   });
   window.attach_cursor_pos_callback(
@@ -97,30 +76,19 @@ int main() {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    Ray mouse_ray = scene_viewport_ui.create_mouse_ray(
-        window.get_cursor_pos_from_top_left(), camera.GetProjectionMatrix(),
-        camera.GetViewMatrix());
-    gizmo.tick(mouse_ray, world);
+    editor_root_layout_ui.tick(camera, world,
+                               window.get_cursor_pos_from_top_left());
 
     // Render Scene
     {
-      scene_viewport_ui.start_frame();
+      editor_root_layout_ui.start_frame();
       basic_renderer.render(camera, lights, world);
 
       // line_renderer.queue_line(debug_ray, WHITE);
       line_renderer.render(camera.GetProjectionMatrix(),
                            camera.GetViewMatrix());
 
-      glDisable(GL_DEPTH_TEST);
-      gizmo.render(camera, lights[0].position);
-      glEnable(GL_DEPTH_TEST);
-      // for (int i = 0; i < 9; ++i) {
-      //   line_renderer.queue_box(gizmo.transform,
-      //                           gizmo.models[i].meshes[0].boundingBox,
-      //                           WHITE);
-      // }
-
-      scene_viewport_ui.end_frame();
+      editor_root_layout_ui.end_frame(camera);
     }
 
     // Render UI
@@ -133,18 +101,9 @@ int main() {
         window.set_should_close(true);
       }
 
-      // Show and handle content browser
-      auto clicked = content_browser_ui.draw_and_handle_clicks();
-      if (clicked.has_value() && clicked->static_mesh.has_value()) {
-        const auto entity = world.create();
-        world.emplace<Transform>(entity, Transform{});
-        world.emplace<StaticMesh>(entity, *clicked->static_mesh);
-      }
-
-      // Show the scene
-      scene_viewport_ui.draw();
-
+      editor_root_layout_ui.draw_and_handle_events(world);
       editor_root_layout_ui.end();
+
       window.end_ui_frame();
     }
 

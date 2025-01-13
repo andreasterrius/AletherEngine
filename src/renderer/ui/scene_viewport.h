@@ -21,7 +21,7 @@ public:
   // TODO: do we render on screen size then downscale to viewport size?
   // TODO: or viewport size directly? I'm not sure.. choosing former for now
   // TODO: resize framebuffer when window is resized?
-  SceneViewport(ivec2 screen_size);
+  SceneViewport(ivec2 initial_screen_size);
 
   void start_frame();
 
