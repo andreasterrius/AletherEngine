@@ -5,9 +5,11 @@
 #ifndef ROOT_LAYOUT_H
 #define ROOT_LAYOUT_H
 #include "content_browser.h"
+#include "scene_tree.h"
 #include "scene_viewport.h"
 #include "src/gizmo/gizmo.h"
-#include "src/window.h"
+
+#include <imgui.h>
 
 namespace ale::ui {
 class EditorRootLayout {
@@ -19,8 +21,12 @@ public:
 private:
   ContentBrowser content_browser_ui;
   SceneViewport scene_viewport_ui;
+  SceneTree scene_tree_ui;
   Gizmo gizmo;
   Light gizmo_light;
+
+private:
+  ImGuiID dockspace_id;
 
 public:
   EditorRootLayout(StaticMeshLoader &sm_loader, ivec2 initial_window_size);

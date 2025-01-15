@@ -5,7 +5,6 @@
 #include "../data/transform.h"
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
-#include <memory>
 #include <optional>
 #include <vector>
 

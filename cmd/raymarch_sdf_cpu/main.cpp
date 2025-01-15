@@ -227,7 +227,7 @@ int main() {
   });
 
   // SdfModel robotSdf(robot, 4);
-  SdfModel trophySdf(*objects[1].model.get()->meshes[0], 32);
+  SdfModel trophySdf(objects[1].model.get()->meshes[0], 32);
   auto size = trophySdf.outerBB.getSize();
   cout << size.x << " " << size.y << " " << size.z << endl;
 
@@ -376,14 +376,14 @@ int main() {
     glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
     // renderScene(colorShader, objects);
 
-    gizmo.render(camera, lightPos, vec2(wd.screenWidth, wd.screenHeight));
+    gizmo.render(camera, lightPos);
 
-    lineRenderer.queueBox(Transform{}, trophySdf.bb, vec3(0.0, 1.0, 0.0));
-    lineRenderer.queueBox(Transform{}, trophySdf.outerBB, vec3(1.0, 0.0, 0.0));
+    lineRenderer.queue_box(Transform{}, trophySdf.bb, vec3(0.0, 1.0, 0.0));
+    lineRenderer.queue_box(Transform{}, trophySdf.outerBB, vec3(1.0, 0.0, 0.0));
     trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
       vec3 color;
       if (trophySdf.distances[i][j][k] < 0) {
-        lineRenderer.queueBox(Transform{}, bb, vec3(0.0, 1.0, 0.0));
+        lineRenderer.queue_box(Transform{}, bb, vec3(0.0, 1.0, 0.0));
         // color =
         // vec3(1.0, 0.0, 0.0); // RED
       } else {

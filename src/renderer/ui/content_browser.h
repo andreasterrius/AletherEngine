@@ -8,6 +8,7 @@
 #include "../../file_system.h"
 #include "../thumbnail_generator.h"
 
+#include <imgui.h>
 #include <string>
 
 using namespace std;
@@ -20,6 +21,8 @@ namespace ale::ui {
 class ContentBrowser {
 
 public:
+  const string panel_name = "Content Browser";
+
   struct Entry {
     FileMeta file_meta;
     shared_ptr<Texture> thumbnail;

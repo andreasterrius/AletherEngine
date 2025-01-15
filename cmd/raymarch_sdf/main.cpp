@@ -151,7 +151,7 @@ public:
 
     // binds texture2D atlas[16];
     // binds int atlasSize;
-    auto entries = {};
+    vector<pair<Transform, vector<unsigned int>>> entries = {};
     sdfModelPacked.bind_to_shader(shader, entries);
 
     glBindVertexArray(vao);

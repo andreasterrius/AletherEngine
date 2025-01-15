@@ -6,18 +6,19 @@
 #define SCENE_VIEWPORT_H
 #include "../framebuffer.h"
 #include "src/data/ray.h"
+#include <imgui.h>
 
 namespace ale::ui {
 class SceneViewport {
 private:
   Framebuffer framebuffer;
-
-public:
   // Last known pos and size during draw
   ivec2 last_pos = ivec2();
   ivec2 last_size = ivec2();
 
 public:
+  const string panel_name = "Scene Viewport";
+
   // TODO: do we render on screen size then downscale to viewport size?
   // TODO: or viewport size directly? I'm not sure.. choosing former for now
   // TODO: resize framebuffer when window is resized?
@@ -40,6 +41,8 @@ public:
 
   // only create ray if the mouse cursor is inside the viewport
   Ray create_mouse_ray(ivec2 global_pos, mat4 proj_mat, mat4 view_mat);
+
+  ImGuiID get_panel_id();
 };
 } // namespace ale::ui
 

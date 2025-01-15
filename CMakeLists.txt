@@ -13,6 +13,11 @@ set(ASSIMP_INSTALL ON)
 set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/assimp)
 add_subdirectory(external/glfw)
+
+option(SPDLOG_BUILD_SHARED "Build spdlog as shared library" ON)
+add_subdirectory(external/spdlog)
+
+set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(external/glm)
 add_subdirectory(external/entt)
 
@@ -71,10 +76,10 @@ function(create_exe name folder_name)
             external/imgui
             external/imgui/backends
     )
-    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT)
+    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT spdlog::spdlog)
+    target_compile_definitions(${name} PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)
 endfunction()
 
-create_exe(AletherEngine editor)
 create_exe(RaymarchSdfCpu raymarch_sdf_cpu)
 create_exe(RaymarchSdf raymarch_sdf)
 create_exe(SdfGenerator sdf_generator_gpu)

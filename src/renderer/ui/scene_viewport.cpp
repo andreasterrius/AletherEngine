@@ -4,8 +4,6 @@
 
 #include "scene_viewport.h"
 
-#include <imgui.h>
-
 namespace ale::ui {
 
 SceneViewport::SceneViewport(ivec2 initial_screen_size)
@@ -20,7 +18,7 @@ void SceneViewport::draw() {
 
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
-  ImGui::Begin("Scene Viewport");
+  ImGui::Begin(panel_name.c_str());
 
   ImVec2 window_size = ImGui::GetContentRegionAvail();
   ImGui::Image((GLuint)framebuffer.get_color_attachment0()->id, window_size,

@@ -1,5 +1,6 @@
 #include "static_mesh.h"
 
+#include <spdlog/spdlog.h>
 #include <utility>
 
 StaticMesh::StaticMesh(shared_ptr<Model> model,
@@ -19,6 +20,8 @@ StaticMeshLoader::StaticMeshLoader()
     : packed(make_shared<SdfModelPacked>(vector<SdfModel *>(), false)) {}
 
 StaticMesh StaticMeshLoader::load_static_mesh(string path) {
+
+  auto start_time = std::chrono::high_resolution_clock::now();
   const int res = 64;
   auto model = make_shared<Model>(path);
   auto indices = vector<unsigned int>();
@@ -32,6 +35,12 @@ StaticMesh StaticMeshLoader::load_static_mesh(string path) {
     auto index = packed->add(sdf_model);
     indices.push_back(index);
   }
+
+  auto elapsed = std::chrono::high_resolution_clock::now() - start_time;
+
+  SPDLOG_DEBUG(
+      "loaded {}, took {}ms", path,
+      std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count());
 
   return {model, packed, indices};
 }

@@ -6,6 +6,7 @@
 #include "../thumbnail_generator.h"
 
 #include <imgui.h>
+#include <spdlog/spdlog.h>
 #include <vector>
 
 using namespace ale;
@@ -17,6 +18,8 @@ ui::ContentBrowser::ContentBrowser(StaticMeshLoader &sm_loader,
 }
 
 void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
+  SPDLOG_DEBUG("Refreshing contents of {}", browse_path);
+
   auto file_metas = afs::list(browse_path);
   for (auto &file_meta : file_metas) {
     if (entries.find(file_meta.full_path) == entries.end()) {
@@ -37,13 +40,14 @@ void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
       }
     }
   }
+  SPDLOG_DEBUG("Finish refreshing contents of {}", browse_path);
 }
 
 optional<ui::ContentBrowser::Entry>
 ui::ContentBrowser::draw_and_handle_clicks() {
   optional<Entry> clicked = nullopt;
 
-  ImGui::Begin("ContentBrowser");
+  ImGui::Begin(panel_name.c_str());
   for (auto &[key, entry] : entries) {
     if (ImGui::Selectable(("##cb-" + key).c_str(), false,
                           ImGuiSelectableFlags_SpanAllColumns,

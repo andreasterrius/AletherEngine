@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 // clang-format on
 
+#include "spdlog/spdlog.h"
 #include "src/data/static_mesh.h"
 #include "src/file_system.h"
 #include "src/gizmo/gizmo.h"
@@ -28,6 +29,9 @@ using afs = ale::FileSystem;
 
 int main() {
   glfwInit();
+
+  spdlog::set_level(spdlog::level::trace);
+  SPDLOG_INFO("Starting Editor2");
 
   auto window = Window(1280, 800, "Editor 2");
   auto camera = Camera(ARCBALL, window.get_size().x, window.get_size().y,
