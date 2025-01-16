@@ -99,7 +99,7 @@ void EditorRootLayout::draw_and_handle_events(entt::registry &world) {
 
   // Show the scene
   scene_viewport_ui.draw();
-  scene_tree_ui.draw_and_handle_clicks(world);
+  scene_tree_ui.draw_and_handle_clicks(world, gizmo.selected_entity);
 
   // Assign specific windows to each dock
   ImGui::DockBuilderAddNode(dockspace_id,

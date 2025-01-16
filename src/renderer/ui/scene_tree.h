@@ -16,9 +16,12 @@ public:
   struct Entry {
     int id;
     std::string name;
+    bool currently_selected;
   };
 
-  std::optional<Entry> draw_and_handle_clicks(entt::registry &world);
+  std::optional<Entry>
+  draw_and_handle_clicks(entt::registry &world,
+                         std::optional<entt::entity> selected_entity);
 };
 
 #endif // SCENE_TREE_H

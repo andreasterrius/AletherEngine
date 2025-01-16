@@ -4,6 +4,7 @@
 #include <fstream>
 #include <spdlog/spdlog.h>
 #include <utility>
+#include <zstd.h>
 
 using afs = ale::FileSystem;
 
@@ -104,8 +105,9 @@ void StaticMeshLoader::save_sdf(Texture3D &sdf, const string &sdf_name) {
   SPDLOG_TRACE("saving sdf {} -> {}", sdf_name, sdf_cache_path);
 
   auto data = sdf.retrieve_data_from_gpu();
-  ofstream out_file(sdf_cache_path);
-  out_file.write(reinterpret_cast<const char *>(data.data()), data.size() * sizeof(float));
+  ofstream out_file(sdf_cache_path, std::ios::binary);
+  out_file.write(reinterpret_cast<const char *>(data.data()),
+                 data.size() * sizeof(float));
   out_file.close();
 }
 

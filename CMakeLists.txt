@@ -14,6 +14,8 @@ set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/assimp)
 add_subdirectory(external/glfw)
 
+add_subdirectory(external/zstd/build/cmake)
+
 option(SPDLOG_BUILD_SHARED "Build spdlog as shared library" ON)
 add_subdirectory(external/spdlog)
 
@@ -72,11 +74,12 @@ function(create_exe name folder_name)
             external/glad/include
             external/assimp/include
             external/glfw/include
-            ${CMAKE_BINARY_DIR}/external/assimp/includea
+            ${CMAKE_BINARY_DIR}/external/assimp/include
             external/imgui
             external/imgui/backends
+            external/zstd/lib
     )
-    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT spdlog::spdlog)
+    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT spdlog::spdlog zstdd)
     target_compile_definitions(${name} PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)
 endfunction()
 
