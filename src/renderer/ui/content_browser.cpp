@@ -18,7 +18,7 @@ ui::ContentBrowser::ContentBrowser(StaticMeshLoader &sm_loader,
 }
 
 void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
-  SPDLOG_DEBUG("Refreshing contents of {}", browse_path);
+  SPDLOG_TRACE("Refreshing contents of {}", browse_path);
 
   auto file_metas = afs::list(browse_path);
   for (auto &file_meta : file_metas) {
@@ -40,7 +40,7 @@ void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
       }
     }
   }
-  SPDLOG_DEBUG("Finish refreshing contents of {}", browse_path);
+  SPDLOG_TRACE("Finish refreshing contents of {}", browse_path);
 }
 
 optional<ui::ContentBrowser::Entry>

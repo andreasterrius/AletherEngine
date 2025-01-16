@@ -39,6 +39,13 @@ public:
   StaticMeshLoader();
 
   StaticMesh load_static_mesh(string path);
+
+private:
+  optional<Texture3D> load_cached_sdf(int res, const string &sdf_name);
+
+  void save_sdf(Texture3D &sdf, const string &sdf_name);
+
+  std::string hash_sdf_name(std::string sdf_name);
 };
 
 }; // namespace ale

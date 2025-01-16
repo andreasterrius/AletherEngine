@@ -69,7 +69,22 @@ public:
   unsigned int id = 0;
 
   // initialize a texture, empty data is possible
-  Texture3D(Meta meta, vector<float> &data);
+  template <typename T> Texture3D(Meta meta, vector<T> &data) : meta(meta) {
+    glGenTextures(1, &this->id);
+    glBindTexture(GL_TEXTURE_3D, this->id);
+    glTexImage3D(GL_TEXTURE_3D, 0, meta.internal_format, meta.width,
+                 meta.height, meta.depth, 0, meta.input_format, meta.input_type,
+                 data.empty() ? nullptr : data.data());
+
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glBindTexture(GL_TEXTURE_3D, 0);
+  }
+
   ~Texture3D();
 
   Texture3D(const Texture3D &other) = delete;

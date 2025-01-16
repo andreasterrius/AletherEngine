@@ -186,29 +186,6 @@ Texture &Texture::operator=(Texture &&other) {
   return *this;
 }
 
-Texture3D::Texture3D(Meta meta, vector<float> &data) : meta(meta) {
-  glGenTextures(1, &this->id);
-  glBindTexture(GL_TEXTURE_3D, this->id);
-  if (!data.empty()) {
-    glTexImage3D(GL_TEXTURE_3D, 0, meta.internal_format, meta.width,
-                 meta.height, meta.depth, 0, meta.input_format, meta.input_type,
-                 data.data());
-  } else {
-    vector<vec4> empty_pixel(meta.width * meta.height * meta.depth, vec4(0.0));
-    glTexImage3D(GL_TEXTURE_3D, 0, meta.internal_format, meta.width,
-                 meta.height, meta.depth, 0, meta.input_format, meta.input_type,
-                 empty_pixel.data());
-  }
-
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  glBindTexture(GL_TEXTURE_3D, 0);
-}
-
 Texture3D::~Texture3D() { glDeleteTextures(1, &id); }
 
 vector<float> Texture3D::retrieve_data_from_gpu() {
@@ -299,8 +276,7 @@ Texture3D Texture3D::load(string name) {
   return std::move(Texture3D(meta, pixels));
 }
 
-Texture3D::Texture3D(Texture3D &&other)
-    : meta(std::move(other.meta)), id(other.id) {
+Texture3D::Texture3D(Texture3D &&other) : meta(other.meta), id(other.id) {
   other.id = 0;
 }
 

@@ -6,7 +6,7 @@
 
 #include <spdlog/spdlog.h>
 ale::Framebuffer::Framebuffer(Meta meta) : meta(meta) {
-  SPDLOG_DEBUG("Creating framebuffer {} {}", meta.width, meta.height);
+  SPDLOG_TRACE("Creating framebuffer {} {}", meta.width, meta.height);
   glEnable(GL_FRAMEBUFFER_SRGB);
   glGenFramebuffers(1, &framebuffer_id);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
@@ -37,7 +37,7 @@ ale::Framebuffer::Framebuffer(Meta meta) : meta(meta) {
   }
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  SPDLOG_DEBUG("Created framebuffer {} {}", meta.width, meta.height);
+  SPDLOG_TRACE("Created framebuffer {} {}", meta.width, meta.height);
 }
 
 shared_ptr<Texture> ale::Framebuffer::create_new_color_attachment0() {
