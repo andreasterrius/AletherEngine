@@ -17,6 +17,7 @@ public:
   struct Event {
     bool is_exit_clicked = false;
     bool is_new_clicked = false;
+    optional<ContentBrowser::Entry> new_object;
   };
 
 private:
@@ -28,21 +29,21 @@ private:
 
 private:
   ImGuiID dockspace_id;
+  bool show_menubar;
 
 public:
   EditorRootLayout(StaticMeshLoader &sm_loader, ivec2 initial_window_size);
 
-  Event start(ivec2 pos, ivec2 size);
-
+  void start(ivec2 pos, ivec2 size);
+  Event draw_and_handle_events(entt::registry &world);
   void end();
 
   void handle_press(Camera &camera, entt::registry &world,
                     ivec2 cursor_top_left);
   void handle_release();
   void tick(Camera &camera, entt::registry &world, ivec2 cursor_top_left);
-  void start_frame();
-  void end_frame(Camera &camera);
-  void draw_and_handle_events(entt::registry &world);
+  void start_capture_scene();
+  void end_capture_scene(Camera &camera);
 };
 } // namespace ale::ui
 

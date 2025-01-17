@@ -18,7 +18,7 @@ EditorRootLayout::EditorRootLayout(StaticMeshLoader &sm_loader,
       scene_viewport_ui(initial_window_size),
       gizmo_light(make_pair(vec3(5.0f), Light{})) {}
 
-EditorRootLayout::Event EditorRootLayout::start(ivec2 pos, ivec2 size) {
+void EditorRootLayout::start(ivec2 pos, ivec2 size) {
   auto x = pos.x;
   auto y = pos.y;
   auto size_x = size.x;
@@ -41,28 +41,11 @@ EditorRootLayout::Event EditorRootLayout::start(ivec2 pos, ivec2 size) {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
                       ImVec2(0, 0)); // we don't want any padding for
   // windows docked to this window frame
-  bool show_menubar =
-      (ImGui::Begin("Main", NULL, windowFlags)); // show the "window"
+  show_menubar = (ImGui::Begin("Main", NULL, windowFlags)); // show the "window"
   ImGui::PopStyleVar(); // restore the style so inner windows have fames
 
   dockspace_id = ImGui::DockSpace(ImGui::GetID("Dockspace"), ImVec2(0.0f, 0.0f),
                                   ImGuiDockNodeFlags_PassthruCentralNode);
-
-  Event event;
-  if (show_menubar) {
-    // Do a menu bar with an exit menu
-    if (ImGui::BeginMenuBar()) {
-      if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("New"))
-          event.is_new_clicked = true;
-        if (ImGui::MenuItem("Exit"))
-          event.is_exit_clicked = true;
-        ImGui::EndMenu();
-      }
-      ImGui::EndMenuBar();
-    }
-  }
-  return event;
 }
 
 void EditorRootLayout::end() { ImGui::End(); }
@@ -82,23 +65,37 @@ void EditorRootLayout::tick(Camera &camera, entt::registry &world,
       cursor_top_left, camera.GetProjectionMatrix(), camera.GetViewMatrix());
   gizmo.tick(mouse_ray, world);
 }
-void EditorRootLayout::start_frame() { scene_viewport_ui.start_frame(); }
+void EditorRootLayout::start_capture_scene() {
+  scene_viewport_ui.start_frame();
+}
 
-void EditorRootLayout::end_frame(Camera &camera) {
+void EditorRootLayout::end_capture_scene(Camera &camera) {
   glDisable(GL_DEPTH_TEST);
   gizmo.render(camera, gizmo_light.first);
   glEnable(GL_DEPTH_TEST);
 
   scene_viewport_ui.end_frame();
 }
-void EditorRootLayout::draw_and_handle_events(entt::registry &world) {
-  auto clicked = content_browser_ui.draw_and_handle_clicks();
-  if (clicked.has_value()) {
-    const auto entity = world.create();
-    world.emplace<SceneNode>(entity, SceneNode("unnamed"));
-    world.emplace<Transform>(entity, Transform{});
-    world.emplace<StaticMesh>(entity, clicked->static_mesh);
+
+EditorRootLayout::Event
+EditorRootLayout::draw_and_handle_events(entt::registry &world) {
+
+  Event event;
+  if (show_menubar) {
+    // Do a menu bar with an exit menu
+    if (ImGui::BeginMenuBar()) {
+      if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("New"))
+          event.is_new_clicked = true;
+        if (ImGui::MenuItem("Exit"))
+          event.is_exit_clicked = true;
+        ImGui::EndMenu();
+      }
+      ImGui::EndMenuBar();
+    }
   }
+
+  event.new_object = content_browser_ui.draw_and_handle_clicks();
 
   // Show the scene
   scene_viewport_ui.draw();
@@ -123,6 +120,8 @@ void EditorRootLayout::draw_and_handle_events(entt::registry &world) {
 
   // Finalize the layout
   ImGui::DockBuilderFinish(dockspace_id);
+
+  return event;
 }
 
 } // namespace ale::ui

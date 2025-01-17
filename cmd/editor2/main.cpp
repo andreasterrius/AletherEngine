@@ -106,22 +106,22 @@ int main() {
 
     // Render Scene
     {
-      editor_root_layout_ui.start_frame();
+      editor_root_layout_ui.start_capture_scene();
       basic_renderer.render(camera, world);
 
       // line_renderer.queue_line(debug_ray, WHITE);
       line_renderer.render(camera.GetProjectionMatrix(),
                            camera.GetViewMatrix());
-
-      editor_root_layout_ui.end_frame(camera);
+      editor_root_layout_ui.end_capture_scene(camera);
     }
 
     // Render UI
     {
       window.start_ui_frame();
+      editor_root_layout_ui.start(window.get_position(), window.get_size());
 
-      auto events =
-          editor_root_layout_ui.start(window.get_position(), window.get_size());
+      auto events = editor_root_layout_ui.draw_and_handle_events(world);
+      // we can handle the events from UI here
       if (events.is_exit_clicked) {
         window.set_should_close(true);
       }
@@ -129,10 +129,14 @@ int main() {
         world.clear<>();
         world = new_world(sm_loader);
       }
+      if (events.new_object.has_value()) {
+        const auto entity = world.create();
+        world.emplace<SceneNode>(entity, SceneNode("unnamed"));
+        world.emplace<Transform>(entity, Transform{});
+        world.emplace<StaticMesh>(entity, events.new_object->static_mesh);
+      }
 
-      editor_root_layout_ui.draw_and_handle_events(world);
       editor_root_layout_ui.end();
-
       window.end_ui_frame();
     }
 
