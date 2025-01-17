@@ -164,7 +164,7 @@ void Texture::dump_data_to_file(string path) {
           out_file << data[ctr] << " ";
           ctr += 1;
         } else {
-          throw new TextureException("format not yet supported");
+          throw TextureException("format not yet supported");
         }
       }
       out_file << "\n";

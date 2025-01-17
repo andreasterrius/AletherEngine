@@ -9,8 +9,8 @@ using afs = ale::FileSystem;
 // using namespace ale;
 
 BasicRenderer::BasicRenderer()
-    : shader(afs::root("src/renderer/basic_renderer.vs").c_str(),
-             afs::root("src/renderer/basic_renderer.fs").c_str()) {
+    : color_shader(afs::root("src/renderer/basic_renderer.vs").c_str(),
+                   afs::root("src/renderer/basic_renderer.fs").c_str()) {
   glEnable(GL_CULL_FACE);
 }
 
@@ -19,21 +19,22 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
   glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  shader.use();
-  shader.setMat4("projection", camera.GetProjectionMatrix());
-  shader.setMat4("view", camera.GetViewMatrix());
-  shader.setVec3("viewPos", camera.Position);
+  color_shader.use();
+  color_shader.setMat4("projection", camera.GetProjectionMatrix());
+  color_shader.setMat4("view", camera.GetViewMatrix());
+  color_shader.setVec3("viewPos", camera.Position);
 
   auto light_view = world.view<Transform, Light>();
   int light_index = 0;
   for (auto [entity, transform, light] : light_view.each()) {
-    shader.setVec3(format("lights[{}].position", light_index),
-                   transform.translation);
-    shader.setVec3(format("lights[{}].color", light_index), light.color);
-    shader.setFloat(format("lights[{}].radius", light_index), light.radius);
+    color_shader.setVec3(format("lights[{}].position", light_index),
+                         transform.translation);
+    color_shader.setVec3(format("lights[{}].color", light_index), light.color);
+    color_shader.setFloat(format("lights[{}].radius", light_index),
+                          light.radius);
     light_index += 1;
   }
-  shader.setInt("numLights", light_index);
+  color_shader.setInt("numLights", light_index);
 
   // Handle shadows, can only handle 1 sdf model packed for now.
   auto sdf_model_packed = std::shared_ptr<SdfModelPacked>(nullptr);
@@ -52,17 +53,15 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
     }
   }
   if (sdf_model_packed != nullptr) {
-    sdf_model_packed->bind_to_shader(shader, entries);
+    sdf_model_packed->bind_to_shader(color_shader, entries);
   }
   // End handle shadows
 
   // Render static mesh
   auto view = world.view<Transform, StaticMesh>();
   for (auto [entity, transform, static_mesh] : view.each()) {
-    shader.setMat4("model", transform.getModelMatrix());
-    shader.setVec4("diffuseColor", vec4(1.0, 1.0, 1.0, 0.0));
-    static_mesh.get_model()->draw(shader);
+    color_shader.setMat4("model", transform.getModelMatrix());
+    color_shader.setVec4("diffuseColor", vec4(1.0, 1.0, 1.0, 0.0));
+    static_mesh.get_model()->draw(color_shader);
   }
-
-  // Render light
 }

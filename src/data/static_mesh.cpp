@@ -29,9 +29,11 @@ StaticMesh::get_model_shadow() {
 
 StaticMeshLoader::StaticMeshLoader()
     : packed(make_shared<SdfModelPacked>(vector<SdfModel *>(), false)) {
-  this->create_static_mesh(SM_DEFAULT_CUBE, ModelFactory::createCubeModel());
-  this->create_static_mesh(SM_DEFAULT_SPHERE,
-                           ModelFactory::createSphereModel(1.0));
+  this->create_static_mesh(
+      SM_UNIT_CUBE, Model(afs::root("resources/default_models/unit_cube.obj")));
+  this->create_static_mesh(
+      SM_UNIT_SPHERE,
+      Model(afs::root("resources/default_models/unit_sphere.obj")));
 }
 
 StaticMesh StaticMeshLoader::load_static_mesh(string path) {

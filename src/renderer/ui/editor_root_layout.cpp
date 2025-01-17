@@ -47,19 +47,22 @@ EditorRootLayout::Event EditorRootLayout::start(ivec2 pos, ivec2 size) {
 
   dockspace_id = ImGui::DockSpace(ImGui::GetID("Dockspace"), ImVec2(0.0f, 0.0f),
                                   ImGuiDockNodeFlags_PassthruCentralNode);
+
+  Event event;
   if (show_menubar) {
     // Do a menu bar with an exit menu
     if (ImGui::BeginMenuBar()) {
       if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("New"))
+          event.is_new_clicked = true;
         if (ImGui::MenuItem("Exit"))
-          return Event{.is_exit_clicked = true};
+          event.is_exit_clicked = true;
         ImGui::EndMenu();
       }
       ImGui::EndMenuBar();
     }
   }
-
-  return Event{};
+  return event;
 }
 
 void EditorRootLayout::end() { ImGui::End(); }

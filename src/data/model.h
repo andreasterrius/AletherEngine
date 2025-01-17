@@ -66,14 +66,6 @@ private:
   loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
 };
 
-class ModelFactory {
-public:
-  static Model createCubeModel();
-
-  // https://www.songho.ca/opengl/gl_sphere.html#sphere
-  static Model createSphereModel(float radius);
-};
-
 } // namespace ale
 
 #endif

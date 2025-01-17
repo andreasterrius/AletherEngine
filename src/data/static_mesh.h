@@ -40,8 +40,8 @@ public:
   pair<shared_ptr<SdfModelPacked>, vector<unsigned int>> get_model_shadow();
 };
 
-const string SM_DEFAULT_CUBE = "default_cube";
-const string SM_DEFAULT_SPHERE = "default_sphere";
+const string SM_UNIT_CUBE = "default_cube";
+const string SM_UNIT_SPHERE = "default_sphere";
 
 class StaticMeshLoader {
   SdfGeneratorGPU sdf_generator_gpu;

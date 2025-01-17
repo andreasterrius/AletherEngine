@@ -30,6 +30,26 @@ using namespace ale;
 using namespace glm;
 using afs = ale::FileSystem;
 
+entt::registry new_world(StaticMeshLoader &sm_loader) {
+  // Create world
+  auto world = entt::registry{};
+
+  // Lights
+  {
+    const auto entity = world.create();
+    world.emplace<SceneNode>(entity, SceneNode("light"));
+    world.emplace<Transform>(entity,
+                             Transform{.translation = vec3(10.0, 10.0, 10.0)});
+    world.emplace<Light>(entity, Light{});
+
+    auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
+    sphere.set_cast_shadow(false);
+    world.emplace<StaticMesh>(entity, sphere);
+  }
+
+  return world;
+}
+
 int main() {
   glfwInit();
 
@@ -45,22 +65,7 @@ int main() {
   auto line_renderer = LineRenderer();
   auto sm_loader = StaticMeshLoader();
 
-  // Create world
-  auto world = entt::registry{};
-
-  // Lights
-  {
-    const auto entity = world.create();
-    world.emplace<SceneNode>(entity, SceneNode("light"));
-    world.emplace<Transform>(entity,
-                             Transform{.translation = vec3(10.0, 10.0, 10.0)});
-    world.emplace<Light>(entity, Light{});
-
-    auto sphere = *sm_loader.get_static_mesh(SM_DEFAULT_SPHERE);
-    sphere.set_cast_shadow(false);
-
-    world.emplace<StaticMesh>(entity, sphere);
-  }
+  auto world = new_world(sm_loader);
 
   // Declare UI related
   auto editor_root_layout_ui =
@@ -119,6 +124,10 @@ int main() {
           editor_root_layout_ui.start(window.get_position(), window.get_size());
       if (events.is_exit_clicked) {
         window.set_should_close(true);
+      }
+      if (events.is_new_clicked) {
+        world.clear<>();
+        world = new_world(sm_loader);
       }
 
       editor_root_layout_ui.draw_and_handle_events(world);

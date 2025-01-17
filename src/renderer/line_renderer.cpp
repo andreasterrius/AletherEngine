@@ -40,7 +40,7 @@ LineRenderer::LineRenderer()
   glBindVertexArray(0);
 
   // for boxes
-  Model cube = ModelFactory::createCubeModel();
+  Model cube = Model(afs::root("resources/default_models/unit_cube.obj"));
   glGenVertexArrays(1, &boxVAO);
   glGenBuffers(1, &boxVBO);
 

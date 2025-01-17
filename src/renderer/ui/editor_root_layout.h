@@ -16,6 +16,7 @@ class EditorRootLayout {
 public:
   struct Event {
     bool is_exit_clicked = false;
+    bool is_new_clicked = false;
   };
 
 private:

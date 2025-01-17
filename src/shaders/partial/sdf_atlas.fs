@@ -64,6 +64,7 @@ bool raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, out
     const float MAXIMUM_TRACE_DISTANCE = maxTraceDist;
     const vec3 NO_HIT_COLOR = vec3(0.52, 0.8, 0.92);
     const vec3 SDF_COLOR =  vec3(0.89, 0.89, 0.56);
+    const vec3 oriRayWo = rayWo;
 
     for (int i = 0; i < NUMBER_OF_STEPS; ++i)
     {
@@ -98,7 +99,7 @@ bool raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, out
             }
         }
         rayWo = vec3(offsets[closestDistIndex].modelMat * vec4(closestRayLo+closestRayLd*closestDist, 1.0));
-        if(closestDist > MAXIMUM_TRACE_DISTANCE) {
+        if(distance(rayWo, oriRayWo) > MAXIMUM_TRACE_DISTANCE) {
             return false;
         }
         if(closestDist < MINIMUM_HIT_DISTANCE)

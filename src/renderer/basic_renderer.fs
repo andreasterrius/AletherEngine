@@ -25,7 +25,10 @@ float ShadowCalculation(vec3 fragPos, vec3 lightPos, vec3 normalDir)
     vec3 lightDir = normalize(lightPos - fs_in.FragPos);
     vec3 isectPos = vec3(0.0);
     vec3 boxCenter = vec3(0.0);
-    bool occluded = raymarch(fragPos + normalDir, lightDir, distance(lightPos, fragPos), isectPos, boxCenter);
+
+    // + (normalDir * 0.05) -> prevents self intersect but cannot ignore self intersection fully because of possible self shadow
+    // + (lightDir * 0.05) -> prevents bleeding by escaping the really close to boundaries sdfs
+    bool occluded = raymarch(fragPos + (normalDir * 0.05) + (lightDir * 0.05), lightDir, distance(lightPos, fragPos), isectPos, boxCenter);
 
     if (occluded) {
         return 1.0;
