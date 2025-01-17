@@ -23,7 +23,7 @@ private:
   SceneViewport scene_viewport_ui;
   SceneTree scene_tree_ui;
   Gizmo gizmo;
-  Light gizmo_light;
+  pair<vec3, Light> gizmo_light;
 
 private:
   ImGuiID dockspace_id;

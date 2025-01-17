@@ -15,8 +15,14 @@ namespace ale {
 
 // This class is safe to be copied.
 class StaticMesh {
+public:
+  struct Meta {
+    bool cast_shadow = true;
+  };
+
 private:
   shared_ptr<Model> model;
+  Meta meta;
 
   // shadow
   shared_ptr<SdfModelPacked> sdf_model_packed;
@@ -27,18 +33,31 @@ public:
              shared_ptr<SdfModelPacked> sdf_model_packed = nullptr,
              vector<unsigned int> sdf_model_packed_index = {});
 
+  void set_cast_shadow(bool cast_shadow);
+  bool get_cast_shadow();
+
   shared_ptr<Model> get_model();
   pair<shared_ptr<SdfModelPacked>, vector<unsigned int>> get_model_shadow();
 };
 
+const string SM_DEFAULT_CUBE = "default_cube";
+const string SM_DEFAULT_SPHERE = "default_sphere";
+
 class StaticMeshLoader {
   SdfGeneratorGPU sdf_generator_gpu;
   shared_ptr<SdfModelPacked> packed; // OWNING pointer
+  unordered_map<string, StaticMesh> static_meshes;
 
 public:
   StaticMeshLoader();
 
   StaticMesh load_static_mesh(string path);
+
+  StaticMesh create_static_mesh(string id, Model model);
+
+  optional<StaticMesh> get_static_mesh(string id);
+
+  unordered_map<string, StaticMesh> &get_static_meshes();
 
 private:
   optional<Texture3D> load_cached_sdf(int res, const string &sdf_name);

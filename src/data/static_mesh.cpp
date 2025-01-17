@@ -14,6 +14,12 @@ StaticMesh::StaticMesh(shared_ptr<Model> model,
     : model(std::move(model)), sdf_model_packed(std::move(sdf_model_packed)),
       sdf_model_packed_index(std::move(sdf_model_packed_index)) {}
 
+void StaticMesh::set_cast_shadow(bool cast_shadow) {
+  this->meta.cast_shadow = cast_shadow;
+}
+
+bool StaticMesh::get_cast_shadow() { return this->meta.cast_shadow; }
+
 shared_ptr<Model> StaticMesh::get_model() { return model; }
 
 pair<shared_ptr<SdfModelPacked>, vector<unsigned int>>
@@ -22,28 +28,39 @@ StaticMesh::get_model_shadow() {
 }
 
 StaticMeshLoader::StaticMeshLoader()
-    : packed(make_shared<SdfModelPacked>(vector<SdfModel *>(), false)) {}
+    : packed(make_shared<SdfModelPacked>(vector<SdfModel *>(), false)) {
+  this->create_static_mesh(SM_DEFAULT_CUBE, ModelFactory::createCubeModel());
+  this->create_static_mesh(SM_DEFAULT_SPHERE,
+                           ModelFactory::createSphereModel(1.0));
+}
 
 StaticMesh StaticMeshLoader::load_static_mesh(string path) {
+  return create_static_mesh(path, Model(path));
+}
 
+StaticMesh StaticMeshLoader::create_static_mesh(string id, Model model) {
+  auto it = this->static_meshes.find(id);
+  if (it != this->static_meshes.end()) {
+    return it->second;
+  }
   auto start_time = std::chrono::high_resolution_clock::now();
   const int res = 64;
-  auto model = make_shared<Model>(path);
+
   auto indices = vector<unsigned int>();
-  for (int i = 0; i < model->meshes.size(); ++i) {
-    string name = path + "_" + to_string(i);
+  for (int i = 0; i < model.meshes.size(); ++i) {
+    string name = id + "_" + to_string(i);
 
     auto cached = load_cached_sdf(res, name);
     if (cached) {
-      auto sdf_model = SdfModel(model->meshes[i], std::move(*cached), res);
+      auto sdf_model = SdfModel(model.meshes[i], std::move(*cached), res);
       auto index = packed->add(sdf_model);
       indices.push_back(index);
     } else {
-      sdf_generator_gpu.add_mesh(name, model->meshes[i], res, res, res);
+      sdf_generator_gpu.add_mesh(name, model.meshes[i], res, res, res);
       sdf_generator_gpu.generate_all();
 
       auto sdf_model =
-          SdfModel(model->meshes[i], move(sdf_generator_gpu.at(name)), res);
+          SdfModel(model.meshes[i], move(sdf_generator_gpu.at(name)), res);
       auto index = packed->add(sdf_model);
       indices.push_back(index);
 
@@ -53,11 +70,28 @@ StaticMesh StaticMeshLoader::load_static_mesh(string path) {
 
   auto elapsed = std::chrono::high_resolution_clock::now() - start_time;
   SPDLOG_INFO(
-      "loaded {}, took {}ms", path,
+      "loaded {}, took {}ms", id,
       std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count());
 
-  return {model, packed, indices};
+  auto static_mesh =
+      StaticMesh{make_shared<Model>(std::move(model)), packed, indices};
+  this->static_meshes.emplace(id, static_mesh);
+
+  return static_mesh;
 }
+
+optional<StaticMesh> StaticMeshLoader::get_static_mesh(string id) {
+  auto it = this->static_meshes.find(id);
+  if (it != this->static_meshes.end()) {
+    return it->second;
+  }
+  return nullopt;
+}
+
+unordered_map<string, StaticMesh> &StaticMeshLoader::get_static_meshes() {
+  return this->static_meshes;
+}
+
 optional<Texture3D> StaticMeshLoader::load_cached_sdf(int res,
                                                       const string &sdf_name) {
 

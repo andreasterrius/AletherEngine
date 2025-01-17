@@ -6,7 +6,6 @@
 
 #include "../camera.h"
 #include "../data/shader.h"
-#include "../sdf_generator_gpu.h"
 #include "../sdf_model_packed.h"
 
 namespace ale {
@@ -17,19 +16,20 @@ public:
 };
 
 struct Light {
-  vec3 position;
+  vec3 color = vec3(1.0f);
+  float radius = 1.0f;
 };
 
 class BasicRenderer {
 private:
-  Shader basicShader;
+  Shader shader;
 
   bool debug_mode = true;
 
 public:
   BasicRenderer();
 
-  void render(Camera &camera, vector<Light> &lights, entt::registry &world);
+  void render(Camera &camera, entt::registry &world);
 };
 } // namespace ale
 

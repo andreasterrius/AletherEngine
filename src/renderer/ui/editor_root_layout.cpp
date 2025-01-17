@@ -16,7 +16,7 @@ EditorRootLayout::EditorRootLayout(StaticMeshLoader &sm_loader,
                                    ivec2 initial_window_size)
     : content_browser_ui(sm_loader, afs::root("resources/content_browser")),
       scene_viewport_ui(initial_window_size),
-      gizmo_light(vec3(5.0f, 5.0f, 5.0f)) {}
+      gizmo_light(make_pair(vec3(5.0f), Light{})) {}
 
 EditorRootLayout::Event EditorRootLayout::start(ivec2 pos, ivec2 size) {
   auto x = pos.x;
@@ -83,18 +83,18 @@ void EditorRootLayout::start_frame() { scene_viewport_ui.start_frame(); }
 
 void EditorRootLayout::end_frame(Camera &camera) {
   glDisable(GL_DEPTH_TEST);
-  gizmo.render(camera, gizmo_light.position);
+  gizmo.render(camera, gizmo_light.first);
   glEnable(GL_DEPTH_TEST);
 
   scene_viewport_ui.end_frame();
 }
 void EditorRootLayout::draw_and_handle_events(entt::registry &world) {
   auto clicked = content_browser_ui.draw_and_handle_clicks();
-  if (clicked.has_value() && clicked->static_mesh.has_value()) {
+  if (clicked.has_value()) {
     const auto entity = world.create();
     world.emplace<SceneNode>(entity, SceneNode("unnamed"));
     world.emplace<Transform>(entity, Transform{});
-    world.emplace<StaticMesh>(entity, *clicked->static_mesh);
+    world.emplace<StaticMesh>(entity, clicked->static_mesh);
   }
 
   // Show the scene

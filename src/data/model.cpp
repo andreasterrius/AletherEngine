@@ -309,8 +309,8 @@ Model ModelFactory::createCubeModel() {
 
 Model ModelFactory::createSphereModel(float radius) {
   vector<Vertex> vertices;
-  int sectorCount = 72;
-  int stackCount = 24;
+  int sectorCount = 24;
+  int stackCount = 12;
   float PI = pi<float>();
 
   // clear memory of prev arrays

@@ -14,12 +14,18 @@ using namespace ale;
 ui::ContentBrowser::ContentBrowser(StaticMeshLoader &sm_loader,
                                    string browse_path)
     : browse_path(browse_path) {
+
+  for (auto &[name, sm] : sm_loader.get_static_meshes()) {
+    entries.emplace(name, Entry{.name = name,
+                                .thumbnail = thumbnail_generator.generate(sm),
+                                .static_mesh = sm});
+  }
+
   refresh_files(sm_loader);
 }
 
 void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
   SPDLOG_TRACE("Refreshing contents of {}", browse_path);
-
   auto file_metas = afs::list(browse_path);
   for (auto &file_meta : file_metas) {
     if (entries.find(file_meta.full_path) == entries.end()) {
@@ -31,10 +37,12 @@ void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
         // generate thumbnail
         auto thumbnail = thumbnail_generator.generate(static_mesh);
 
-        auto entry = Entry{};
-        entry.file_meta = file_meta;
-        entry.thumbnail = thumbnail;
-        entry.static_mesh = static_mesh;
+        auto entry = Entry{
+            .name = file_meta.file_name,
+            .thumbnail = thumbnail,
+            .static_mesh = static_mesh,
+            .file_meta = file_meta,
+        };
 
         entries.emplace(file_meta.full_path, entry);
       }
@@ -58,7 +66,7 @@ ui::ContentBrowser::draw_and_handle_clicks() {
     ImGui::Image(entry.thumbnail->id, ImVec2(100, 100), ImVec2(0, 1),
                  ImVec2(1, 0));
     ImGui::SameLine();
-    ImGui::Text(entry.file_meta.file_name.c_str());
+    ImGui::Text(entry.name.c_str());
 
     ImGui::Spacing();
   }

@@ -15,18 +15,25 @@ shared_ptr<Texture> ThumbnailGenerator::generate(StaticMesh static_mesh) {
   {
     framebuffer.start_frame();
 
-    auto lights = vector{Light{vec3(5.0f, 5.0f, 5.0f)}};
     auto camera =
         Camera(ARCBALL, framebuffer.get_size().x, framebuffer.get_size().y,
                glm::vec3(3.0f, 5.0f, -7.0f));
     auto world = entt::registry{};
+    // create model
     {
       const auto entity = world.create();
       world.emplace<Transform>(entity, Transform{});
       world.emplace<StaticMesh>(entity, static_mesh);
     }
+    // create light
+    {
+      const auto entity = world.create();
+      world.emplace<Transform>(
+          entity, Transform{.translation = vec3(5.0f, 5.0f, 5.0f)});
+      world.emplace<Light>(entity, Light{});
+    }
 
-    renderer.render(camera, lights, world);
+    renderer.render(camera, world);
 
     framebuffer.end_frame();
   }

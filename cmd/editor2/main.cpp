@@ -19,6 +19,9 @@
 
 // clang-format off
 #define STB_IMAGE_IMPLEMENTATION
+#include "src/data/scene_node.h"
+
+
 #include <stb_image.h>
 // clang-format on
 
@@ -36,7 +39,6 @@ int main() {
   auto window = Window(1280, 800, "Editor 2");
   auto camera = Camera(ARCBALL, window.get_size().x, window.get_size().y,
                        glm::vec3(3.0f, 5.0f, -7.0f));
-  auto lights = vector{Light{vec3(5.0f, 5.0f, 5.0f)}};
 
   // Declare a basic scene
   auto basic_renderer = BasicRenderer();
@@ -45,6 +47,20 @@ int main() {
 
   // Create world
   auto world = entt::registry{};
+
+  // Lights
+  {
+    const auto entity = world.create();
+    world.emplace<SceneNode>(entity, SceneNode("light"));
+    world.emplace<Transform>(entity,
+                             Transform{.translation = vec3(10.0, 10.0, 10.0)});
+    world.emplace<Light>(entity, Light{});
+
+    auto sphere = *sm_loader.get_static_mesh(SM_DEFAULT_SPHERE);
+    sphere.set_cast_shadow(false);
+
+    world.emplace<StaticMesh>(entity, sphere);
+  }
 
   // Declare UI related
   auto editor_root_layout_ui =
@@ -86,7 +102,7 @@ int main() {
     // Render Scene
     {
       editor_root_layout_ui.start_frame();
-      basic_renderer.render(camera, lights, world);
+      basic_renderer.render(camera, world);
 
       // line_renderer.queue_line(debug_ray, WHITE);
       line_renderer.render(camera.GetProjectionMatrix(),

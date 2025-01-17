@@ -6,7 +6,7 @@ uniform vec2 iResolution;
 uniform mat4 invViewProj;
 uniform vec3 cameraPos;
 
-#include "src/shaders/partial/sdf_atlas.fs" 0
+#include "src/shaders/partial/sdf_atlas.fs"
 
 vec3 lambertBRDF(vec3 normal, vec3 lightDir, vec3 albedo) {
     float NdotL = max(dot(normal, lightDir), 0.0);

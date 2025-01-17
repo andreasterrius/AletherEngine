@@ -24,11 +24,14 @@ public:
   const string panel_name = "Content Browser";
 
   struct Entry {
-    FileMeta file_meta;
+    string name;
     shared_ptr<Texture> thumbnail;
 
-    // if file contains a static mesh;
-    optional<StaticMesh> static_mesh;
+    // if entry contains a static mesh;
+    StaticMesh static_mesh;
+
+    // if entry is from a file
+    optional<FileMeta> file_meta;
   };
 
 private:
