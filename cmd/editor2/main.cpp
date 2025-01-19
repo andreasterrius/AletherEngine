@@ -73,7 +73,7 @@ int main() {
     world.emplace<SceneNode>(entity, SceneNode("light"));
     world.emplace<Transform>(entity,
                              Transform{.translation = vec3(10.0, 10.0, -10.0)});
-    world.emplace<Light>(entity, Light{});
+    world.emplace<Light>(entity, Light{.color = vec3(3.0f, 3.0f, 3.0f)});
 
     auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
     sphere.set_cast_shadow(false);

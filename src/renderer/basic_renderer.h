@@ -18,6 +18,7 @@ public:
 struct Light {
   vec3 color = vec3(1.0f);
   float radius = 1.0f;
+  vec3 attenuation = vec3(1.0f, 0.09f, 0.032f);
 };
 
 class BasicRenderer {

@@ -30,7 +30,8 @@ shared_ptr<Texture> ThumbnailGenerator::generate(StaticMesh static_mesh) {
       const auto entity = world.create();
       world.emplace<Transform>(
           entity, Transform{.translation = vec3(5.0f, 5.0f, 5.0f)});
-      world.emplace<Light>(entity, Light{});
+      world.emplace<Light>(entity,
+                           Light{.attenuation = vec3(1.0, 0.022, 0.0019)});
     }
 
     renderer.render(camera, world);

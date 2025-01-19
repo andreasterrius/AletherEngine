@@ -33,7 +33,7 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
     color_shader.setFloat(format("lights[{}].radius", light_index),
                           light.radius);
     color_shader.setVec3(format("lights[{}].attenuation", light_index),
-                         vec3(1.0f, 0.09f, 0.032f));
+                         light.attenuation);
     light_index += 1;
   }
   color_shader.setInt("numLights", light_index);

@@ -73,7 +73,6 @@ void EditorRootLayout::start_capture_scene(Camera &camera) {
   {
     gizmo_frame.start_capture();
     gizmo.render(camera, gizmo_light.first);
-    // texture_renderer.render(test_texture);
     gizmo_frame.end_capture();
   }
 
@@ -83,7 +82,6 @@ void EditorRootLayout::start_capture_scene(Camera &camera) {
 void EditorRootLayout::end_capture_scene() {
   texture_renderer.render(*gizmo_frame.get_color_attachment0(),
                           TextureRenderer::RenderMeta{.discard_alpha = true});
-  // texture_renderer.render(test_texture);
   scene_viewport_ui.end_capture();
 }
 void EditorRootLayout::debug() {
