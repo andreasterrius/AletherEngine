@@ -70,22 +70,65 @@ TextureRenderer &TextureRenderer::operator=(TextureRenderer &&other) {
   return *this;
 }
 
-void TextureRenderer::render(Texture &texture) {
+void TextureRenderer::render(Texture &texture, RenderMeta render_meta) {
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
   shader.use();
   shader.setInt("texture1", 0);
+  shader.setBool("discard_alpha", render_meta.discard_alpha);
   glActiveTexture(GL_TEXTURE0 + 0); // active proper texture unit before binding
   glBindTexture(GL_TEXTURE_2D, texture.id);
   glBindVertexArray(vao);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
+
+  glDisable(GL_BLEND);
 }
 
-Texture::Texture(Meta meta, vector<float> &pixels) : meta(meta) {
+Texture::Texture(string path) {
+  unsigned int textureID;
+  glGenTextures(1, &textureID);
+
+  int width, height, nrComponents;
+  unsigned char *data =
+      stbi_load(path.c_str(), &width, &height, &nrComponents, 0);
+  if (data == nullptr) {
+    throw TextureException("failed to load image: " + path);
+  }
+
+  GLint format;
+  if (nrComponents == 1)
+    format = GL_RED;
+  else if (nrComponents == 2)
+    format = GL_RG;
+  else if (nrComponents == 3)
+    format = GL_RGB;
+  else if (nrComponents == 4)
+    format = GL_RGBA;
+  else
+    throw TextureException("nr components not supported");
+
+  *this = Texture(
+      Meta{
+          .width = width,
+          .height = height,
+          .internal_format = format,
+          .input_format = format,
+          .input_type = GL_UNSIGNED_BYTE,
+      },
+      data);
+  stbi_image_free(data);
+}
+
+Texture::Texture(Meta meta, vector<float> &pixels)
+    : Texture(meta, pixels.empty() ? nullptr : pixels.data()) {}
+
+Texture::Texture(Meta meta, void *data) : meta(meta) {
   glGenTextures(1, &this->id);
   glBindTexture(GL_TEXTURE_2D, this->id);
   glTexImage2D(GL_TEXTURE_2D, 0, meta.internal_format, meta.width, meta.height,
-               0, meta.input_format, meta.input_type,
-               pixels.empty() ? nullptr : pixels.data());
+               0, meta.input_format, meta.input_type, data);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

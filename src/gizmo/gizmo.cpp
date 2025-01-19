@@ -13,8 +13,8 @@
 using afs = ale::FileSystem;
 
 ale::Gizmo::Gizmo()
-    : basicColorShader(afs::root("src/gizmo/basic_color_shader.vs").c_str(),
-                       afs::root("src/gizmo/basic_color_shader.fs").c_str()) {
+    : gizmo_shader(afs::root("src/gizmo/gizmo.vs").c_str(),
+                   afs::root("src/gizmo/gizmo.fs").c_str()) {
 
   // load a flat shader here ?
   // the default raylib shader is flat though
@@ -247,26 +247,35 @@ void Gizmo::render(Camera camera, vec3 lightPos) {
     return;
   }
 
-  basicColorShader.use();
-  basicColorShader.setMat4("model", transform.getModelMatrix());
-  basicColorShader.setMat4("view", camera.GetViewMatrix());
-  basicColorShader.setMat4("projection", camera.GetProjectionMatrix());
-  basicColorShader.setVec3("lightPos", lightPos);
-  basicColorShader.setVec3("viewPos", camera.Position);
+  gizmo_shader.use();
+  gizmo_shader.setMat4("model", transform.getModelMatrix());
+  gizmo_shader.setMat4("view", camera.GetViewMatrix());
+  gizmo_shader.setMat4("projection", camera.GetProjectionMatrix());
+  gizmo_shader.setVec3("lightPos", lightPos);
+  gizmo_shader.setVec3("viewPos", camera.Position);
 
   if (this->gizmoType == Translate || this->gizmoType == Scale) {
-    // TODO: need to pass in color as well
-    this->models[ArrowX].draw(basicColorShader);
-    this->models[ArrowY].draw(basicColorShader);
-    this->models[ArrowZ].draw(basicColorShader);
+    gizmo_shader.setVec3("color", GREEN_X);
+    this->models[ArrowX].draw(gizmo_shader);
+    this->models[PlaneYZ].draw(gizmo_shader);
 
-    this->models[PlaneXY].draw(basicColorShader);
-    this->models[PlaneXZ].draw(basicColorShader);
-    this->models[PlaneYZ].draw(basicColorShader);
+    gizmo_shader.setVec3("color", BLUE_Y);
+    this->models[ArrowY].draw(gizmo_shader);
+    this->models[PlaneXZ].draw(gizmo_shader);
+
+    gizmo_shader.setVec3("color", RED_Z);
+    this->models[ArrowZ].draw(gizmo_shader);
+    this->models[PlaneXY].draw(gizmo_shader);
+
   } else if (this->gizmoType == Rotate) {
-    this->models[RotationXY].draw(basicColorShader);
-    this->models[RotationXZ].draw(basicColorShader);
-    this->models[RotationYZ].draw(basicColorShader);
+    gizmo_shader.setVec3("color", RED_Z);
+    this->models[RotationXY].draw(gizmo_shader);
+
+    gizmo_shader.setVec3("color", BLUE_Y);
+    this->models[RotationXZ].draw(gizmo_shader);
+
+    gizmo_shader.setVec3("color", GREEN_X);
+    this->models[RotationYZ].draw(gizmo_shader);
   }
 }
 

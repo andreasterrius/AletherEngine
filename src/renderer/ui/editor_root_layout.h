@@ -24,8 +24,13 @@ private:
   ContentBrowser content_browser_ui;
   SceneViewport scene_viewport_ui;
   SceneTree scene_tree_ui;
+
+  TextureRenderer texture_renderer;
+  Framebuffer gizmo_frame;
   Gizmo gizmo;
   pair<vec3, Light> gizmo_light;
+
+  Texture test_texture;
 
 private:
   ImGuiID dockspace_id;
@@ -42,8 +47,10 @@ public:
                     ivec2 cursor_top_left);
   void handle_release();
   void tick(Camera &camera, entt::registry &world, ivec2 cursor_top_left);
-  void start_capture_scene();
-  void end_capture_scene(Camera &camera);
+  void start_capture_scene(Camera &camera);
+  void end_capture_scene();
+
+  void debug();
 };
 } // namespace ale::ui
 

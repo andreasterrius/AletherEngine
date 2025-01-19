@@ -7,20 +7,33 @@
 #include <spdlog/spdlog.h>
 ale::Framebuffer::Framebuffer(Meta meta) : meta(meta) {
   SPDLOG_TRACE("Creating framebuffer {} {}", meta.width, meta.height);
-  glEnable(GL_FRAMEBUFFER_SRGB);
+  // glEnable(GL_FRAMEBUFFER_SRGB);
   glGenFramebuffers(1, &framebuffer_id);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
 
   auto empty = vector<float>();
-  this->color_attachment0 = make_shared<Texture>(
-      Texture::Meta{
-          .width = meta.width,
-          .height = meta.height,
-          .internal_format = GL_SRGB8_ALPHA8,
-          .input_format = GL_RGBA,
-          .input_type = GL_UNSIGNED_BYTE,
-      },
-      empty);
+
+  if (meta.color_space == LINEAR) {
+    this->color_attachment0 = make_shared<Texture>(
+        Texture::Meta{
+            .width = meta.width,
+            .height = meta.height,
+            .internal_format = GL_RGBA8,
+            .input_format = GL_RGBA,
+            .input_type = GL_UNSIGNED_BYTE,
+        },
+        empty);
+  } else {
+    this->color_attachment0 = make_shared<Texture>(
+        Texture::Meta{
+            .width = meta.width,
+            .height = meta.height,
+            .internal_format = GL_SRGB8_ALPHA8,
+            .input_format = GL_RGBA,
+            .input_type = GL_UNSIGNED_BYTE,
+        },
+        empty);
+  }
 
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          color_attachment0->id, 0);
@@ -55,16 +68,19 @@ shared_ptr<Texture> ale::Framebuffer::create_new_color_attachment0() {
   return before;
 }
 
-void ale::Framebuffer::start_frame() {
+void ale::Framebuffer::start_capture() {
   int viewport[4];
   glGetIntegerv(GL_VIEWPORT, viewport);
   start_frame_width = viewport[2];
   start_frame_height = viewport[3];
   glViewport(0, 0, this->meta.width, this->meta.height);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
+
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void ale::Framebuffer::end_frame() {
+void ale::Framebuffer::end_capture() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, start_frame_width, start_frame_height);
 }

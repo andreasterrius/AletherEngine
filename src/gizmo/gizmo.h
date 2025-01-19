@@ -59,6 +59,10 @@ public:
   // Meshes
   std::vector<Model> models;
 
+  const vec3 RED_Z = vec3(1.0, 0.0, 0.0);
+  const vec3 GREEN_X = vec3(0.0, 1.0, 0.0);
+  const vec3 BLUE_Y = vec3(0.0, 0.0, 1.0);
+
   // State
   bool is_hidden;
   bool is_dragging;
@@ -71,7 +75,7 @@ public:
   // if exist = true, then user has selected one of the axis
   Gizmo_InitialClickInfo initial_click_info;
 
-  Shader basicColorShader;
+  Shader gizmo_shader;
 
 public:
   Gizmo_Type gizmoType;

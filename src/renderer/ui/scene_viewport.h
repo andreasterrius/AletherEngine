@@ -24,9 +24,9 @@ public:
   // TODO: resize framebuffer when window is resized?
   SceneViewport(ivec2 initial_screen_size);
 
-  void start_frame();
+  void start_capture();
 
-  void end_frame();
+  void end_capture();
 
   void draw();
 

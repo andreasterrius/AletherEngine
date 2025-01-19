@@ -14,9 +14,13 @@ namespace ale::ui {
 
 EditorRootLayout::EditorRootLayout(StaticMeshLoader &sm_loader,
                                    ivec2 initial_window_size)
-    : content_browser_ui(sm_loader, afs::root("resources/content_browser")),
+    : gizmo_frame(Framebuffer::Meta{.width = initial_window_size.x,
+                                    .height = initial_window_size.y,
+                                    .color_space = Framebuffer::LINEAR}),
+      content_browser_ui(sm_loader, afs::root("resources/content_browser")),
       scene_viewport_ui(initial_window_size),
-      gizmo_light(make_pair(vec3(5.0f), Light{})) {}
+      gizmo_light(make_pair(vec3(5.0f), Light{})),
+      test_texture(afs::root("resources/textures/wood.png")) {}
 
 void EditorRootLayout::start(ivec2 pos, ivec2 size) {
   auto x = pos.x;
@@ -65,16 +69,28 @@ void EditorRootLayout::tick(Camera &camera, entt::registry &world,
       cursor_top_left, camera.GetProjectionMatrix(), camera.GetViewMatrix());
   gizmo.tick(mouse_ray, world);
 }
-void EditorRootLayout::start_capture_scene() {
-  scene_viewport_ui.start_frame();
+void EditorRootLayout::start_capture_scene(Camera &camera) {
+  {
+    gizmo_frame.start_capture();
+    gizmo.render(camera, gizmo_light.first);
+    // texture_renderer.render(test_texture);
+    gizmo_frame.end_capture();
+  }
+
+  scene_viewport_ui.start_capture();
 }
 
-void EditorRootLayout::end_capture_scene(Camera &camera) {
-  glDisable(GL_DEPTH_TEST);
-  gizmo.render(camera, gizmo_light.first);
-  glEnable(GL_DEPTH_TEST);
-
-  scene_viewport_ui.end_frame();
+void EditorRootLayout::end_capture_scene() {
+  texture_renderer.render(*gizmo_frame.get_color_attachment0(),
+                          TextureRenderer::RenderMeta{.discard_alpha = true});
+  // texture_renderer.render(test_texture);
+  scene_viewport_ui.end_capture();
+}
+void EditorRootLayout::debug() {
+  glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  texture_renderer.render(*gizmo_frame.get_color_attachment0(),
+                          TextureRenderer::RenderMeta{.discard_alpha = false});
 }
 
 EditorRootLayout::Event

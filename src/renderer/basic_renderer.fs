@@ -10,7 +10,12 @@ in VS_OUT {
 struct Light {
     vec3 position;
     vec3 color;
+
+    // used for soft shadows, not for color calculation (yet)
     float radius;
+
+    // for point lights
+    vec3 attenuation;
 };
 uniform int numLights;
 uniform Light lights[20];
@@ -63,8 +68,16 @@ void main()
         vec3 specular = spec * lightColor;
 
         // calculate shadow
+        float distance = length(lightPos - fs_in.FragPos);
+        float attenuation = 1.0 / (lights[i].attenuation.x + lights[i].attenuation.y * distance +
+            lights[i].attenuation.z * (distance * distance));
         float shadow = ShadowCalculation(fs_in.FragPos, lightPos, normal);
-        lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+
+        ambient *= attenuation;
+        diffuse *= attenuation;
+        specular *= attenuation;
+
+        lighting += (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
     }
 
     lighting *= color;

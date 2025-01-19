@@ -36,6 +36,7 @@ Window::Window(int width, int height, string caption) {
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
+  glEnable(GL_FRAMEBUFFER_SRGB);
 
   glfwSetMouseButtonCallback(this->raw_window, mouse_button_callback);
   glfwSetCursorPosCallback(this->raw_window, cursor_pos_callback);
@@ -215,9 +216,11 @@ void Window::start_ui_frame() {
 }
 
 void Window::end_ui_frame() {
+  glDisable(GL_FRAMEBUFFER_SRGB);
   if (imgui != nullptr) {
     imgui->end_frame();
   }
+  glEnable(GL_FRAMEBUFFER_SRGB);
 }
 
 void GLAPIENTRY ale::debugCallback(GLenum source, GLenum type, GLuint id,

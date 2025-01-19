@@ -9,15 +9,15 @@ namespace ale {
 ThumbnailGenerator::ThumbnailGenerator(int thumbnail_width,
                                        int thumbnail_height)
     : framebuffer(Framebuffer::Meta{.width = thumbnail_width,
-                                    .height = thumbnail_height}) {}
+                                    .height = thumbnail_height,
+                                    .color_space = Framebuffer::SRGB}) {}
 
 shared_ptr<Texture> ThumbnailGenerator::generate(StaticMesh static_mesh) {
   {
-    framebuffer.start_frame();
+    framebuffer.start_capture();
 
-    auto camera =
-        Camera(ARCBALL, framebuffer.get_size().x, framebuffer.get_size().y,
-               glm::vec3(3.0f, 5.0f, -7.0f));
+    auto camera = Camera(ARCBALL, framebuffer.get_size().x,
+                         framebuffer.get_size().y, glm::vec3(3.0f, 5.0f, 7.0f));
     auto world = entt::registry{};
     // create model
     {
@@ -35,7 +35,7 @@ shared_ptr<Texture> ThumbnailGenerator::generate(StaticMesh static_mesh) {
 
     renderer.render(camera, world);
 
-    framebuffer.end_frame();
+    framebuffer.end_capture();
   }
   return this->framebuffer.create_new_color_attachment0();
 }

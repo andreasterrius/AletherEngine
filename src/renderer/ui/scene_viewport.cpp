@@ -7,12 +7,12 @@
 namespace ale::ui {
 
 SceneViewport::SceneViewport(ivec2 initial_screen_size)
-    : framebuffer(
-          Framebuffer::Meta{initial_screen_size.x, initial_screen_size.y}) {}
+    : framebuffer(Framebuffer::Meta{
+          initial_screen_size.x, initial_screen_size.y, Framebuffer::LINEAR}) {}
 
-void SceneViewport::start_frame() { framebuffer.start_frame(); }
+void SceneViewport::start_capture() { framebuffer.start_capture(); }
 
-void SceneViewport::end_frame() { framebuffer.end_frame(); }
+void SceneViewport::end_capture() { framebuffer.end_capture(); }
 
 void SceneViewport::draw() {
 

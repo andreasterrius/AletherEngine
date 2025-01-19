@@ -4,6 +4,7 @@
 // clang-format on
 
 #include "spdlog/spdlog.h"
+#include "src/data/scene_node.h"
 #include "src/data/static_mesh.h"
 #include "src/file_system.h"
 #include "src/gizmo/gizmo.h"
@@ -11,17 +12,12 @@
 #include "src/renderer/thumbnail_generator.h"
 #include "src/renderer/ui/content_browser.h"
 #include "src/renderer/ui/editor_root_layout.h"
-#include "src/renderer/ui/scene_viewport.h"
 #include "src/window.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <imgui.h>
 
 // clang-format off
 #define STB_IMAGE_IMPLEMENTATION
-#include "src/data/scene_node.h"
-
-
 #include <stb_image.h>
 // clang-format on
 
@@ -46,9 +42,14 @@ entt::registry new_world(StaticMeshLoader &sm_loader) {
     sphere.set_cast_shadow(false);
     world.emplace<StaticMesh>(entity, sphere);
   }
-
   return world;
 }
+
+void save_world(entt::registry &world) {}
+
+// tuple<entt::registry> load_world(StaticMeshLoader &sm_loader) {
+//   return make_tuple();
+// }
 
 int main() {
   glfwInit();
@@ -58,7 +59,7 @@ int main() {
 
   auto window = Window(1280, 800, "Editor 2");
   auto camera = Camera(ARCBALL, window.get_size().x, window.get_size().y,
-                       glm::vec3(3.0f, 5.0f, -7.0f));
+                       glm::vec3(3.0f, 5.0f, 7.0f));
 
   // Declare a basic scene
   auto basic_renderer = BasicRenderer();
@@ -66,6 +67,18 @@ int main() {
   auto sm_loader = StaticMeshLoader();
 
   auto world = new_world(sm_loader);
+  // Lights
+  {
+    const auto entity = world.create();
+    world.emplace<SceneNode>(entity, SceneNode("light"));
+    world.emplace<Transform>(entity,
+                             Transform{.translation = vec3(10.0, 10.0, -10.0)});
+    world.emplace<Light>(entity, Light{});
+
+    auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
+    sphere.set_cast_shadow(false);
+    world.emplace<StaticMesh>(entity, sphere);
+  }
 
   // Declare UI related
   auto editor_root_layout_ui =
@@ -106,13 +119,13 @@ int main() {
 
     // Render Scene
     {
-      editor_root_layout_ui.start_capture_scene();
+      editor_root_layout_ui.start_capture_scene(camera);
       basic_renderer.render(camera, world);
 
       // line_renderer.queue_line(debug_ray, WHITE);
       line_renderer.render(camera.GetProjectionMatrix(),
                            camera.GetViewMatrix());
-      editor_root_layout_ui.end_capture_scene(camera);
+      editor_root_layout_ui.end_capture_scene();
     }
 
     // Render UI

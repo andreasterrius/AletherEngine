@@ -12,11 +12,11 @@ uniform samplerCube depthMap;
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
+uniform vec3 color;
 
 void main()
 {
 //     vec3 color = texture(diffuseTexture, fs_in.TexCoords).rgb;
-     vec3 color = vec3(1.0, 1.0, 1.0);
     vec3 normal = normalize(fs_in.Normal);
     vec3 lightColor = vec3(0.3);
     // ambient

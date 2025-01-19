@@ -19,9 +19,15 @@ public:
 
 class Framebuffer {
 public:
+  enum ColorSpace {
+    LINEAR, // always be in linear
+    SRGB    // SRGB is for framebuffer that color attachment will be rendered to
+            // the screen
+  };
   struct Meta {
     int width = 0;
     int height = 0;
+    ColorSpace color_space = SRGB;
   };
 
 private:
@@ -39,9 +45,9 @@ public:
 
   shared_ptr<Texture> create_new_color_attachment0();
 
-  void start_frame();
+  void start_capture();
 
-  void end_frame();
+  void end_capture();
 
   shared_ptr<Texture> get_color_attachment0();
 

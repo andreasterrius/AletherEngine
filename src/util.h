@@ -15,6 +15,7 @@ using namespace glm;
 
 class Util {
 public:
+  [[deprecated("use Texture(string) ctor instead")]]
   static std::optional<unsigned int> loadTexture(char const *path);
 
   static float udTriangle(vec3 p, vec3 a, vec3 b, vec3 c);

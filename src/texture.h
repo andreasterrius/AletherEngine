@@ -6,6 +6,7 @@
 #define TEXTURE_H
 
 #include <glm/glm.hpp>
+#include <stb_image.h>
 #include <vector>
 
 #include "data/shader.h"
@@ -33,7 +34,9 @@ public:
   Meta meta;
   unsigned int id;
 
+  Texture(string path);
   Texture(Meta meta, vector<float> &data);
+  Texture(Meta meta, void *data);
   ~Texture();
 
   Texture(const Texture &other) = delete;
@@ -104,6 +107,9 @@ public:
 
 class TextureRenderer {
 public:
+  struct RenderMeta {
+    bool discard_alpha = false;
+  };
   unsigned int vao, vbo, ebo;
   Shader shader;
 
@@ -116,7 +122,7 @@ public:
   TextureRenderer(TextureRenderer &&other);
   TextureRenderer &operator=(TextureRenderer &&other);
 
-  void render(Texture &texture);
+  void render(Texture &texture, RenderMeta render_meta = {});
 };
 
 #endif // TEXTURE_H
