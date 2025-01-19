@@ -80,7 +80,7 @@ function(create_exe name folder_name)
             external/zstd/lib
     )
     target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT spdlog::spdlog zstdd)
-    target_compile_definitions(${name} PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)
+    target_compile_definitions(${name} PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE GLM_ENABLE_EXPERIMENTAL)
 endfunction()
 
 create_exe(RaymarchSdfCpu raymarch_sdf_cpu)

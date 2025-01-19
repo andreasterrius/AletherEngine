@@ -43,9 +43,12 @@ public:
   Event draw_and_handle_events(entt::registry &world);
   void end();
 
+  // input
   void handle_press(Camera &camera, entt::registry &world,
                     ivec2 cursor_top_left);
   void handle_release();
+  void handle_key(int key, int scancode, int action, int mods);
+
   void tick(Camera &camera, entt::registry &world, ivec2 cursor_top_left);
   void start_capture_scene(Camera &camera);
   void end_capture_scene();

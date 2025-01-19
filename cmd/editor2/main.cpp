@@ -108,6 +108,8 @@ int main() {
       camera.ProcessKeyboardArcball(true);
     else if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE)
       camera.ProcessKeyboardArcball(false);
+
+    editor_root_layout_ui.handle_key(key, scancode, action, mods);
   });
 
   while (!window.should_close()) {

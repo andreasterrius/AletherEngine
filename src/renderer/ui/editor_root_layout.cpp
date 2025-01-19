@@ -6,6 +6,7 @@
 
 #include "src/data/scene_node.h"
 
+#include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <spdlog/spdlog.h>
@@ -62,6 +63,18 @@ void EditorRootLayout::handle_press(Camera &camera, entt::registry &world,
 }
 
 void EditorRootLayout::handle_release() { gizmo.handle_release(); }
+
+void EditorRootLayout::handle_key(int key, int scancode, int action, int mods) {
+  if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+
+  } else if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+    gizmo.change_mode(Translate);
+  } else if (key == GLFW_KEY_E && action == GLFW_PRESS) {
+    gizmo.change_mode(Scale);
+  } else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+    gizmo.change_mode(Rotate);
+  }
+}
 
 void EditorRootLayout::tick(Camera &camera, entt::registry &world,
                             ivec2 cursor_top_left) {

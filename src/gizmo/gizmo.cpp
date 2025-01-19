@@ -9,12 +9,16 @@
 #include "../data/transform.h"
 #include "../file_system.h"
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 using afs = ale::FileSystem;
 
 ale::Gizmo::Gizmo()
     : gizmo_shader(afs::root("src/gizmo/gizmo.vs").c_str(),
-                   afs::root("src/gizmo/gizmo.fs").c_str()) {
+                   afs::root("src/gizmo/gizmo.fs").c_str()),
+      isLocalSpace(false) {
 
   // load a flat shader here ?
   // the default raylib shader is flat though
@@ -45,6 +49,12 @@ ale::Gizmo::Gizmo()
       afs::root("resources/gizmo/Ring_XZ.glb")); // Ring_XZ
   this->models.emplace_back(
       afs::root("resources/gizmo/Ring_YZ.glb")); // Ring_YZ
+  this->models.emplace_back(
+      afs::root("resources/gizmo/Scale_X+.glb")); // ArrowX
+  this->models.emplace_back(
+      afs::root("resources/gizmo/Scale_Y+.glb")); // ArrowY
+  this->models.emplace_back(
+      afs::root("resources/gizmo/Scale_Z+.glb")); // ArrowY
 }
 
 bool Gizmo::try_hold(Transform *transform, Ray ray) {
@@ -52,16 +62,10 @@ bool Gizmo::try_hold(Transform *transform, Ray ray) {
   // There's an active selected object
   // Show & set gizmo position properly
   this->is_hidden = false;
+  this->transform = Transform{}; // reset transform;
   this->transform.translation = transform->translation;
 
   // TODO: This should not be here, this should be in tick(), but
-  // dependentPosition will be weakly owned. Scale the size depending on the
-  // size
-  // float scale = glm::distance(camera.Position, objTransform->translation) /
-  //               Gizmo_MaximumDistanceScale;
-  // scale = glm::clamp(scale, 0.25f, 1.0f);
-  // this->transform.scale = vec3(scale);
-  // this->scaleAll();
   this->transform.scale = vec3(1.0f);
 
   // Try to check which arrow we're hitting
@@ -104,31 +108,20 @@ bool Gizmo::try_hold(Transform *transform, Ray ray) {
     if (this->gizmoType == Translate) {
       vec3 newPos = this->handle_translate(this->initial_click_info.activeAxis,
                                            rayPlaneHit.value());
-      this->transform.translation = newPos;
       transform->translation = newPos;
-
-      // cout << this->transform.translation.x << " "
-      //      << this->transform.translation.y << " "
-      //      << this->transform.translation.z << endl;
-
     } else if (this->gizmoType == Scale) {
       // unlike translate, we just return delta here
       vec3 delta = rayPlaneHit.value() -
                    this->initial_click_info.lastFrameRayPlaneHitPos;
       transform->scale = transform->scale + delta;
     } else if (this->gizmoType == Rotate) {
-      //			vec3 unitVecA = rayPlaneHit.value() -
-      // this->position; 			vec3 unitVecB =
-      // this->initialClickInfo.lastFrameRayPlaneHitPos - this->position;
-      //
-      //			vec4 delta = QuaternionFromvec3Tovec3(unitVecB,
-      // unitVecA);
-      //			//not commutative, multiply order matters!
-      //			// world rotation
-      //			transform->rotation = QuaternionMultiply(delta,
-      // transform->rotation);
-      //			// local rotation :
-      // QuaternionMultiply(transform->rotation, delta);
+      vec3 unitVecA =
+          normalize(rayPlaneHit.value() - this->transform.translation);
+      vec3 unitVecB =
+          normalize(this->initial_click_info.lastFrameRayPlaneHitPos -
+                    this->transform.translation);
+      quat rot = glm::rotation(unitVecB, unitVecA);
+      transform->rotation = rot * transform->rotation;
     }
     this->initial_click_info.lastFrameRayPlaneHitPos = rayPlaneHit.value();
   }
@@ -144,19 +137,49 @@ void Gizmo::handle_release() {
 optional<Gizmo_GrabAxis> Gizmo::grab_axis(Ray ray) {
 
   auto tray = ray.apply_transform_inversed(transform);
-  if (this->gizmoType == Translate || this->gizmoType == Scale) {
+  if (this->gizmoType == Translate) {
     auto coll = tray.intersect(this->models[ArrowX].meshes[0].boundingBox);
     if (coll.has_value()) {
       return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = X};
     }
     coll = tray.intersect(this->models[ArrowY].meshes[0].boundingBox);
-    ;
     if (coll.has_value()) {
       return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = Y};
     }
     coll = tray.intersect(this->models[ArrowZ].meshes[0].boundingBox);
+    if (coll.has_value()) {
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
+                            .activeAxis = Z};
+    }
+    coll = tray.intersect(this->models[PlaneYZ].meshes[0].boundingBox);
+    if (coll.has_value()) {
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
+                            .activeAxis = YZ};
+    }
+    coll = tray.intersect(this->models[PlaneXZ].meshes[0].boundingBox);
+    if (coll.has_value()) {
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
+                            .activeAxis = XZ};
+    }
+    coll = tray.intersect(this->models[PlaneXY].meshes[0].boundingBox);
+    if (coll.has_value()) {
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
+                            .activeAxis = XY};
+    }
+  } else if (this->gizmoType == Scale) {
+    auto coll = tray.intersect(this->models[ScaleX].meshes[0].boundingBox);
+    if (coll.has_value()) {
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
+                            .activeAxis = X};
+    }
+    coll = tray.intersect(this->models[ScaleY].meshes[0].boundingBox);
+    if (coll.has_value()) {
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
+                            .activeAxis = Y};
+    }
+    coll = tray.intersect(this->models[ScaleZ].meshes[0].boundingBox);
     if (coll.has_value()) {
       return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = Z};
@@ -254,7 +277,7 @@ void Gizmo::render(Camera camera, vec3 lightPos) {
   gizmo_shader.setVec3("lightPos", lightPos);
   gizmo_shader.setVec3("viewPos", camera.Position);
 
-  if (this->gizmoType == Translate || this->gizmoType == Scale) {
+  if (this->gizmoType == Translate) {
     gizmo_shader.setVec3("color", GREEN_X);
     this->models[ArrowX].draw(gizmo_shader);
     this->models[PlaneYZ].draw(gizmo_shader);
@@ -265,6 +288,18 @@ void Gizmo::render(Camera camera, vec3 lightPos) {
 
     gizmo_shader.setVec3("color", RED_Z);
     this->models[ArrowZ].draw(gizmo_shader);
+    this->models[PlaneXY].draw(gizmo_shader);
+  } else if (this->gizmoType == Scale) {
+    gizmo_shader.setVec3("color", GREEN_X);
+    this->models[ScaleX].draw(gizmo_shader);
+    this->models[PlaneYZ].draw(gizmo_shader);
+
+    gizmo_shader.setVec3("color", BLUE_Y);
+    this->models[ScaleY].draw(gizmo_shader);
+    this->models[PlaneXZ].draw(gizmo_shader);
+
+    gizmo_shader.setVec3("color", RED_Z);
+    this->models[ScaleZ].draw(gizmo_shader);
     this->models[PlaneXY].draw(gizmo_shader);
 
   } else if (this->gizmoType == Rotate) {
@@ -277,6 +312,12 @@ void Gizmo::render(Camera camera, vec3 lightPos) {
     gizmo_shader.setVec3("color", GREEN_X);
     this->models[RotationYZ].draw(gizmo_shader);
   }
+}
+
+void Gizmo::change_mode(Gizmo_Type gizmoType) { this->gizmoType = gizmoType; }
+
+void Gizmo::change_space(bool isLocalSpace) {
+  this->isLocalSpace = isLocalSpace;
 }
 
 vec3 Gizmo::handle_translate(Gizmo_ActiveAxis activeAxis,

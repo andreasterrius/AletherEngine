@@ -26,7 +26,10 @@ typedef enum Gizmo_ModelType {
   PlaneYZ,
   RotationXY,
   RotationXZ,
-  RotationYZ
+  RotationYZ,
+  ScaleX,
+  ScaleY,
+  ScaleZ
 } Gizmo_ModelType;
 
 typedef enum Gizmo_ActiveAxis { X, Y, Z, XY, XZ, YZ } Gizmo_ActiveAxis;
@@ -54,7 +57,7 @@ typedef struct Gizmo_GrabAxis {
 } Gizmo_GrabAxis;
 
 class Gizmo {
-#define MODELS_LEN 9
+#define MODELS_LEN 12
 public:
   // Meshes
   std::vector<Model> models;
@@ -79,6 +82,8 @@ public:
 
 public:
   Gizmo_Type gizmoType;
+  // not supported yet
+  bool isLocalSpace;
 
   Gizmo();
 
@@ -98,6 +103,8 @@ public:
   void handle_release();
   void tick(const Ray &mouse_ray, entt::registry &world);
   void render(Camera camera, vec3 lightPos);
+  void change_mode(Gizmo_Type gizmoType);
+  void change_space(bool isLocalSpace);
 
 private:
   void scale_all();
