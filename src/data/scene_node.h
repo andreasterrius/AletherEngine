@@ -4,15 +4,13 @@
 
 #ifndef NAME_H
 #define NAME_H
+#include <nlohmann/json.hpp>
 #include <string>
 
-class SceneNode {
+namespace ale {
+struct SceneNode {
   std::string name;
-
-public:
-  SceneNode(std::string name);
-
-  std::string get_name();
 };
-
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SceneNode, name);
+} // namespace ale
 #endif // NAME_H

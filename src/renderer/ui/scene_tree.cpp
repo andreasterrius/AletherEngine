@@ -12,11 +12,11 @@ SceneTree::draw_and_handle_clicks(entt::registry &world,
                                   std::optional<entt::entity> selected_entity) {
   ImGui::Begin(panel_name.c_str());
 
-  auto view = world.view<SceneNode>();
+  auto view = world.view<ale::SceneNode>();
 
   auto entries = std::vector<Entry>();
   for (auto [entity, scene_node] : view.each()) {
-    auto name = scene_node.get_name();
+    auto name = scene_node.name;
     auto id = to_integral(entity);
     auto currently_selected =
         selected_entity ? *selected_entity == entity : false;

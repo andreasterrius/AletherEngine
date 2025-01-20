@@ -73,8 +73,8 @@ public:
         inverse(camera.GetProjectionMatrix(screenWidth, screenHeight) *
                 camera.GetViewMatrix());
     shader.setMat4("invViewProj", invViewProj);
-    shader.setMat4("modelMat", transform.getModelMatrix());
-    shader.setMat4("invModelMat", inverse(transform.getModelMatrix()));
+    shader.setMat4("modelMat", transform.get_model_matrix());
+    shader.setMat4("invModelMat", inverse(transform.get_model_matrix()));
 
     sdfModel.bind_to_shader(shader);
 
@@ -109,8 +109,8 @@ public:
         auto &p = sdfModelPacked.get_offsets()[i];
         auto &t = transform[i];
         details.push_back(PackedSdfOffsetDetail{
-            .modelMat = t.getModelMatrix(),
-            .invModelMat = inverse(t.getModelMatrix()),
+            .modelMat = t.get_model_matrix(),
+            .invModelMat = inverse(t.get_model_matrix()),
             .innerBBMin = vec4(p.inner_bb.min, 0.0),
             .innerBBMax = vec4(p.inner_bb.max, 0.0),
             .outerBBMin = vec4(p.outer_bb.min, 0.0),

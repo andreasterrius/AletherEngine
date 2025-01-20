@@ -271,7 +271,7 @@ void Gizmo::render(Camera camera, vec3 lightPos) {
   }
 
   gizmo_shader.use();
-  gizmo_shader.setMat4("model", transform.getModelMatrix());
+  gizmo_shader.setMat4("model", transform.get_model_matrix());
   gizmo_shader.setMat4("view", camera.GetViewMatrix());
   gizmo_shader.setMat4("projection", camera.GetProjectionMatrix());
   gizmo_shader.setVec3("lightPos", lightPos);

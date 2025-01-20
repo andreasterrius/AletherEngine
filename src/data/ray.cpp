@@ -42,7 +42,7 @@ optional<float> Ray::intersect(const BoundingBox &boxR, float limitTMin,
 vec3 Ray::resolve(float t) { return this->origin + t * this->dir; }
 
 Ray Ray::apply_transform_inversed(Transform t) {
-  auto inv_mat = inverse(t.getModelMatrix());
+  auto inv_mat = inverse(t.get_model_matrix());
   auto O = inv_mat * vec4(origin, 1.0);
   auto D = normalize(inv_mat * vec4(dir, 0.0));
   return Ray(O, D);

@@ -2,6 +2,10 @@
 // Created by Alether on 4/17/2024.
 //
 #include "model.h"
+
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <stb_image.h>
 #include <vector>
 
 ale::Model::Model(const string &path, bool gamma) : gammaCorrection(gamma) {

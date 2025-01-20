@@ -157,8 +157,8 @@ void LineRenderer::render(mat4 projection, mat4 view) {
 
 void LineRenderer::queue_box(Transform transform, BoundingBox bb, vec3 color) {
   BoundingBox bbT = bb;
-  bbT.min = transform.getModelMatrix() * vec4(bb.min, 1.0);
-  bbT.max = transform.getModelMatrix() * vec4(bb.max, 1.0);
+  bbT.min = transform.get_model_matrix() * vec4(bb.min, 1.0);
+  bbT.max = transform.get_model_matrix() * vec4(bb.max, 1.0);
   this->boxData.push_back(bbT.min);
   this->boxData.push_back(bbT.max);
   this->boxData.push_back(color);
@@ -166,8 +166,8 @@ void LineRenderer::queue_box(Transform transform, BoundingBox bb, vec3 color) {
 
 void LineRenderer::queue_unit_cube(Transform transform) {
   BoundingBox bb(vec3(-0.5f), vec3(0.5f));
-  bb.min = transform.getModelMatrix() * vec4(bb.min, 1.0);
-  bb.max = transform.getModelMatrix() * vec4(bb.max, 1.0);
+  bb.min = transform.get_model_matrix() * vec4(bb.min, 1.0);
+  bb.max = transform.get_model_matrix() * vec4(bb.max, 1.0);
   this->boxData.push_back(bb.min);
   this->boxData.push_back(bb.max);
 }

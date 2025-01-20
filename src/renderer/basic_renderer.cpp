@@ -62,7 +62,7 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
   // Render static mesh
   auto view = world.view<Transform, StaticMesh>();
   for (auto [entity, transform, static_mesh] : view.each()) {
-    color_shader.setMat4("model", transform.getModelMatrix());
+    color_shader.setMat4("model", transform.get_model_matrix());
     color_shader.setVec4("diffuseColor", vec4(1.0, 1.0, 1.0, 0.0));
     static_mesh.get_model()->draw(color_shader);
   }

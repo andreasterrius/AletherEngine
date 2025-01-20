@@ -23,6 +23,8 @@ class FileSystem {
 public:
   static string root(const string &path);
 
+  static string from_root(const string &path);
+
   static vector<FileMeta> list(const string &path);
 };
 

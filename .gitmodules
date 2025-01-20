@@ -23,3 +23,6 @@
 [submodule "external/zstd"]
 	path = external/zstd
 	url = https://github.com/facebook/zstd.git
+[submodule "external/json"]
+	path = external/json
+	url = git@github.com:nlohmann/json.git

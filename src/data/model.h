@@ -1,24 +1,13 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include <glad/glad.h>
-#include <stb_image.h>
 
-#include <assimp/Importer.hpp>
 #include <filesystem>
-#include <fstream>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <iostream>
-#include <map>
-#include <optional>
-#include <sstream>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 
-#include "boundingbox.h"
 #include "mesh.h"
 
 using namespace std;
@@ -65,7 +54,6 @@ private:
   vector<LoadedTexture>
   loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
 };
-
 } // namespace ale
 
 #endif

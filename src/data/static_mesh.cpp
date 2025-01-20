@@ -1,11 +1,13 @@
 #include "static_mesh.h"
 
 #include "../file_system.h"
+#include <filesystem>
 #include <fstream>
 #include <spdlog/spdlog.h>
 #include <utility>
 #include <zstd.h>
 
+namespace fs = std::filesystem;
 using afs = ale::FileSystem;
 
 StaticMesh::StaticMesh(shared_ptr<Model> model,
@@ -20,6 +22,8 @@ void StaticMesh::set_cast_shadow(bool cast_shadow) {
 
 bool StaticMesh::get_cast_shadow() { return this->meta.cast_shadow; }
 
+void StaticMesh::set_meta(Meta meta) { this->meta = meta; }
+
 shared_ptr<Model> StaticMesh::get_model() { return model; }
 
 pair<shared_ptr<SdfModelPacked>, vector<unsigned int>>
@@ -27,20 +31,28 @@ StaticMesh::get_model_shadow() {
   return make_pair(sdf_model_packed, sdf_model_packed_index);
 }
 
+StaticMesh::Serde StaticMesh::to_serde() {
+  return Serde{
+      .meta = meta,
+      .model_path = model->path.string(),
+  };
+}
+
 StaticMeshLoader::StaticMeshLoader()
     : packed(make_shared<SdfModelPacked>(vector<SdfModel *>(), false)) {
-  this->create_static_mesh(
-      SM_UNIT_CUBE, Model(afs::root("resources/default_models/unit_cube.obj")));
-  this->create_static_mesh(
-      SM_UNIT_SPHERE,
-      Model(afs::root("resources/default_models/unit_sphere.obj")));
+  this->load_static_mesh(afs::root("resources/default_models/unit_cube.obj"),
+                         {SM_UNIT_CUBE});
+  this->load_static_mesh(afs::root("resources/default_models/unit_sphere.obj"),
+                         {SM_UNIT_SPHERE});
 }
 
 StaticMesh StaticMeshLoader::load_static_mesh(string path) {
-  return create_static_mesh(path, Model(path));
+  return load_static_mesh(path, {});
 }
 
-StaticMesh StaticMeshLoader::create_static_mesh(string id, Model model) {
+StaticMesh StaticMeshLoader::load_static_mesh(string path,
+                                              vector<string> alternate_names) {
+  string id = afs::from_root(path);
   auto it = this->static_meshes.find(id);
   if (it != this->static_meshes.end()) {
     return it->second;
@@ -48,6 +60,7 @@ StaticMesh StaticMeshLoader::create_static_mesh(string id, Model model) {
   auto start_time = std::chrono::high_resolution_clock::now();
   const int res = 64;
 
+  auto model = Model(path);
   auto indices = vector<unsigned int>();
   for (int i = 0; i < model.meshes.size(); ++i) {
     string name = id + "_" + to_string(i);
@@ -79,10 +92,19 @@ StaticMesh StaticMeshLoader::create_static_mesh(string id, Model model) {
       StaticMesh{make_shared<Model>(std::move(model)), packed, indices};
   this->static_meshes.emplace(id, static_mesh);
 
+  for (auto &name : alternate_names) {
+    this->alternate_names[name] = id;
+  }
+
   return static_mesh;
 }
 
 optional<StaticMesh> StaticMeshLoader::get_static_mesh(string id) {
+  auto name_it = this->alternate_names.find(id);
+  if (name_it != this->alternate_names.end()) {
+    id = name_it->second;
+  }
+
   auto it = this->static_meshes.find(id);
   if (it != this->static_meshes.end()) {
     return it->second;

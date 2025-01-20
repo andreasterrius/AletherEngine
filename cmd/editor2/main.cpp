@@ -5,6 +5,7 @@
 
 #include "spdlog/spdlog.h"
 #include "src/data/scene_node.h"
+#include "src/data/serde/world.h"
 #include "src/data/static_mesh.h"
 #include "src/file_system.h"
 #include "src/gizmo/gizmo.h"
@@ -42,14 +43,19 @@ entt::registry new_world(StaticMeshLoader &sm_loader) {
     sphere.set_cast_shadow(false);
     world.emplace<StaticMesh>(entity, sphere);
   }
+  {
+    const auto entity = world.create();
+    world.emplace<SceneNode>(entity, SceneNode("light"));
+    world.emplace<Transform>(entity,
+                             Transform{.translation = vec3(10.0, 10.0, -10.0)});
+    world.emplace<Light>(entity, Light{.color = vec3(3.0f, 3.0f, 3.0f)});
+
+    auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
+    sphere.set_cast_shadow(false);
+    world.emplace<StaticMesh>(entity, sphere);
+  }
   return world;
 }
-
-void save_world(entt::registry &world) {}
-
-// tuple<entt::registry> load_world(StaticMeshLoader &sm_loader) {
-//   return make_tuple();
-// }
 
 int main() {
   glfwInit();
@@ -67,18 +73,6 @@ int main() {
   auto sm_loader = StaticMeshLoader();
 
   auto world = new_world(sm_loader);
-  // Lights
-  {
-    const auto entity = world.create();
-    world.emplace<SceneNode>(entity, SceneNode("light"));
-    world.emplace<Transform>(entity,
-                             Transform{.translation = vec3(10.0, 10.0, -10.0)});
-    world.emplace<Light>(entity, Light{.color = vec3(3.0f, 3.0f, 3.0f)});
-
-    auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
-    sphere.set_cast_shadow(false);
-    world.emplace<StaticMesh>(entity, sphere);
-  }
 
   // Declare UI related
   auto editor_root_layout_ui =
@@ -108,6 +102,20 @@ int main() {
       camera.ProcessKeyboardArcball(true);
     else if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE)
       camera.ProcessKeyboardArcball(false);
+
+    if (key == GLFW_KEY_S && action == GLFW_PRESS && mods == GLFW_MOD_CONTROL) {
+      serde::save_world("resources/scenes/editor2.json", world);
+    }
+    if (key == GLFW_KEY_N && action == GLFW_PRESS && mods == GLFW_MOD_CONTROL) {
+      world = new_world(sm_loader);
+    }
+    if (key == GLFW_KEY_O && action == GLFW_PRESS && mods == GLFW_MOD_CONTROL) {
+      try {
+        world = serde::load_world("resources/scenes/editor2.json", sm_loader);
+      } catch (const std::exception &e) {
+        SPDLOG_ERROR("{}", e.what());
+      }
+    }
 
     editor_root_layout_ui.handle_key(key, scancode, action, mods);
   });

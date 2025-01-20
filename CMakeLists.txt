@@ -13,6 +13,7 @@ set(ASSIMP_INSTALL ON)
 set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/assimp)
 add_subdirectory(external/glfw)
+add_subdirectory(external/json)
 
 add_subdirectory(external/zstd/build/cmake)
 
@@ -78,8 +79,9 @@ function(create_exe name folder_name)
             external/imgui
             external/imgui/backends
             external/zstd/lib
+            external/json/include
     )
-    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT spdlog::spdlog zstdd)
+    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT spdlog::spdlog nlohmann_json::nlohmann_json zstdd)
     target_compile_definitions(${name} PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE GLM_ENABLE_EXPERIMENTAL)
 endfunction()
 

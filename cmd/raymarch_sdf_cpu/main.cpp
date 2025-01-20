@@ -444,7 +444,7 @@ void renderScene(Shader &shader, vector<Object> &objects) {
 
   for (auto &object : objects) {
     if (object.shouldRender) {
-      shader.setMat4("model", object.transform.getModelMatrix());
+      shader.setMat4("model", object.transform.get_model_matrix());
       shader.setVec4("diffuseColor", object.color);
       object.model->draw(shader);
     }

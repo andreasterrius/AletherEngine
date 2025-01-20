@@ -5,21 +5,24 @@
 #ifndef ALETHERENGINE_TRANSFORM_H
 #define ALETHERENGINE_TRANSFORM_H
 
+#include "serde/glm.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <nlohmann/json.hpp>
 
 using namespace glm;
 
 namespace ale {
 class Transform {
- public:
+public:
   vec3 translation = vec3(0.0f);
   vec3 scale = vec3(1.0f);
-  quat rotation = glm::identity<glm::quat>();  // quaternion
+  quat rotation = glm::identity<quat>(); // quaternion
 
-  mat4 getModelMatrix();
+  mat4 get_model_matrix();
 };
-}  // namespace ale
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Transform, translation, scale, rotation);
+} // namespace ale
 
-#endif  // ALETHERENGINE_TRANSFORM_H
+#endif // ALETHERENGINE_TRANSFORM_H

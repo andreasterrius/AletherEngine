@@ -106,7 +106,7 @@ void ale::SdfModelPacked::bind_to_shader(
   for (auto [transform, shadow_indices] : entries) {
     for (auto shadow_index : shadow_indices) {
       auto &p = offsets[shadow_index];
-      mat4 model = transform.getModelMatrix();
+      mat4 model = transform.get_model_matrix();
       details.push_back(GPUObject{
           .model_mat = model,
           .inv_model_mat = inverse(model),

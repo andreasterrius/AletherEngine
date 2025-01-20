@@ -4,6 +4,4 @@
 
 #include "scene_node.h"
 
-SceneNode::SceneNode(std::string name) : name(name) {}
-
-std::string SceneNode::get_name() { return this->name; }
+namespace ale {} // namespace ale

@@ -11,7 +11,7 @@ ale::BoundingBox::BoundingBox(vec3 min, vec3 max) : min(min), max(max) {
 }
 
 ale::BoundingBox ale::BoundingBox::apply_scale(ale::Transform t) const {
-  vec3 newSize = t.getModelMatrix() * vec4(this->getSize(), 1.0);
+  vec3 newSize = t.get_model_matrix() * vec4(this->getSize(), 1.0);
   vec3 newMin = this->getCenter() - newSize / 2.0f;
   vec3 newMax = this->getCenter() + newSize / 2.0f;
   return BoundingBox(newMin, newMax);

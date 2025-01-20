@@ -12,6 +12,14 @@ string FileSystem::root(const string &path) {
   return string(ALE_ROOT_PATH) + "/" + path;
 }
 
+string FileSystem::from_root(const string &path) {
+  fs::path p(path);
+  fs::path this_root = root("");
+
+  auto res = fs::relative(p, this_root);
+  return res.generic_string();
+}
+
 vector<FileMeta> FileSystem::list(const string &path) {
   vector<FileMeta> file_metas;
 

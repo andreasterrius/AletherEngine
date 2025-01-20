@@ -4,8 +4,6 @@
 
 #include "editor_root_layout.h"
 
-#include "src/data/scene_node.h"
-
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_internal.h>
