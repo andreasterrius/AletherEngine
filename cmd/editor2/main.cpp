@@ -92,28 +92,37 @@ int main() {
   });
   window.attach_cursor_pos_callback(
       [&](double xpos, double ypos, double xoffset, double yoffset) {
-        camera.ProcessMouseMovement(xoffset, yoffset);
+        if (editor_root_layout_ui.get_scene_has_focus()) {
+          camera.ProcessMouseMovement(xoffset, yoffset);
+        }
       });
   window.attach_scroll_callback([&](double xoffset, double yoffset) {
-    camera.ProcessMouseScroll(yoffset);
+    if (editor_root_layout_ui.get_scene_has_focus()) {
+      camera.ProcessMouseScroll(yoffset);
+    }
   });
   window.attach_key_callback([&](int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_LEFT_ALT && action == GLFW_PRESS)
-      camera.ProcessKeyboardArcball(true);
-    else if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE)
-      camera.ProcessKeyboardArcball(false);
+    if (editor_root_layout_ui.get_scene_has_focus()) {
+      if (key == GLFW_KEY_LEFT_ALT && action == GLFW_PRESS)
+        camera.ProcessKeyboardArcball(true);
+      else if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE)
+        camera.ProcessKeyboardArcball(false);
 
-    if (key == GLFW_KEY_S && action == GLFW_PRESS && mods == GLFW_MOD_CONTROL) {
-      serde::save_world("resources/scenes/editor2.json", world);
-    }
-    if (key == GLFW_KEY_N && action == GLFW_PRESS && mods == GLFW_MOD_CONTROL) {
-      world = new_world(sm_loader);
-    }
-    if (key == GLFW_KEY_O && action == GLFW_PRESS && mods == GLFW_MOD_CONTROL) {
-      try {
-        world = serde::load_world("resources/scenes/editor2.json", sm_loader);
-      } catch (const std::exception &e) {
-        SPDLOG_ERROR("{}", e.what());
+      if (key == GLFW_KEY_S && action == GLFW_PRESS &&
+          mods == GLFW_MOD_CONTROL) {
+        serde::save_world("resources/scenes/editor2.json", world);
+      }
+      if (key == GLFW_KEY_N && action == GLFW_PRESS &&
+          mods == GLFW_MOD_CONTROL) {
+        world = new_world(sm_loader);
+      }
+      if (key == GLFW_KEY_O && action == GLFW_PRESS &&
+          mods == GLFW_MOD_CONTROL) {
+        try {
+          world = serde::load_world("resources/scenes/editor2.json", sm_loader);
+        } catch (const std::exception &e) {
+          SPDLOG_ERROR("{}", e.what());
+        }
       }
     }
 
@@ -154,7 +163,10 @@ int main() {
       }
       if (events.new_object.has_value()) {
         const auto entity = world.create();
-        world.emplace<SceneNode>(entity, SceneNode("unnamed"));
+        world.emplace<SceneNode>(entity,
+                                 events.new_object->static_mesh.get_model()
+                                     ->path.filename()
+                                     .string());
         world.emplace<Transform>(entity, Transform{});
         world.emplace<StaticMesh>(entity, events.new_object->static_mesh);
       }

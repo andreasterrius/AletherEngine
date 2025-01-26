@@ -19,7 +19,8 @@ EditorRootLayout::EditorRootLayout(StaticMeshLoader &sm_loader,
       content_browser_ui(sm_loader, afs::root("resources/content_browser")),
       scene_viewport_ui(initial_window_size),
       gizmo_light(make_pair(vec3(5.0f), Light{})),
-      test_texture(afs::root("resources/textures/wood.png")) {}
+      test_texture(afs::root("resources/textures/wood.png")),
+      scene_has_focus(false) {}
 
 void EditorRootLayout::start(ivec2 pos, ivec2 size) {
   auto x = pos.x;
@@ -55,22 +56,24 @@ void EditorRootLayout::end() { ImGui::End(); }
 
 void EditorRootLayout::handle_press(Camera &camera, entt::registry &world,
                                     ivec2 cursor_top_left) {
-  Ray mouse_ray = scene_viewport_ui.create_mouse_ray(
-      cursor_top_left, camera.GetProjectionMatrix(), camera.GetViewMatrix());
-  gizmo.handle_press(mouse_ray, world);
+  if (scene_viewport_ui.is_cursor_inside(cursor_top_left)) {
+    Ray mouse_ray = scene_viewport_ui.create_mouse_ray(
+        cursor_top_left, camera.GetProjectionMatrix(), camera.GetViewMatrix());
+    gizmo.handle_press(mouse_ray, world);
+  }
 }
 
 void EditorRootLayout::handle_release() { gizmo.handle_release(); }
 
 void EditorRootLayout::handle_key(int key, int scancode, int action, int mods) {
-  if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
-
-  } else if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-    gizmo.change_mode(Translate);
-  } else if (key == GLFW_KEY_E && action == GLFW_PRESS) {
-    gizmo.change_mode(Scale);
-  } else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-    gizmo.change_mode(Rotate);
+  if (!ImGui::GetIO().WantTextInput) {
+    if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+      gizmo.change_mode(Translate);
+    } else if (key == GLFW_KEY_E && action == GLFW_PRESS) {
+      gizmo.change_mode(Scale);
+    } else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+      gizmo.change_mode(Rotate);
+    }
   }
 }
 
@@ -79,6 +82,8 @@ void EditorRootLayout::tick(Camera &camera, entt::registry &world,
   Ray mouse_ray = scene_viewport_ui.create_mouse_ray(
       cursor_top_left, camera.GetProjectionMatrix(), camera.GetViewMatrix());
   gizmo.tick(mouse_ray, world);
+
+  scene_has_focus = scene_viewport_ui.is_cursor_inside(cursor_top_left);
 }
 void EditorRootLayout::start_capture_scene(Camera &camera) {
   {
@@ -95,6 +100,9 @@ void EditorRootLayout::end_capture_scene() {
                           TextureRenderer::RenderMeta{.discard_alpha = true});
   scene_viewport_ui.end_capture();
 }
+
+bool EditorRootLayout::get_scene_has_focus() { return scene_has_focus; }
+
 void EditorRootLayout::debug() {
   glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -124,6 +132,7 @@ EditorRootLayout::draw_and_handle_events(entt::registry &world) {
 
   // Show the scene
   scene_viewport_ui.draw();
+  item_inspector.draw_and_handle(world, gizmo.selected_entity);
   scene_tree_ui.draw_and_handle_clicks(world, gizmo.selected_entity);
 
   // Assign specific windows to each dock
@@ -137,11 +146,14 @@ EditorRootLayout::draw_and_handle_events(entt::registry &world) {
                                                   0.25f, nullptr, &dock_main);
   ImGuiID dock_right = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Right,
                                                    0.25f, nullptr, &dock_main);
+  ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Down,
+                                                    0.25f, nullptr, &dock_main);
 
   ImGui::DockBuilderDockWindow(scene_tree_ui.panel_name.c_str(), dock_left);
-  ImGui::DockBuilderDockWindow(content_browser_ui.panel_name.c_str(),
-                               dock_right);
+  ImGui::DockBuilderDockWindow(item_inspector.panel_name.c_str(), dock_right);
   ImGui::DockBuilderDockWindow(scene_viewport_ui.panel_name.c_str(), dock_main);
+  ImGui::DockBuilderDockWindow(content_browser_ui.panel_name.c_str(),
+                               dock_bottom);
 
   // Finalize the layout
   ImGui::DockBuilderFinish(dockspace_id);

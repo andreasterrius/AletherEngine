@@ -18,7 +18,7 @@ void SceneViewport::draw() {
 
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
-  ImGui::Begin(panel_name.c_str());
+  ImGui::Begin(panel_name.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
 
   ImVec2 window_size = ImGui::GetContentRegionAvail();
   ImGui::Image((GLuint)framebuffer.get_color_attachment0()->id, window_size,
@@ -74,7 +74,7 @@ vec2 SceneViewport::convert_to_logical_pos(ivec2 world_pos) {
 }
 bool SceneViewport::is_cursor_inside(ivec2 world_pos) {
   vec2 l = convert_to_logical_pos(world_pos);
-  if (l.x < 0 || l.x >= last_size.x || l.y < 0 || l.y >= last_size.y) {
+  if (l.x < 0 || l.x >= 1.0 || l.y < 0 || l.y >= 1.0) {
     return false;
   }
   return true;

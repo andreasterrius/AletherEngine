@@ -8,7 +8,7 @@
 #include <stb_image.h>
 #include <vector>
 
-ale::Model::Model(const string &path, bool gamma) : gammaCorrection(gamma) {
+Model::Model(const string &path, bool gamma) : gammaCorrection(gamma) {
   loadModel(path);
 }
 

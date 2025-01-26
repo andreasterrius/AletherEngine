@@ -5,6 +5,7 @@
 #ifndef ROOT_LAYOUT_H
 #define ROOT_LAYOUT_H
 #include "content_browser.h"
+#include "item_inspector.h"
 #include "scene_tree.h"
 #include "scene_viewport.h"
 #include "src/gizmo/gizmo.h"
@@ -21,6 +22,7 @@ public:
   };
 
 private:
+  ItemInspector item_inspector;
   ContentBrowser content_browser_ui;
   SceneViewport scene_viewport_ui;
   SceneTree scene_tree_ui;
@@ -35,6 +37,7 @@ private:
 private:
   ImGuiID dockspace_id;
   bool show_menubar;
+  bool scene_has_focus;
 
 public:
   EditorRootLayout(StaticMeshLoader &sm_loader, ivec2 initial_window_size);
@@ -52,6 +55,8 @@ public:
   void tick(Camera &camera, entt::registry &world, ivec2 cursor_top_left);
   void start_capture_scene(Camera &camera);
   void end_capture_scene();
+
+  bool get_scene_has_focus();
 
   void debug();
 };

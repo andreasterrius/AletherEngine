@@ -10,7 +10,7 @@
 std::optional<SceneTree::Entry>
 SceneTree::draw_and_handle_clicks(entt::registry &world,
                                   std::optional<entt::entity> selected_entity) {
-  ImGui::Begin(panel_name.c_str());
+  ImGui::Begin(panel_name.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
 
   auto view = world.view<ale::SceneNode>();
 
