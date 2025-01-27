@@ -40,7 +40,8 @@ LineRenderer::LineRenderer()
   glBindVertexArray(0);
 
   // for boxes
-  Model cube = Model(afs::root("resources/default_models/unit_cube.obj"));
+  // Model cube = Model(afs::root("resources/default_models/unit_cube.obj"));
+  Model cube = create_box();
   glGenVertexArrays(1, &boxVAO);
   glGenBuffers(1, &boxVBO);
 
@@ -170,4 +171,94 @@ void LineRenderer::queue_unit_cube(Transform transform) {
   bb.max = transform.get_model_matrix() * vec4(bb.max, 1.0);
   this->boxData.push_back(bb.min);
   this->boxData.push_back(bb.max);
+  this->boxData.push_back(WHITE);
+}
+
+Model LineRenderer::create_box() {
+  // vector<Vertex> vertices;
+  vector<Vertex> vertices = vector{
+      // back face
+      Vertex{vec3(-1.0f, -1.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f),
+             vec2(0.0f, 0.0f)}, // bottom-left
+      Vertex{vec3(1.0f, 1.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f),
+             vec2(1.0f, 1.0f)}, // top-right
+      Vertex{vec3(1.0f, -1.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f),
+             vec2(1.0f, 0.0f)}, // bottom-right
+      Vertex{vec3(1.0f, 1.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f),
+             vec2(1.0f, 1.0f)}, // top-right
+      Vertex{vec3(-1.0f, -1.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f),
+             vec2(0.0f, 0.0f)}, // bottom-left
+      Vertex{vec3(-1.0f, 1.0f, -1.0f), vec3(0.0f, 0.0f, -1.0f),
+             vec2(0.0f, 1.0f)}, // top-left
+      // front face
+      Vertex{vec3(-1.0f, -1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+             vec2(0.0f, 0.0f)}, // bottom-left
+      Vertex{vec3(1.0f, -1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+             vec2(1.0f, 0.0f)}, // bottom-right
+      Vertex{vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+             vec2(1.0f, 1.0f)}, // top-right
+      Vertex{vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+             vec2(1.0f, 1.0f)}, // top-right
+      Vertex{vec3(-1.0f, 1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+             vec2(0.0f, 1.0f)}, // top-left
+      Vertex{vec3(-1.0f, -1.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
+             vec2(0.0f, 0.0f)}, // bottom-left
+      // left face
+      Vertex{vec3(-1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f),
+             vec2(1.0f, 0.0f)}, // top-right
+      Vertex{vec3(-1.0f, 1.0f, -1.0f), vec3(-1.0f, 0.0f, 0.0f),
+             vec2(1.0f, 1.0f)}, // top-left
+      Vertex{vec3(-1.0f, -1.0f, -1.0f), vec3(-1.0f, 0.0f, 0.0f),
+             vec2(0.0f, 1.0f)}, // bottom-left
+      Vertex{vec3(-1.0f, -1.0f, -1.0f), vec3(-1.0f, 0.0f, 0.0f),
+             vec2(0.0f, 1.0f)}, // bottom-left
+      Vertex{vec3(-1.0f, -1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f),
+             vec2(0.0f, 0.0f)}, // bottom-right
+      Vertex{vec3(-1.0f, 1.0f, 1.0f), vec3(-1.0f, 0.0f, 0.0f),
+             vec2(1.0f, 0.0f)}, // top-right
+      // right face
+      Vertex{vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
+             vec2(1.0f, 0.0f)}, // top-left
+      Vertex{vec3(1.0f, -1.0f, -1.0f), vec3(1.0f, 0.0f, 0.0f),
+             vec2(0.0f, 1.0f)}, // bottom-right
+      Vertex{vec3(1.0f, 1.0f, -1.0f), vec3(1.0f, 0.0f, 0.0f),
+             vec2(1.0f, 1.0f)}, // top-right
+      Vertex{vec3(1.0f, -1.0f, -1.0f), vec3(1.0f, 0.0f, 0.0f),
+             vec2(0.0f, 1.0f)}, // bottom-right
+      Vertex{vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
+             vec2(1.0f, 0.0f)}, // top-left
+      Vertex{vec3(1.0f, -1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
+             vec2(0.0f, 0.0f)}, // bottom-left
+      // bottom face
+      Vertex{vec3(-1.0f, -1.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f),
+             vec2(0.0f, 1.0f)}, // top-right
+      Vertex{vec3(1.0f, -1.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f),
+             vec2(1.0f, 1.0f)}, // top-left
+      Vertex{vec3(1.0f, -1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f),
+             vec2(1.0f, 0.0f)}, // bottom-left
+      Vertex{vec3(1.0f, -1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f),
+             vec2(1.0f, 0.0f)}, // bottom-left
+      Vertex{vec3(-1.0f, -1.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f),
+             vec2(0.0f, 0.0f)}, // bottom-right
+      Vertex{vec3(-1.0f, -1.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f),
+             vec2(0.0f, 1.0f)}, // top-right
+      // top face
+      Vertex{vec3(-1.0f, 1.0f, -1.0f), vec3(0.0f, 1.0f, 0.0f),
+             vec2(0.0f, 1.0f)}, // top-left
+      Vertex{vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
+             vec2(1.0f, 0.0f)}, // bottom-right
+      Vertex{vec3(1.0f, 1.0f, -1.0f), vec3(0.0f, 1.0f, 0.0f),
+             vec2(1.0f, 1.0f)}, // top-right
+      Vertex{vec3(1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
+             vec2(1.0f, 0.0f)}, // bottom-right
+      Vertex{vec3(-1.0f, 1.0f, -1.0f), vec3(0.0f, 1.0f, 0.0f),
+             vec2(0.0f, 1.0f)}, // top-left
+      Vertex{vec3(-1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
+             vec2(0.0f, 0.0f)} // bottom-left
+  };
+
+  BoundingBox bb(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f));
+  Mesh mesh(vertices, vector<unsigned int>(), vector<LoadedTexture>(), bb);
+
+  return Model(vector<LoadedTexture>(), vector<Mesh>{std::move(mesh)});
 }

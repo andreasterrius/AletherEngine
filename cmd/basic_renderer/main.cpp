@@ -36,8 +36,7 @@ int main() {
   window.attach_scroll_callback([&](double xoffset, double yoffset) {
     camera.ProcessMouseScroll(yoffset);
   });
-
-  auto lights = vector<Light>{Light{vec3(5.0f, 5.0f, 5.0f)}};
+  ;
   auto basic_renderer = BasicRenderer();
 
   auto sm_loader = StaticMeshLoader();
@@ -59,12 +58,17 @@ int main() {
                                      });
     world.emplace<StaticMesh>(entity, sm_floor);
   }
+  {
+    const auto entity = world.create();
+    world.emplace<Transform>(entity, Transform{});
+    world.emplace<Light>(entity, Light{vec3(5.0f, 5.0f, 5.0f)});
+  }
 
   while (!window.should_close()) {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    basic_renderer.render(camera, lights, world);
+    basic_renderer.render(camera, world);
 
     if (glfwGetKey(window.get(), GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
       camera.ProcessKeyboardArcball(true);

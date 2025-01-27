@@ -5,6 +5,7 @@
 #ifndef ALETHERENGINE_LINE_RENDERER_H
 #define ALETHERENGINE_LINE_RENDERER_H
 
+#include "../data/model.h"
 #include "../data/shader.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -35,6 +36,8 @@ private:
   Shader boxShader;
   unsigned int boxVAO, boxVBO, boxInstanceVBO;
   vector<vec3> boxData;
+
+  Model create_box();
 
 public:
   LineRenderer();
