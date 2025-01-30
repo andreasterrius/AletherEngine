@@ -22,6 +22,7 @@
 
 #include <stb_image.h>
 
+#include "src/renderer/sdf_generator_gpu_v2.h"
 #include "src/texture.h"
 
 using namespace std;
@@ -226,8 +227,10 @@ int main() {
       .type = "texture_diffuse",
   });
 
-  // SdfModel robotSdf(robot, 4);
-  SdfModel trophySdf(objects[1].model.get()->meshes[0], 32);
+  SdfGeneratorGPUV2 sdf_generator_gpuv2;
+  auto k = sdf_generator_gpuv2.generate_gpu(*objects[1].model, 64);
+  SdfModel trophySdf(objects[1].model.get()->meshes[0], std::move(k[0]), 64);
+
   auto size = trophySdf.outerBB.getSize();
   cout << size.x << " " << size.y << " " << size.z << endl;
 
@@ -282,7 +285,7 @@ int main() {
           xpos, ypos, wd.screenWidth, wd.screenHeight,
           camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight),
           camera.GetViewMatrix());
-      trophySdf.findHitPositions(raymarchDebugRay, &raymarchDebugHitPos);
+      trophySdf.find_hit_positions(raymarchDebugRay, &raymarchDebugHitPos);
     }
     if (glfwGetKey(window.get(), GLFW_KEY_ENTER) == GLFW_PRESS) {
       std::cout << "Shooting raymarching rays..." << endl;
@@ -380,15 +383,15 @@ int main() {
 
     lineRenderer.queue_box(Transform{}, trophySdf.bb, vec3(0.0, 1.0, 0.0));
     lineRenderer.queue_box(Transform{}, trophySdf.outerBB, vec3(1.0, 0.0, 0.0));
-    trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
-      vec3 color;
-      if (trophySdf.distances[i][j][k] < 0) {
-        lineRenderer.queue_box(Transform{}, bb, vec3(0.0, 1.0, 0.0));
-        // color =
-        // vec3(1.0, 0.0, 0.0); // RED
-      } else {
-      }
-    });
+    // trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
+    //   vec3 color;
+    //   if (trophySdf.distances[i][j][k] < 0) {
+    //     lineRenderer.queue_box(Transform{}, bb, vec3(0.0, 1.0, 0.0));
+    //     // color =
+    //     // vec3(1.0, 0.0, 0.0); // RED
+    //   } else {
+    //   }
+    // });
     for (auto &r : rays) {
       lineRenderer.queue_line(r, WHITE);
     }
@@ -432,7 +435,7 @@ int main() {
 vector<vec4> raymarch(vector<Ray> &rays, SdfModel &sdf) {
   vector<vec4> color(rays.size(), vec4());
   for (int i = 0; i < rays.size(); ++i) {
-    if (sdf.findHitPositions(rays[i], nullptr)) {
+    if (sdf.find_hit_positions(rays[i], nullptr)) {
       color[i] = (vec4(1.0, 1.0, 1.0, 0.0));
     }
   }

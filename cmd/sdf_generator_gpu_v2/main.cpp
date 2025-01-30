@@ -14,6 +14,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "src/data/static_mesh.h"
+#include "src/renderer/raymarcher_cpu.h"
 
 #include <corecrt_io.h>
 #include <stb_image.h>
@@ -46,8 +47,8 @@ int main() {
   auto camera = Camera(ARCBALL, 1024, 768, glm::vec3(3.0f, 5.0f, -7.0f));
   auto basic_renderer = BasicRenderer();
   auto sm_loader = StaticMeshLoader();
-  auto static_mesh =
-      sm_loader.load_static_mesh(afs::root("resources/models/open_bottom.obj"));
+  auto static_mesh = sm_loader.load_static_mesh(
+      afs::root("resources/content_browser/tree.obj"));
   auto model = static_mesh.get_model();
 
   window.set_debug(true);
@@ -62,8 +63,8 @@ int main() {
   SdfGeneratorGPUV2 sdfgen;
   LineRenderer line_renderer;
 
-  int resolution = 8;
-  auto texture = std::move(sdfgen.generate_gpu(*model, 8).at(0));
+  int resolution = 16;
+  auto texture = std::move(sdfgen.generate_gpu(*model, resolution).at(0));
   auto texture_data = texture.retrieve_data_from_gpu();
   auto sdf_mesh = SdfModel(model->meshes.at(0), std::move(texture), resolution);
 
@@ -82,6 +83,10 @@ int main() {
   vector image(
       resolution,
       vector(resolution, vector(resolution, vec4(0.0f, 0.0f, 0.0f, 0.0f))));
+
+  auto debug_raymarch = false;
+  auto cursor_pos = window.get_cursor_pos();
+  auto raymarcher_cpu = RaymarcherCpu();
 
   window.attach_key_callback([&](int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
@@ -104,6 +109,12 @@ int main() {
       auto result = image[sx][sy][sz];
       closest_point = vec3(result[1], result[2], result[3]);
     }
+
+    if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
+      debug_raymarch = true;
+    } else if (key == GLFW_KEY_UP && action == GLFW_RELEASE) {
+      debug_raymarch = false;
+    }
   });
 
   while (!window.should_close()) {
@@ -112,42 +123,50 @@ int main() {
 
     basic_renderer.render(camera, world);
 
-    line_renderer.queue_box(Transform{}, model->meshes[0].boundingBox,
-                            vec3(1.0, 0.0, 0.0));
-    sdf_mesh.loopOverCubes([&](int x, int y, int z, BoundingBox bb) {
-      int index = sdf_mesh.texture3D->get_index(x, y, z, 0);
-      float distance = texture_data.at(index);
-      vec3 color;
-      if (distance > 0.0f) {
-        color = WHITE;
-      } else {
-        color = RED;
-      }
-      if (selected_index == index) {
-        color = GREEN;
-        sx = x;
-        sy = y;
-        sz = z;
-        auto center_dir = normalize(bb.getCenter() - closest_point);
-        auto d = dot(closest_normal, normalize(bb.getCenter() - closest_point));
-        cout << format("dot:{} | {} {} {} | {} {} {}", d, closest_normal.x,
-                       closest_normal.y, closest_normal.z, center_dir.x,
-                       center_dir.y, center_dir.z)
-             << endl;
-        line_renderer.queue_line(closest_point, closest_point + center_dir,
-                                 YELLOW);
-        line_renderer.queue_line(closest_point, closest_point + closest_normal,
-                                 BLUE);
-        line_renderer.queue_unit_cube(Transform{
-            .translation = normalize(closest_point + closest_normal)});
-      }
-      if (color == WHITE) {
-      } else {
-        line_renderer.queue_box(Transform{}, bb, color);
-      }
-    });
+    line_renderer.queue_box(Transform{}, model->meshes[0].boundingBox, RED);
+    line_renderer.queue_box(Transform{}, model->meshes[1].boundingBox, GREEN);
+    // sdf_mesh.loopOverCubes([&](int x, int y, int z, BoundingBox bb) {
+    //   int index = sdf_mesh.texture3D->get_index(x, y, z, 0);
+    //   float distance = texture_data.at(index);
+    //   vec3 color;
+    //   if (distance > 0.0f) {
+    //     color = WHITE;
+    //   } else {
+    //     color = RED;
+    //   }
+    //   if (selected_index == index) {
+    //     color = GREEN;
+    //     sx = x;
+    //     sy = y;
+    //     sz = z;
+    //     auto center_dir = normalize(bb.getCenter() - closest_point);
+    //     auto d = dot(closest_normal, normalize(bb.getCenter() -
+    //     closest_point));
+    //     // cout << format("dot:{} | {} {} {} | {} {} {}", d,
+    //     closest_normal.x,
+    //     //                closest_normal.y, closest_normal.z, center_dir.x,
+    //     //                center_dir.y, center_dir.z)
+    //     //      << endl;
+    //     line_renderer.queue_line(closest_point, closest_point + center_dir,
+    //                              YELLOW);
+    //     line_renderer.queue_line(closest_point, closest_point +
+    //     closest_normal,
+    //                              BLUE);
+    //     line_renderer.queue_unit_cube(Transform{
+    //         .translation = normalize(closest_point + closest_normal)});
+    //   }
+    //   if (color == WHITE) {
+    //   } else {
+    //     line_renderer.queue_box(Transform{}, bb, color);
+    //   }
+    // });
     line_renderer.queue_unit_cube(Transform{.translation = closest_point});
     line_renderer.render(camera.GetProjectionMatrix(), camera.GetViewMatrix());
+
+    if (debug_raymarch) {
+      raymarcher_cpu.shoot_ray(window, camera, sdf_mesh);
+    }
+    raymarcher_cpu.render(camera);
 
     if (glfwGetKey(window.get(), GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
       camera.ProcessKeyboardArcball(true);

@@ -35,6 +35,7 @@ public:
   optional<Texture3D> texture3D;
 
   // TODO: move to private, public is for debugging
+  vector<float> texture3D_data;
   vector<vector<vector<float>>> distances;
   vector<vector<vector<vec3>>> positions; // Only used for debugging
   vector<pair<vec3, vec3>> faceNormals;   // Only used for debugging
@@ -58,7 +59,7 @@ public:
 
   void writeToFile(string path);
 
-  bool findHitPositions(Ray debugRay, vector<vec3> *debugHitPos);
+  bool find_hit_positions(Ray debugRay, vector<vec3> *debugHitPos);
 };
 
 } // namespace ale

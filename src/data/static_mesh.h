@@ -8,7 +8,8 @@
 #include "../sdf_model.h"
 #include "../sdf_model_packed.h"
 #include "model.h"
-#include "src/sdf_generator_gpu.h"
+#include "../renderer/sdf_generator_gpu_v2.h"
+#include "../sdf_generator_gpu.h"
 
 using namespace std;
 
@@ -59,7 +60,8 @@ const string SM_UNIT_CUBE = "default_cube";
 const string SM_UNIT_SPHERE = "default_sphere";
 
 class StaticMeshLoader {
-  SdfGeneratorGPU sdf_generator_gpu;
+  // SdfGeneratorGPU sdf_generator_gpu;
+  SdfGeneratorGPUV2 sdf_generator_gpu_v2;
   shared_ptr<SdfModelPacked> packed; // OWNING pointer
   unordered_map<string, StaticMesh> static_meshes;
 

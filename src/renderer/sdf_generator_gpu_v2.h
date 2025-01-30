@@ -32,6 +32,7 @@ public:
 
   vector<Texture3D> generate_cpu(Model &M, int resolution);
   vector<Texture3D> generate_gpu(Model &m, int resolution);
+  Texture3D generate_gpu(Mesh &mesh, int resolution);
 };
 
 } // namespace ale

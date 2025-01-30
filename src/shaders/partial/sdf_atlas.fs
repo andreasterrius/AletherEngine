@@ -60,7 +60,7 @@ float distance_from_box_minmax(vec3 p, vec3 bbMin, vec3 bbMax) {
 bool raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, out vec3 objectCenter) {
     float total_distance_traveled = 0.0;
     const int NUMBER_OF_STEPS = 100;
-    const float MINIMUM_HIT_DISTANCE = 0.01;
+    const float MINIMUM_HIT_DISTANCE = 0.001;
     const float MAXIMUM_TRACE_DISTANCE = maxTraceDist;
     const vec3 NO_HIT_COLOR = vec3(0.52, 0.8, 0.92);
     const vec3 SDF_COLOR =  vec3(0.89, 0.89, 0.56);

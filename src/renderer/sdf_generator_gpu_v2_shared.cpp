@@ -107,7 +107,7 @@ void generate_sdf(ivec3 texel_coord, int vertices_size, int indices_size,
     vec3 ac = vec3(c.position) - vec3(a.position);
     vec3 normal = normalize(cross(ab, ac));
     float check_dist =
-        distance(closest_point + normal * vec3(0.001), cube_center_pos);
+        distance(closest_point + normal * vec3(0.0001), cube_center_pos);
     if (check_dist < shortest_check_distance) {
       shortest_check_distance = check_dist;
       shortest_distance = distance(closest_point, cube_center_pos);

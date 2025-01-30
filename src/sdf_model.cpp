@@ -102,6 +102,9 @@ ale::SdfModel::SdfModel(Mesh &mesh, Texture3D texture3D, int cubeCount)
   cubeSize = vec3((outerBB.max.x - outerBB.min.x) / cubeCount,
                   (outerBB.max.y - outerBB.min.y) / cubeCount,
                   (outerBB.max.z - outerBB.min.z) / cubeCount);
+
+  // flush back all distance to the vector (ergh)
+  texture3D_data = texture3D.retrieve_data_from_gpu();
 }
 
 void SdfModel::loopOverCubes(function<void(int, int, int, BoundingBox)> func) {
@@ -177,7 +180,7 @@ void SdfModel::writeToFile(string path) {
   cout << "data written to " << path << endl;
 }
 
-bool SdfModel::findHitPositions(Ray debugRay, vector<vec3> *debugHitPos) {
+bool SdfModel::find_hit_positions(Ray debugRay, vector<vec3> *debugHitPos) {
   // to box only
   // cout << "hit T" << endl;
   // for(int i = 0; i < 20; ++i) {
@@ -191,17 +194,17 @@ bool SdfModel::findHitPositions(Ray debugRay, vector<vec3> *debugHitPos) {
 
   // to box with sdf
   // cout << "hit T" << endl;
-  for (int i = 0; i < 20; ++i) {
+  for (int i = 0; i < 100; ++i) {
     if (this->bb.isInside(debugRay.origin)) {
       vec3 localCoord = debugRay.origin - this->outerBB.min;
       vec3 boxArrSize = this->outerBB.getSize() / vec3(this->cubeCount);
       int x = localCoord.x / boxArrSize.x;
       int y = localCoord.y / boxArrSize.y;
       int z = localCoord.z / boxArrSize.z;
-      float dist = this->distances[x][y][z];
+      float dist = texture3D_data.at(texture3D->get_index(x, y, z, 1));
       debugRay.origin = debugRay.resolve(dist);
 
-      if (dist < 0.01) {
+      if (dist < 0.001) {
         if (debugHitPos != nullptr) {
           debugHitPos->push_back(debugRay.origin);
           cout << "isect found: " << debugRay.origin.x << " "

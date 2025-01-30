@@ -71,15 +71,21 @@ StaticMesh StaticMeshLoader::load_static_mesh(string path,
       auto index = packed->add(sdf_model);
       indices.push_back(index);
     } else {
-      sdf_generator_gpu.add_mesh(name, model.meshes[i], res, res, res);
-      sdf_generator_gpu.generate_all();
-
-      auto sdf_model =
-          SdfModel(model.meshes[i], move(sdf_generator_gpu.at(name)), res);
+      auto texture = sdf_generator_gpu_v2.generate_gpu(model.meshes[i], res);
+      auto sdf_model = SdfModel(model.meshes[i], std::move(texture), res);
       auto index = packed->add(sdf_model);
       indices.push_back(index);
-
       this->save_sdf(*sdf_model.texture3D, name);
+
+      // sdf_generator_gpu.add_mesh(name, model.meshes[i], res, res, res);
+      // sdf_generator_gpu.generate_all();
+      //
+      // auto sdf_model =
+      //     SdfModel(model.meshes[i], move(sdf_generator_gpu.at(name)), res);
+      // auto index = packed->add(sdf_model);
+      // indices.push_back(index);
+      //
+      // this->save_sdf(*sdf_model.texture3D, name);
     }
   }
 
