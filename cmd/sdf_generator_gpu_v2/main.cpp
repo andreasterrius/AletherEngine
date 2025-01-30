@@ -47,7 +47,7 @@ int main() {
   auto basic_renderer = BasicRenderer();
   auto sm_loader = StaticMeshLoader();
   auto static_mesh =
-      sm_loader.load_static_mesh(afs::root("resources/models/Barrel_A.obj"));
+      sm_loader.load_static_mesh(afs::root("resources/models/open_bottom.obj"));
   auto model = static_mesh.get_model();
 
   window.set_debug(true);
