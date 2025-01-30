@@ -42,7 +42,7 @@ SdfModel::SdfModel(Mesh &mesh, int cubeCount)
 
       float tIsect;
       if (Util::rayTriangleIntersect(bb.center, normalize(vec3(0.0, 1.0, 0.0)),
-                                     a.Position, b.Position, c.Position,
+                                     a.position, b.position, c.position,
                                      tIsect)) {
         vec3 isect = bb.center + vec3(0.0, 1.0, 0.0) * tIsect;
         bool ok = true;
@@ -58,7 +58,7 @@ SdfModel::SdfModel(Mesh &mesh, int cubeCount)
       }
 
       float distance =
-          Util::udTriangle(bb.center, a.Position, b.Position, c.Position);
+          Util::udTriangle(bb.center, a.position, b.position, c.position);
       if (distance < distances[i][j][k]) {
         distances[i][j][k] = distance;
         positions[k][j][i] = bb.center;

@@ -258,6 +258,9 @@ vector<float> Texture3D::retrieve_data_from_gpu() {
 
   return data;
 }
+int Texture3D::get_index(int x, int y, int z, int ele_count) {
+  return (z * meta.height * meta.width + y * meta.width + x) + ele_count;
+}
 
 void Texture3D::save(string name) {
   string path = "resources/" + name + ".bin";

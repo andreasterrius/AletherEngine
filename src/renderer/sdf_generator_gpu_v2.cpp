@@ -3,7 +3,9 @@
 //
 
 #include "sdf_generator_gpu_v2.h"
+
 #include "../file_system.h"
+#include "sdf_generator_gpu_v2_shared.h"
 
 using afs = ale::FileSystem;
 

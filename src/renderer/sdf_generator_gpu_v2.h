@@ -33,6 +33,7 @@ public:
   vector<Texture3D> generate_cpu(Model &M, int resolution);
   vector<Texture3D> generate_gpu(Model &m, int resolution);
 };
+
 } // namespace ale
 
 #endif // SDF_GENERATOR_GPU_V2_H

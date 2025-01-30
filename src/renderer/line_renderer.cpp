@@ -57,19 +57,19 @@ LineRenderer::LineRenderer()
   // vertex normals
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        (void *)offsetof(Vertex, Normal));
+                        (void *)offsetof(Vertex, normal));
   // vertex texture coords
   glEnableVertexAttribArray(2);
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        (void *)offsetof(Vertex, TexCoords));
+                        (void *)offsetof(Vertex, tex_coords));
   // vertex tangent
   glEnableVertexAttribArray(3);
   glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        (void *)offsetof(Vertex, Tangent));
+                        (void *)offsetof(Vertex, tangent));
   // vertex bitangent
   glEnableVertexAttribArray(4);
   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        (void *)offsetof(Vertex, Bitangent));
+                        (void *)offsetof(Vertex, bitangent));
   // bone ids
   glEnableVertexAttribArray(5);
   glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex),

@@ -9,23 +9,10 @@
 
 ale::ComputeShader::ComputeShader(string path) {
   std::ifstream computeShaderFile;
-  string computeShaderCode;
-  try {
-    // open files
-    computeShaderFile.open(path);
-    std::stringstream shaderStream;
-    // read file's buffer contents into streams
-    shaderStream << computeShaderFile.rdbuf();
-    // close file handlers
-    computeShaderFile.close();
-    // convert stream into string
-    computeShaderCode = shaderStream.str();
-    // if geometry shader path is present, also load a geometry shader
-  } catch (std::ifstream::failure &e) {
-    std::cout << "ERROR::COMPUTE_SHADER::FILE_NOT_SUCCESSFULLY_READ: "
-              << e.what() << std::endl;
-    throw;
-  }
+  string computeShaderCode =
+      Shader::load_file_with_include(Shader::IncludeDirective{
+          .filename = path,
+      });
 
   unsigned int compute = glCreateShader(GL_COMPUTE_SHADER);
   const char *cShaderCode = computeShaderCode.c_str();

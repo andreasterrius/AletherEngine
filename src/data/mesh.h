@@ -3,12 +3,10 @@
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include "boundingbox.h"
 #include "shader.h"
 
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -18,11 +16,11 @@ using namespace std;
 #define MAX_BONE_INFLUENCE 4
 
 struct Vertex {
-  alignas(16) glm::vec3 Position;
-  alignas(16) glm::vec3 Normal;
-  alignas(16) glm::vec2 TexCoords;
-  alignas(16) glm::vec3 Tangent;
-  alignas(16) glm::vec3 Bitangent;
+  alignas(16) glm::vec3 position;
+  alignas(16) glm::vec3 normal;
+  alignas(16) glm::vec2 tex_coords;
+  alignas(16) glm::vec3 tangent;
+  alignas(16) glm::vec3 bitangent;
 
   // bone indexes which will influence this vertex
   alignas(16) int m_BoneIDs[MAX_BONE_INFLUENCE];
@@ -148,19 +146,19 @@ private:
     // vertex normals
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, Normal));
+                          (void *)offsetof(Vertex, normal));
     // vertex texture coords
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, TexCoords));
+                          (void *)offsetof(Vertex, tex_coords));
     // vertex tangent
     glEnableVertexAttribArray(3);
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, Tangent));
+                          (void *)offsetof(Vertex, tangent));
     // vertex bitangent
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, Bitangent));
+                          (void *)offsetof(Vertex, bitangent));
     // bone ids
     glEnableVertexAttribArray(5);
     glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex),

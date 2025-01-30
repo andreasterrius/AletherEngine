@@ -14,7 +14,7 @@ std::string Shader::load_file_with_include(IncludeDirective include_directive) {
     throw runtime_error("no path is provided");
   }
 
-  auto shader_file = ifstream{};  // open files
+  auto shader_file = ifstream{}; // open files
   string code;
   {
     shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -44,6 +44,12 @@ std::string Shader::load_file_with_include(IncludeDirective include_directive) {
     }
   }
 
+  // special case, we stop including anything if it contains this string
+  if (include_directive.filename.find("_shared.cpp") != std::string::npos) {
+    code = remove_include_lines(code, false);
+    return code;
+  }
+
   string new_code;
   {
     regex pattern("#include\\s+\"([^\"]+)\"\\s+([\\d\\s]+)");
@@ -69,7 +75,7 @@ std::string Shader::load_file_with_include(IncludeDirective include_directive) {
       }
 
       new_code.append(prev_pos, match[0].first);
-      string included_code = this->load_file_with_include(include_directive);
+      string included_code = load_file_with_include(include_directive);
       new_code.append(included_code);
       prev_pos = match[0].second;
     }
@@ -78,4 +84,39 @@ std::string Shader::load_file_with_include(IncludeDirective include_directive) {
   }
 
   return new_code;
+}
+
+std::string Shader::remove_include_lines(const std::string &input,
+                                         bool replace_with_spaces) {
+  // Split input into lines
+  std::regex line_re(R"(([^\n]*)(\n?))");
+  std::sregex_iterator it(input.begin(), input.end(), line_re);
+  std::sregex_iterator end;
+  std::string result;
+
+  // Regex to identify #include lines (with optional leading/trailing
+  // whitespace)
+  std::regex include_re(R"(\s*#include\s*["<][^">]*[">]\s*)");
+
+  for (; it != end; ++it) {
+    std::smatch match = *it;
+    std::string line_content = match[1]; // Line text (without newline)
+    std::string line_ending = match[2];  // Newline character(s)
+
+    if (std::regex_match(line_content, include_re)) {
+      if (replace_with_spaces) {
+        // Replace line content with spaces, preserve line ending
+        result += std::string(line_content.size(), ' ') + line_ending;
+      } else {
+        // Remove the line entirely (only keep line ending if not part of the
+        // match)
+        result += line_ending;
+      }
+    } else {
+      // Keep non-#include lines unchanged
+      result += line_content + line_ending;
+    }
+  }
+
+  return result;
 }

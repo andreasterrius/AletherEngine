@@ -12,7 +12,7 @@
 #include <vector>
 
 class Shader {
- public:
+public:
   struct IncludeDirective {
     std::string filename;
     std::vector<int> bindings;
@@ -62,14 +62,16 @@ class Shader {
     ID = glCreateProgram();
     glAttachShader(ID, vertex);
     glAttachShader(ID, fragment);
-    if (geometryPath != nullptr) glAttachShader(ID, geometry);
+    if (geometryPath != nullptr)
+      glAttachShader(ID, geometry);
     glLinkProgram(ID);
     checkCompileErrors(ID, "PROGRAM", "");
     // delete the shaders as they're linked into our program now and no longer
     // necessary
     glDeleteShader(vertex);
     glDeleteShader(fragment);
-    if (geometryPath != nullptr) glDeleteShader(geometry);
+    if (geometryPath != nullptr)
+      glDeleteShader(geometry);
   }
   // activate the shader
   // ------------------------------------------------------------------------
@@ -124,7 +126,7 @@ class Shader {
                        &mat[0][0]);
   }
 
- private:
+private:
   // utility function for checking shader compilation/linking errors.
   // ------------------------------------------------------------------------
   void checkCompileErrors(GLuint shader, std::string type, std::string path) {
@@ -155,6 +157,10 @@ class Shader {
     }
   }
 
-  std::string load_file_with_include(IncludeDirective include_directive);
+public:
+  static std::string load_file_with_include(IncludeDirective include_directive);
+
+  static std::string remove_include_lines(const std::string &input,
+                                          bool replace_with_spaces = true);
 };
 #endif

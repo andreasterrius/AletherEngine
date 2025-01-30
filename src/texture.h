@@ -97,6 +97,7 @@ public:
   Texture3D &operator=(Texture3D &&other);
 
   vector<float> retrieve_data_from_gpu();
+  int get_index(int x, int y, int z, int ele_count);
 
   void save(string name);
 

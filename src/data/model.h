@@ -10,7 +10,6 @@
 
 #include "mesh.h"
 
-using namespace std;
 using namespace ale;
 
 namespace ale {
