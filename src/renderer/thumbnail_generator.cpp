@@ -36,6 +36,10 @@ shared_ptr<Texture> ThumbnailGenerator::generate(StaticMesh static_mesh) {
 
     renderer.render(camera, world);
 
+    // wait for the render to be done before we continue
+    // perhaps there are other synchronization object that better fulfill this?
+    glFinish();
+
     framebuffer.end_capture();
   }
   return this->framebuffer.create_new_color_attachment0();
