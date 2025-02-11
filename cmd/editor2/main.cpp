@@ -130,7 +130,7 @@ int main() {
   });
 
   while (!window.should_close()) {
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClearColor(135.0 / 255, 206 / 255, 235 / 255, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     editor_root_layout_ui.tick(camera, world,

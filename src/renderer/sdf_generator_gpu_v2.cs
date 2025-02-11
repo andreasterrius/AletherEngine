@@ -17,11 +17,9 @@ struct Vertex {
 layout (std430, binding = 2) buffer VertexBuffer {
     Vertex vertices[];
 };
-
 layout (std430, binding = 3) buffer IndexBuffer {
     uint indices[];
 };
-
 layout (std140, binding = 4) uniform BoundingBox {
     ivec4 buffer_size;
     vec4 inner_bb_min;

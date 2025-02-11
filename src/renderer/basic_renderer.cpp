@@ -16,7 +16,7 @@ BasicRenderer::BasicRenderer()
 
 void BasicRenderer::render(Camera &camera, entt::registry &world) {
 
-  glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+  glClearColor(135.0 / 255, 206.0 / 255, 235.0 / 255, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   color_shader.use();

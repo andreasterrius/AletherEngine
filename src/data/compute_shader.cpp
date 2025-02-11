@@ -24,41 +24,6 @@ ale::ComputeShader::ComputeShader(string path) {
   glAttachShader(id, compute);
   glLinkProgram(id);
   checkCompileErrors(id, "PROGRAM", "");
-
-  // if (textureDepth == 0){
-  //     // we use 2d texture
-  //     glGenTextures(1, &textureId);
-  //     glActiveTexture(GL_TEXTURE0);
-  //     glBindTexture(GL_TEXTURE_2D, textureId);
-  //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  //     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, textureWidth, textureHeight,
-  //     0, GL_RGBA,
-  //                  GL_FLOAT, NULL);
-  //
-  //     glBindImageTexture(0, textureId, 0, GL_FALSE, 0, GL_READ_WRITE,
-  //     GL_RGBA32F);
-  // }
-  // else{
-  //     // we use 3d texture
-  //     glGenTextures(1, &textureId);
-  //     glActiveTexture(GL_TEXTURE0);
-  //     glBindTexture(GL_TEXTURE_3D, textureId);
-  //
-  //     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  //     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  //     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-  //     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  //     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  //     glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, textureWidth, textureHeight,
-  //     textureDepth,
-  //         0, GL_RGBA, GL_FLOAT, NULL);
-  //
-  //     glBindImageTexture(0, textureId, 0, GL_FALSE, 0, GL_READ_WRITE,
-  //     GL_RGBA32F);
-  // }
 }
 
 void ale::ComputeShader::checkCompileErrors(GLuint shader, std::string type,

@@ -125,41 +125,39 @@ int main() {
 
     line_renderer.queue_box(Transform{}, model->meshes[0].boundingBox, RED);
     line_renderer.queue_box(Transform{}, model->meshes[1].boundingBox, GREEN);
-    // sdf_mesh.loopOverCubes([&](int x, int y, int z, BoundingBox bb) {
-    //   int index = sdf_mesh.texture3D->get_index(x, y, z, 0);
-    //   float distance = texture_data.at(index);
-    //   vec3 color;
-    //   if (distance > 0.0f) {
-    //     color = WHITE;
-    //   } else {
-    //     color = RED;
-    //   }
-    //   if (selected_index == index) {
-    //     color = GREEN;
-    //     sx = x;
-    //     sy = y;
-    //     sz = z;
-    //     auto center_dir = normalize(bb.getCenter() - closest_point);
-    //     auto d = dot(closest_normal, normalize(bb.getCenter() -
-    //     closest_point));
-    //     // cout << format("dot:{} | {} {} {} | {} {} {}", d,
-    //     closest_normal.x,
-    //     //                closest_normal.y, closest_normal.z, center_dir.x,
-    //     //                center_dir.y, center_dir.z)
-    //     //      << endl;
-    //     line_renderer.queue_line(closest_point, closest_point + center_dir,
-    //                              YELLOW);
-    //     line_renderer.queue_line(closest_point, closest_point +
-    //     closest_normal,
-    //                              BLUE);
-    //     line_renderer.queue_unit_cube(Transform{
-    //         .translation = normalize(closest_point + closest_normal)});
-    //   }
-    //   if (color == WHITE) {
-    //   } else {
-    //     line_renderer.queue_box(Transform{}, bb, color);
-    //   }
-    // });
+    sdf_mesh.loopOverCubes([&](int x, int y, int z, BoundingBox bb) {
+      int index = sdf_mesh.texture3D->get_index(x, y, z, 0);
+      float distance = texture_data.at(index);
+      vec3 color;
+      if (distance > 0.0f) {
+        color = WHITE;
+      } else {
+        color = RED;
+      }
+      if (selected_index == index) {
+        color = GREEN;
+        sx = x;
+        sy = y;
+        sz = z;
+        auto center_dir = normalize(bb.getCenter() - closest_point);
+        auto d = dot(closest_normal, normalize(bb.getCenter() - closest_point));
+        // cout << format("dot:{} | {} {} {} | {} {} {}", d,
+        closest_normal.x,
+            //                closest_normal.y, closest_normal.z, center_dir.x,
+            //                center_dir.y, center_dir.z)
+            //      << endl;
+            line_renderer.queue_line(closest_point, closest_point + center_dir,
+                                     YELLOW);
+        line_renderer.queue_line(closest_point, closest_point + closest_normal,
+                                 BLUE);
+        line_renderer.queue_unit_cube(Transform{
+            .translation = normalize(closest_point + closest_normal)});
+      }
+      if (color == WHITE) {
+      } else {
+        line_renderer.queue_box(Transform{}, bb, color);
+      }
+    });
     line_renderer.queue_unit_cube(Transform{.translation = closest_point});
     line_renderer.render(camera.GetProjectionMatrix(), camera.GetViewMatrix());
 
