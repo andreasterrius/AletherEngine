@@ -21,9 +21,8 @@ vector<Texture3D> SdfGeneratorGPUV2::generate_gpu(Model &m, int resolution) {
 
   auto sdfs = vector<Texture3D>();
   for (auto &mesh : m.meshes) {
-    generate_gpu(mesh, resolution);
+    sdfs.emplace_back(std::move(generate_gpu(mesh, resolution)));
   }
-
   return sdfs;
 }
 Texture3D SdfGeneratorGPUV2::generate_gpu(Mesh &mesh, int resolution) {

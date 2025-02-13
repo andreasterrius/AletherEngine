@@ -161,10 +161,11 @@ int main() {
   unsigned int woodTexture = woodTextureOpt.value();
 
   // load some random mesh
-  Model robot(afs::root("resources/models/cyborg/cyborg.obj"));
+  // Model robot(afs::root("resources/models/cyborg/cyborg.obj"));
   Model trophy(afs::root("resources/models/sample2.obj"));
   Model monkey(afs::root("resources/models/monkey.obj"));
   Model unitCube(afs::root("resources/models/unit_cube.obj"));
+  Model unitCube2(afs::root("resources/models/unit_cube.obj"));
 
   // configure depth map FBO
   const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -208,20 +209,13 @@ int main() {
   Object *selectedObject = nullptr;
   vector<Object> objects{
       Object{.transform = Transform{.translation = vec3(10.0f)},
-             .model =
-                 make_shared<Model>(std::move(ModelFactory::createCubeModel())),
+             .model = make_shared<Model>(std::move(unitCube2)),
              .shouldRender = false},
       Object{.transform =
                  Transform{
                      .translation = vec3(0.0f),
                  },
-             .model = make_shared<Model>(std::move(monkey))},
-      Object{.transform =
-                 Transform{
-                     .translation = vec3(10.0f),
-                 },
-             .model = make_shared<Model>(std::move(robot)),
-             .shouldRender = false}};
+             .model = make_shared<Model>(std::move(monkey))}};
   objects[0].model->meshes[0].textures.push_back(LoadedTexture{
       .id = woodTexture,
       .type = "texture_diffuse",
@@ -234,7 +228,7 @@ int main() {
   auto size = trophySdf.outerBB.getSize();
   cout << size.x << " " << size.y << " " << size.z << endl;
 
-  trophySdf.writeToFile("resources/sample_cpu.txt");
+  // trophySdf.writeToFile("resources/sample_cpu.txt");
 
   // objects.push_back(Object{
   //     .transform = Transform{
@@ -377,7 +371,7 @@ int main() {
     glBindTexture(GL_TEXTURE_2D, woodTexture);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-    // renderScene(colorShader, objects);
+    renderScene(colorShader, objects);
 
     gizmo.render(camera, lightPos);
 

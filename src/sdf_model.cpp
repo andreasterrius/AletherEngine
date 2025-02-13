@@ -104,7 +104,7 @@ ale::SdfModel::SdfModel(Mesh &mesh, Texture3D texture3D, int cubeCount)
                   (outerBB.max.z - outerBB.min.z) / cubeCount);
 
   // flush back all distance to the vector (ergh)
-  texture3D_data = texture3D.retrieve_data_from_gpu();
+  texture3D_data = this->texture3D->retrieve_data_from_gpu();
 }
 
 void SdfModel::loopOverCubes(function<void(int, int, int, BoundingBox)> func) {
@@ -204,7 +204,7 @@ bool SdfModel::find_hit_positions(Ray debugRay, vector<vec3> *debugHitPos) {
       float dist = texture3D_data.at(texture3D->get_index(x, y, z, 1));
       debugRay.origin = debugRay.resolve(dist);
 
-      if (dist < 0.001) {
+      if (dist < 0.01) {
         if (debugHitPos != nullptr) {
           debugHitPos->push_back(debugRay.origin);
           cout << "isect found: " << debugRay.origin.x << " "

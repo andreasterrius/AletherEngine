@@ -164,7 +164,7 @@ void render_scene(unsigned int mdf, Transform &monkey_transform,
 int main() {
   glfwInit();
 
-  auto screen_size = glm::ivec2(1024, 768);
+  auto screen_size = glm::ivec2(1920, 1080);
   auto window = create_window(screen_size);
   auto camera = Camera(ARCBALL, screen_size.x, screen_size.y,
                        glm::vec3(6.0f, 10.0f, 14.0f));
