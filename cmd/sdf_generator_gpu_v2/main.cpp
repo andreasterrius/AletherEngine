@@ -20,6 +20,8 @@
 #include <stb_image.h>
 
 using namespace ale;
+using namespace std;
+using namespace glm;
 using afs = ale::FileSystem;
 
 entt::registry new_world(StaticMeshLoader &sm_loader) {

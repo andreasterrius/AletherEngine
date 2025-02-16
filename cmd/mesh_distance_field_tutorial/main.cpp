@@ -15,6 +15,10 @@
 
 #include <stb_image.h>
 
+using namespace std;
+using namespace glm;
+using namespace ale;
+
 struct GpuData {
   ivec4 size; // [0] = vertices.size, [1] = indices.size
   vec4 inner_bb_min;

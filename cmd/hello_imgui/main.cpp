@@ -30,7 +30,7 @@ using afs = ale::FileSystem;
 int main() {
   glfwInit();
 
-  auto screen_size = ivec2(1200, 800);
+  auto screen_size = glm::ivec2(1200, 800);
   auto window = Window(screen_size.x, screen_size.y, "Hello Imgui");
 
   IMGUI_CHECKVERSION();
