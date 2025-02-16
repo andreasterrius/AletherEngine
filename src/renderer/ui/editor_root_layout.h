@@ -30,7 +30,7 @@ private:
   TextureRenderer texture_renderer;
   Framebuffer gizmo_frame;
   Gizmo gizmo;
-  pair<vec3, Light> gizmo_light;
+  pair<glm::vec3, Light> gizmo_light;
 
   Texture test_texture;
 
@@ -40,19 +40,19 @@ private:
   bool scene_has_focus;
 
 public:
-  EditorRootLayout(StaticMeshLoader &sm_loader, ivec2 initial_window_size);
+  EditorRootLayout(StaticMeshLoader &sm_loader, glm::ivec2 initial_window_size);
 
-  void start(ivec2 pos, ivec2 size);
+  void start(glm::ivec2 pos, glm::ivec2 size);
   Event draw_and_handle_events(entt::registry &world);
   void end();
 
   // input
   void handle_press(Camera &camera, entt::registry &world,
-                    ivec2 cursor_top_left);
+                    glm::ivec2 cursor_top_left);
   void handle_release();
   void handle_key(int key, int scancode, int action, int mods);
 
-  void tick(Camera &camera, entt::registry &world, ivec2 cursor_top_left);
+  void tick(Camera &camera, entt::registry &world, glm::ivec2 cursor_top_left);
   void start_capture_scene(Camera &camera);
   void end_capture_scene();
 

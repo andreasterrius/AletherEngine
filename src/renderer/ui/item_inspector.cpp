@@ -3,7 +3,6 @@
 //
 
 #include "item_inspector.h"
-
 #include "src/data/scene_node.h"
 #include "src/data/transform.h"
 
@@ -53,7 +52,7 @@ void ItemInspector::separate_two(std::string name, std::function<void()> func) {
   ImGui::Columns(1);
 }
 
-void ItemInspector::inspect_vec3f(std::string name, vec3 &v) {
+void ItemInspector::inspect_vec3f(std::string name, glm::vec3 &v) {
   separate_two(name, [&]() {
     ImGui::InputFloat3(std::format("##{}", name).c_str(), &v[0]);
   });
@@ -66,7 +65,8 @@ void ItemInspector::inspect_quat(std::string name, glm::quat quat) {
 void ItemInspector::inspect_text(std::string name, std::string &val) {
   separate_two(name, [&]() {
     ImGui::InputText(std::format("##{}", name).c_str(), val.data(),
-                     val.capacity() + 1, ImGuiInputTextFlags_CallbackResize, inspect_text_string_resize, &val);
+                     val.capacity() + 1, ImGuiInputTextFlags_CallbackResize,
+                     inspect_text_string_resize, &val);
   });
 }
 

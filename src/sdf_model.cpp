@@ -17,6 +17,8 @@
 #include "util.h"
 
 using namespace ale;
+using namespace glm;
+using namespace std;
 using afs = ale::FileSystem;
 
 SdfModel::SdfModel(Mesh &mesh, int cubeCount)

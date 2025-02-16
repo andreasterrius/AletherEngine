@@ -8,21 +8,22 @@
 #include "glm/glm.hpp"
 #include <vector>
 
-using namespace glm;
+float dot2(glm::vec3 v);
 
-float dot2(vec3 v);
-
-float distance2(vec3 a, vec3 b);
+float distance2(glm::vec3 a, glm::vec3 b);
 
 // Helper function to project a point onto a line segment
-vec3 closest_point_on_segment(vec3 point, vec3 seg_start, vec3 seg_end);
+glm::vec3 closest_point_on_segment(glm::vec3 point, glm::vec3 seg_start,
+                                   glm::vec3 seg_end);
 
-vec3 closest_point_on_triangle(vec3 A, vec3 v0, vec3 v1, vec3 v2);
+glm::vec3 closest_point_on_triangle(glm::vec3 A, glm::vec3 v0, glm::vec3 v1,
+                                    glm::vec3 v2);
 
-void generate_sdf(ivec3 texel_coord, int vertices_size, int indices_size,
-                  vec3 outer_bb_min, vec3 outer_bb_max, ivec3 image_size,
-                  vector<Vertex> &vertices, vector<unsigned int> &indices,
-                  vector<vector<vector<vec4>>> &imgOutput,
-                  vec3 &closest_normal);
+void generate_sdf(glm::ivec3 texel_coord, int vertices_size, int indices_size,
+                  glm::vec3 outer_bb_min, glm::vec3 outer_bb_max,
+                  glm::ivec3 image_size, std::vector<ale::Vertex> &vertices,
+                  std::vector<unsigned int> &indices,
+                  std::vector<std::vector<std::vector<glm::vec4>>> &imgOutput,
+                  glm::vec3 &closest_normal);
 
 #endif // SDF_GENERATOR_GPU_V2_SHARED_H

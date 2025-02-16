@@ -16,13 +16,13 @@ namespace ale {
 class RaymarcherCpu {
 private:
   LineRenderer line_renderer;
-  vector<vec3> ray_hit_pos;
+  vector<glm::vec3> ray_hit_pos;
 
 public:
   RaymarcherCpu();
 
   Ray get_mouse_ray(float mouseX, float mouseY, float screenWidth,
-                    float screenHeight, mat4 projMat, mat4 viewMat);
+                    float screenHeight, glm::mat4 projMat, glm::mat4 viewMat);
 
   void shoot_ray(Window &window, Camera &camera, SdfModel &sdf_model);
 

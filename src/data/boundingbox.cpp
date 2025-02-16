@@ -5,6 +5,9 @@
 #include "boundingbox.h"
 #include "transform.h"
 
+using namespace glm;
+using namespace std;
+
 ale::BoundingBox::BoundingBox(vec3 min, vec3 max) : min(min), max(max) {
   this->center = vec3(min.x + (max.x - min.x) / 2, min.y + (max.y - min.y) / 2,
                       min.z + (max.z - min.z) / 2);

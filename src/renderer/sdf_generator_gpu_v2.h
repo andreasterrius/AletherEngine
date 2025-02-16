@@ -13,12 +13,12 @@ class SdfGeneratorGPUV2 {
   ComputeShader sdfgen_v2;
 
   struct GpuData {
-    ivec4 size; // [0] = vertices.size, [1] = indices.size, [2] and [3] is
-                // unused (0)
-    vec4 inner_bb_min;
-    vec4 inner_bb_max;
-    vec4 outer_bb_min;
-    vec4 outer_bb_max;
+    glm::ivec4 size; // [0] = vertices.size, [1] = indices.size, [2] and [3] is
+                     // unused (0)
+    glm::vec4 inner_bb_min;
+    glm::vec4 inner_bb_max;
+    glm::vec4 outer_bb_min;
+    glm::vec4 outer_bb_max;
   };
 
   struct Buffers {

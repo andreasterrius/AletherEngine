@@ -14,6 +14,8 @@
 #define BOX_BUFFER_SIZE 90000
 
 using namespace ale;
+using namespace glm;
+using namespace std;
 using afs = ale::FileSystem;
 
 LineRenderer::LineRenderer()

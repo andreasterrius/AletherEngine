@@ -8,9 +8,6 @@
 #include "sdf_model.h"
 #include "texture.h"
 
-using namespace glm;
-using namespace std;
-
 namespace ale {
 
 constexpr int ATLAS_WIDTH = 4096;
@@ -21,12 +18,12 @@ constexpr int SINGLE_TEXTURE_SIZE_Y = 64;
 class SdfModelPacked {
 public:
   struct GPUObject {
-    mat4 model_mat;
-    mat4 inv_model_mat;
-    vec4 inner_bbmin;
-    vec4 inner_bbmax;
-    vec4 outer_bbmin;
-    vec4 outer_bbmax;
+    glm::mat4 model_mat;
+    glm::mat4 inv_model_mat;
+    glm::vec4 inner_bbmin;
+    glm::vec4 inner_bbmax;
+    glm::vec4 outer_bbmin;
+    glm::vec4 outer_bbmax;
     int atlas_index;
     int atlas_count;
     int _a = 0;
@@ -34,7 +31,7 @@ public:
   };
 
   struct Meta {
-    ivec3 size;
+    glm::ivec3 size;
     BoundingBox inner_bb;
     BoundingBox outer_bb;
     int atlas_index; // index of texture_atlas
@@ -42,16 +39,16 @@ public:
   };
 
 private:
-  vector<Texture> texture_atlas;
-  vector<Meta> offsets;
+  std::vector<Texture> texture_atlas;
+  std::vector<Meta> offsets;
   bool debug_mode;
   int ssbo;
 
-  vector<unsigned int> pack_sdf_models(vector<SdfModel *> sdf_models);
+  std::vector<unsigned int> pack_sdf_models(std::vector<SdfModel *> sdf_models);
 
 public:
   // data will be copied, just need to have a temporary reference to sdf models
-  SdfModelPacked(vector<SdfModel *> sdf_models, bool debug_mode = false);
+  SdfModelPacked(std::vector<SdfModel *> sdf_models, bool debug_mode = false);
 
   SdfModelPacked(SdfModelPacked &other) = delete;
   SdfModelPacked &operator=(SdfModelPacked &other) = delete;
@@ -61,12 +58,12 @@ public:
 
   void bind_to_shader(Shader &shader,
                       // transform -> shadow mesh index
-                      vector<pair<Transform, vector<unsigned int>>> &entries);
+                      std::vector<std::pair<Transform, std::vector<unsigned int>>> &entries);
 
   unsigned int add(SdfModel &sdf_model);
 
-  vector<Meta> &get_offsets();
-  vector<Texture> &get_texture_atlas();
+  std::vector<Meta> &get_offsets();
+  std::vector<Texture> &get_texture_atlas();
 };
 
 } // namespace ale

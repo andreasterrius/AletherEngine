@@ -5,8 +5,10 @@
 #include <format>
 #include <spdlog/fmt/bundled/format.h>
 
+namespace ale {
+
+using namespace glm;
 using afs = ale::FileSystem;
-// using namespace ale;
 
 BasicRenderer::BasicRenderer()
     : color_shader(afs::root("src/renderer/basic_renderer.vs").c_str(),
@@ -67,3 +69,4 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
     static_mesh.get_model()->draw(color_shader);
   }
 }
+} // namespace ale

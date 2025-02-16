@@ -7,6 +7,8 @@
 #include <string>
 
 using namespace ale;
+using namespace std;
+using namespace glm;
 
 Window::Window(int width, int height, string caption) {
   // TODO: hardcoded for now, unless the need arise to separate this

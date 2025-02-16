@@ -9,6 +9,8 @@
 #include "file_system.h"
 
 using afs = ale::FileSystem;
+using namespace std;
+using namespace glm;
 
 TextureRenderer::TextureRenderer()
     : shader(afs::root("src/shaders/texture2d.vs").c_str(),

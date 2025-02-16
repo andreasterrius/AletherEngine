@@ -17,9 +17,6 @@
 #include "data/shader.h"
 #include "texture.h"
 
-using namespace glm;
-using namespace std;
-
 namespace ale {
 
 class Model;
@@ -28,20 +25,23 @@ class LineRenderer;
 // This is a 3d array representative given a mesh
 class SdfModel {
 private:
-  vec3 cubeSize;
+  glm::vec3 cubeSize;
   int cubeCount; // for 1 dimension
 
 public:
-  optional<Texture3D> texture3D;
+  std::optional<Texture3D> texture3D;
 
   // TODO: move to private, public is for debugging
-  vector<float> texture3D_data;
-  vector<vector<vector<float>>> distances;
-  vector<vector<vector<vec3>>> positions; // Only used for debugging
-  vector<pair<vec3, vec3>> faceNormals;   // Only used for debugging
+  std::vector<float> texture3D_data;
+  std::vector<std::vector<std::vector<float>>> distances;
+  std::vector<std::vector<std::vector<glm::vec3>>>
+      positions; // Only used for debugging
+  std::vector<std::pair<glm::vec3, glm::vec3>>
+      faceNormals; // Only used for debugging
 
-  vec3 facePoint;
-  vector<tuple<vec3, vec3, vec3>> isectPoints; // debugs
+  glm::vec3 facePoint;
+  std::vector<std::tuple<glm::vec3, glm::vec3, glm::vec3>>
+      isectPoints; // debugs
 
   BoundingBox outerBB; // bb for sdf
   BoundingBox bb;      // mesh bb
@@ -53,13 +53,13 @@ public:
   SdfModel(Mesh &mesh, Texture3D texture3D, int cubeCount);
 
   // returns small cubes that creates the sdf
-  void loopOverCubes(function<void(int, int, int, BoundingBox)> func);
+  void loopOverCubes(std::function<void(int, int, int, BoundingBox)> func);
 
   void bind_to_shader(Shader shader);
 
-  void writeToFile(string path);
+  void writeToFile(std::string path);
 
-  bool find_hit_positions(Ray debugRay, vector<vec3> *debugHitPos);
+  bool find_hit_positions(Ray debugRay, std::vector<glm::vec3> *debugHitPos);
 };
 
 } // namespace ale

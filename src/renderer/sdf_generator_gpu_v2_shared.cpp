@@ -1,5 +1,11 @@
 #include "sdf_generator_gpu_v2_shared.h"
 
+#if !(GLSL)
+using namespace glm;
+using namespace std;
+using namespace ale;
+#endif
+
 float dot2(vec3 v) { return dot(v, v); }
 
 float distance2(vec3 a, vec3 b) {

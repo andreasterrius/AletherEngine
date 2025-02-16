@@ -8,6 +8,7 @@
 
 using namespace std;
 using namespace ale;
+using namespace glm;
 
 // https://tavianator.com/2022/ray_box_boundary.html
 optional<float> Ray::intersect(const BoundingBox &boxR, float limitTMin,

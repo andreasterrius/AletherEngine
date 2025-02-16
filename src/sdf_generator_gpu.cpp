@@ -12,7 +12,10 @@
 #include "sdf_model.h"
 
 using afs = ale::FileSystem;
+using namespace glm;
+using namespace std;
 
+namespace ale {
 ale::SdfGeneratorGPU::SdfGeneratorGPU()
     : compute_shader(afs::root("src/shaders/sdf_generator_gpu.cs")) {
   // test
@@ -171,3 +174,4 @@ void ale::SdfGeneratorGPU::dump_textfile(string name, string filename) {
   }
   debug_out_file.close();
 }
+} // namespace ale

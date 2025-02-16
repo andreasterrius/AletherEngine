@@ -3,8 +3,11 @@
 //
 
 #include "framebuffer.h"
-
 #include <spdlog/spdlog.h>
+
+using namespace std;
+using namespace glm;
+
 ale::Framebuffer::Framebuffer(Meta meta) : meta(meta) {
   SPDLOG_TRACE("Creating framebuffer {} {}", meta.width, meta.height);
   // glEnable(GL_FRAMEBUFFER_SRGB);

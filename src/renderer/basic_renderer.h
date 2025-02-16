@@ -12,15 +12,16 @@
 
 namespace ale {
 
-class BasicRendererException final : public runtime_error {
+class BasicRendererException final : public std::runtime_error {
 public:
-  explicit BasicRendererException(const string &msg) : runtime_error(msg) {}
+  explicit BasicRendererException(const std::string &msg)
+      : runtime_error(msg) {}
 };
 
 struct Light {
-  vec3 color = vec3(1.0f);
+  glm::vec3 color = glm::vec3(1.0f);
   float radius = 1.0f;
-  vec3 attenuation = vec3(1.0f, 0.09f, 0.032f);
+  glm::vec3 attenuation = glm::vec3(1.0f, 0.09f, 0.032f);
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Light, color, radius, attenuation);
 

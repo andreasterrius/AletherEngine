@@ -14,7 +14,10 @@
 #include <glm/gtx/quaternion.hpp>
 
 using afs = ale::FileSystem;
+using namespace std;
+using namespace glm;
 
+namespace ale {
 ale::Gizmo::Gizmo()
     : gizmo_shader(afs::root("src/gizmo/gizmo.vs").c_str(),
                    afs::root("src/gizmo/gizmo.fs").c_str()),
@@ -408,3 +411,4 @@ bool Gizmo::handle_press(Ray &mouse_ray, entt::registry &world) {
 
   return false; // don't propagate click
 }
+} // namespace ale

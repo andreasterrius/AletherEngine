@@ -6,6 +6,7 @@
 #include <filesystem>
 
 namespace fs = std::filesystem;
+using namespace std;
 
 namespace ale {
 string FileSystem::root(const string &path) {

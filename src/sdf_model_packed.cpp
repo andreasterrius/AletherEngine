@@ -1,8 +1,11 @@
 #include "sdf_model_packed.h"
-
 #include "file_system.h"
-using afs = ale::FileSystem;
 
+using afs = ale::FileSystem;
+using namespace glm;
+using namespace std;
+
+namespace ale {
 vector<unsigned int>
 ale::SdfModelPacked::pack_sdf_models(vector<SdfModel *> sdf_models) {
   auto flat_data = vector(ATLAS_WIDTH * ATLAS_HEIGHT, 0.0f);
@@ -216,3 +219,4 @@ vector<ale::SdfModelPacked::Meta> &ale::SdfModelPacked::get_offsets() {
 vector<Texture> &ale::SdfModelPacked::get_texture_atlas() {
   return this->texture_atlas;
 }
+} // namespace ale

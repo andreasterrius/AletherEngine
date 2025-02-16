@@ -10,11 +10,9 @@
 #include <string>
 #include <vector>
 
-using namespace ale;
-using namespace std;
-
 #define MAX_BONE_INFLUENCE 4
 
+namespace ale {
 struct Vertex {
   alignas(16) glm::vec3 position;
   alignas(16) glm::vec3 normal;
@@ -30,22 +28,22 @@ struct Vertex {
 
 struct LoadedTexture {
   unsigned int id;
-  string type;
-  string path;
+  std::string type;
+  std::string path;
 };
 
 class Mesh {
 public:
   // mesh Data
-  vector<Vertex> vertices;
-  vector<unsigned int> indices;
-  vector<LoadedTexture> textures;
+  std::vector<Vertex> vertices;
+  std::vector<unsigned int> indices;
+  std::vector<LoadedTexture> textures;
   BoundingBox boundingBox;
   unsigned int VAO;
 
   // constructor
-  Mesh(vector<Vertex> vertices, vector<unsigned int> indices,
-       vector<LoadedTexture> textures, BoundingBox boundingBox)
+  Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices,
+       std::vector<LoadedTexture> textures, BoundingBox boundingBox)
       : boundingBox(boundingBox) {
     this->vertices = vertices;
     this->indices = indices;
@@ -70,8 +68,8 @@ public:
       glActiveTexture(GL_TEXTURE0 +
                       i); // active proper texture unit before binding
       // retrieve texture number (the N in diffuse_textureN)
-      string number;
-      string name = textures[i].type;
+      std::string number;
+      std::string name = textures[i].type;
       if (name == "texture_diffuse")
         number = std::to_string(diffuseNr++);
       else if (name == "texture_specular")
@@ -174,5 +172,6 @@ private:
     glBindVertexArray(0);
   }
 };
+}
 
 #endif

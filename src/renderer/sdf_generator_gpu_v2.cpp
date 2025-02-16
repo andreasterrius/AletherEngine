@@ -8,6 +8,8 @@
 #include "sdf_generator_gpu_v2_shared.h"
 
 using afs = ale::FileSystem;
+using namespace std;
+using namespace glm;
 
 namespace ale {
 SdfGeneratorGPUV2::SdfGeneratorGPUV2()

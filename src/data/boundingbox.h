@@ -8,24 +8,22 @@
 #include "src/data/transform.h"
 #include <glm/glm.hpp>
 
-using namespace glm;
-
 namespace ale {
 
 class Transform;
 
 class BoundingBox {
 public:
-  vec3 min, max, center;
-  BoundingBox(vec3 min, vec3 max);
+  glm::vec3 min, max, center;
+  BoundingBox(glm::vec3 min, glm::vec3 max);
 
   BoundingBox apply_scale(Transform t) const;
 
-  vec3 getCenter() const;
+  glm::vec3 getCenter() const;
 
-  vec3 getSize() const;
+  glm::vec3 getSize() const;
 
-  bool isInside(vec3 p);
+  bool isInside(glm::vec3 p);
 };
 } // namespace ale
 

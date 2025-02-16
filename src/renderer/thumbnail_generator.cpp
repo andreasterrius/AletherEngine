@@ -6,6 +6,9 @@
 #include "../camera.h"
 
 namespace ale {
+using namespace std;
+using namespace glm;
+
 ThumbnailGenerator::ThumbnailGenerator(int thumbnail_width,
                                        int thumbnail_height)
     : framebuffer(Framebuffer::Meta{.width = thumbnail_width,

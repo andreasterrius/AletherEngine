@@ -11,16 +11,14 @@
 #include <glm/gtc/quaternion.hpp>
 #include <nlohmann/json.hpp>
 
-using namespace glm;
-
 namespace ale {
 class Transform {
 public:
-  vec3 translation = vec3(0.0f);
-  vec3 scale = vec3(1.0f);
-  quat rotation = glm::identity<quat>(); // quaternion
+  glm::vec3 translation = glm::vec3(0.0f);
+  glm::vec3 scale = glm::vec3(1.0f);
+  glm::quat rotation = glm::identity<glm::quat>(); // quaternion
 
-  mat4 get_model_matrix();
+  glm::mat4 get_model_matrix();
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Transform, translation, scale, rotation);
 } // namespace ale

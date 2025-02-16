@@ -12,14 +12,11 @@
 #include <utility>
 #include <vector>
 
-using namespace glm;
-using namespace std;
-
-static vec3 WHITE = vec3(1.0, 1.0, 1.0);
-static vec3 RED = vec3(1.0, 0.0, 0.0);
-static vec3 GREEN = vec3(0.0, 1.0, 0.0);
-static vec3 BLUE = vec3(0.0, 0.0, 1.0);
-static vec3 YELLOW = vec3(1.0, 1.0, 0.0);
+static glm::vec3 WHITE = glm::vec3(1.0, 1.0, 1.0);
+static glm::vec3 RED = glm::vec3(1.0, 0.0, 0.0);
+static glm::vec3 GREEN = glm::vec3(0.0, 1.0, 0.0);
+static glm::vec3 BLUE = glm::vec3(0.0, 0.0, 1.0);
+static glm::vec3 YELLOW = glm::vec3(1.0, 1.0, 0.0);
 
 namespace ale {
 
@@ -30,8 +27,8 @@ class BoundingBox;
 class LineRenderer {
 private:
   struct Data {
-    vec3 startPos;
-    vec3 color;
+    glm::vec3 startPos;
+    glm::vec3 color;
   };
   Shader lineShader;
   unsigned int linesVAO, linesVBO;
@@ -39,22 +36,22 @@ private:
 
   Shader boxShader;
   unsigned int boxVAO, boxVBO, boxInstanceVBO;
-  vector<vec3> boxData;
+  vector<glm::vec3> boxData;
 
   Model create_box();
 
 public:
   LineRenderer();
 
-  void queue_line(Ray &ray, vec3 color = WHITE);
+  void queue_line(Ray &ray, glm::vec3 color = WHITE);
 
-  void queue_line(vec3 start, vec3 end, vec3 color = WHITE);
+  void queue_line(glm::vec3 start, glm::vec3 end, glm::vec3 color = WHITE);
 
-  void queue_box(Transform transform, BoundingBox bb, vec3 color = WHITE);
+  void queue_box(Transform transform, BoundingBox bb, glm::vec3 color = WHITE);
 
   void queue_unit_cube(Transform transform);
 
-  void render(mat4 projection, mat4 view);
+  void render(glm::mat4 projection, glm::mat4 view);
 };
 } // namespace ale
 

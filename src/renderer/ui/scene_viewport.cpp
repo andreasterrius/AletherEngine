@@ -6,6 +6,9 @@
 
 namespace ale::ui {
 
+using namespace glm;
+using namespace std;
+
 SceneViewport::SceneViewport(ivec2 initial_screen_size)
     : framebuffer(Framebuffer::Meta{
           initial_screen_size.x, initial_screen_size.y, Framebuffer::LINEAR}) {}

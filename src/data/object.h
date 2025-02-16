@@ -9,9 +9,6 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-using namespace glm;
-using namespace std;
-
 namespace ale {
 
 class Model;
@@ -19,10 +16,10 @@ class Model;
 class Object {
 public:
   Transform transform;
-  shared_ptr<Model> model;
+  std::shared_ptr<Model> model;
   bool shouldRender = true;
 
-  vec4 color;
+  glm::vec4 color;
 };
 } // namespace ale
 

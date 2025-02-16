@@ -8,6 +8,8 @@
 #include <stb_image.h>
 #include <vector>
 
+namespace ale {
+
 Model::Model(const string &path, bool gamma) : gammaCorrection(gamma) {
   loadModel(path);
 }
@@ -141,8 +143,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
   textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
   BoundingBox boundingBox = BoundingBox(
-      vec3(mesh->mAABB.mMin.x, mesh->mAABB.mMin.y, mesh->mAABB.mMin.z),
-      vec3(mesh->mAABB.mMax.x, mesh->mAABB.mMax.y, mesh->mAABB.mMax.z));
+      glm::vec3(mesh->mAABB.mMin.x, mesh->mAABB.mMin.y, mesh->mAABB.mMin.z),
+      glm::vec3(mesh->mAABB.mMax.x, mesh->mAABB.mMax.y, mesh->mAABB.mMax.z));
 
   // return a mesh object created from the extracted mesh data
   return Mesh(vertices, indices, textures, boundingBox);
@@ -221,3 +223,4 @@ unsigned int ale::TextureFromFile(const char *path, const string &directory,
 
   return textureID;
 }
+} // namespace ale

@@ -6,6 +6,8 @@
 
 #include "glm/gtc/epsilon.hpp"
 
+using namespace glm;
+
 std::optional<unsigned int> Util::loadTexture(const char *path) {
   unsigned int textureID;
   glGenTextures(1, &textureID);

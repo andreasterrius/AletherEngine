@@ -12,6 +12,7 @@
 
 using afs = ale::FileSystem;
 
+namespace ale {
 void serde::save_world(string file_path, entt::registry &world) {
   auto entities = vector<Entity>();
   auto entities_view = world.view<entt::entity>();
@@ -70,3 +71,4 @@ entt::registry serde::load_world(string file_path,
 
   return world;
 }
+} // namespace ale

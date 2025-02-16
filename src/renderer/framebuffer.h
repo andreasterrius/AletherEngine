@@ -8,13 +8,11 @@
 #include "../texture.h"
 #include <memory>
 
-using namespace std;
-
 namespace ale {
 
-class FramebufferException final : public runtime_error {
+class FramebufferException final : public std::runtime_error {
 public:
-  explicit FramebufferException(const string &msg) : runtime_error(msg) {}
+  explicit FramebufferException(const std::string &msg) : runtime_error(msg) {}
 };
 
 class Framebuffer {
@@ -38,20 +36,20 @@ private:
   unsigned int framebuffer_id = 0;
   unsigned int depth_renderbuffer_id = 0;
   Meta meta;
-  shared_ptr<Texture> color_attachment0;
+  std::shared_ptr<Texture> color_attachment0;
 
 public:
   Framebuffer(Meta meta);
 
-  shared_ptr<Texture> create_new_color_attachment0();
+  std::shared_ptr<Texture> create_new_color_attachment0();
 
   void start_capture();
 
   void end_capture();
 
-  shared_ptr<Texture> get_color_attachment0();
+  std::shared_ptr<Texture> get_color_attachment0();
 
-  ivec2 get_size();
+  glm::ivec2 get_size();
 
 public:
   ~Framebuffer();

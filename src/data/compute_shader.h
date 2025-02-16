@@ -5,14 +5,12 @@
 #include <glad/glad.h>
 #include <string>
 
-using namespace std;
-
 namespace ale {
 class ComputeShader {
 public:
   unsigned int id;
 
-  ComputeShader(string path);
+  ComputeShader(std::string path);
   ~ComputeShader();
 
   ComputeShader(const ComputeShader &other) = delete;

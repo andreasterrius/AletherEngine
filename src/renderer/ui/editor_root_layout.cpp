@@ -10,6 +10,8 @@
 #include <spdlog/spdlog.h>
 
 namespace ale::ui {
+using namespace glm;
+using namespace std;
 
 EditorRootLayout::EditorRootLayout(StaticMeshLoader &sm_loader,
                                    ivec2 initial_window_size)

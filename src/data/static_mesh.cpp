@@ -10,6 +10,7 @@
 namespace fs = std::filesystem;
 using afs = ale::FileSystem;
 
+namespace ale {
 StaticMesh::StaticMesh(shared_ptr<Model> model,
                        shared_ptr<SdfModelPacked> sdf_model_packed,
                        vector<unsigned int> sdf_model_packed_index)
@@ -180,3 +181,4 @@ std::string StaticMeshLoader::hash_sdf_name(std::string sdf_name) {
   size_t hashedValue = hasher(sdf_name);
   return to_string(hashedValue);
 }
+} // namespace ale

@@ -11,7 +11,6 @@
 #include <imgui.h>
 #include <string>
 
-using namespace std;
 using afs = ale::FileSystem;
 
 namespace ale::ui {

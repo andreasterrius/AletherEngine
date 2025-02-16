@@ -4,6 +4,9 @@
 
 #include "raymarcher_cpu.h"
 
+using namespace glm;
+using namespace std;
+
 namespace ale {
 RaymarcherCpu::RaymarcherCpu() {}
 

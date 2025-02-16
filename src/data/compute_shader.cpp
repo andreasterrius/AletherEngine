@@ -7,6 +7,9 @@
 #include <iostream>
 #include <sstream>
 
+using namespace std;
+using namespace glm;
+
 ale::ComputeShader::ComputeShader(string path) {
   std::ifstream computeShaderFile;
   string computeShaderCode =

@@ -16,14 +16,12 @@
 #include <stdexcept>
 #include <string>
 
-using namespace std;
-using namespace glm;
 class GLFWwindow;
 
 namespace ale {
-class WindowException final : public runtime_error {
+class WindowException final : public std::runtime_error {
 public:
-  explicit WindowException(const string &msg) : runtime_error(msg) {}
+  explicit WindowException(const std::string &msg) : std::runtime_error(msg) {}
 };
 
 struct DefaultInputs {
@@ -43,22 +41,23 @@ struct Data {
   double cursor_offset_x = 0.0,
          cursor_offset_y = 0.0; // diff last x curr input
 
-  function<void(int, int, int)> mouse_button_callback = nullptr;
-  function<void(double, double, double, double)> cursor_pos_callback = nullptr;
-  function<void(int, int)> framebuffer_size_callback = nullptr;
-  function<void(double, double)> scroll_callback = nullptr;
-  function<void(int, int, int, int)> key_callback = nullptr;
+  std::function<void(int, int, int)> mouse_button_callback = nullptr;
+  std::function<void(double, double, double, double)> cursor_pos_callback =
+      nullptr;
+  std::function<void(int, int)> framebuffer_size_callback = nullptr;
+  std::function<void(double, double)> scroll_callback = nullptr;
+  std::function<void(int, int, int, int)> key_callback = nullptr;
 };
 
 class Window {
   GLFWwindow *raw_window = nullptr;
-  unique_ptr<ImguiIntegration> imgui;
+  std::unique_ptr<ImguiIntegration> imgui;
   Data data; // to be passed to callbacks as well.
 
   static bool first_window_init;
 
 public:
-  Window(int width, int height, string caption);
+  Window(int width, int height, std::string caption);
 
   void set_default_inputs(DefaultInputs default_inputs);
 
@@ -70,28 +69,30 @@ public:
 
   void swap_buffer_and_poll_inputs();
 
-  ivec2 get_position();
+  glm::ivec2 get_position();
 
-  ivec2 get_size();
+  glm::ivec2 get_size();
 
-  vec2 get_cursor_pos_from_top_left();
+  glm::vec2 get_cursor_pos_from_top_left();
 
-  vec2 get_cursor_pos();
+  glm::vec2 get_cursor_pos();
 
   // take x since x/y most likely be equal
   float get_content_scale();
 
   // input callbacks
-  void attach_mouse_button_callback(const function<void(int, int, int)> &func);
+  void
+  attach_mouse_button_callback(const std::function<void(int, int, int)> &func);
 
   void attach_cursor_pos_callback(
-      const function<void(double, double, double, double)> &func);
+      const std::function<void(double, double, double, double)> &func);
 
-  void attach_framebuffer_size_callback(const function<void(int, int)> &func);
+  void
+  attach_framebuffer_size_callback(const std::function<void(int, int)> &func);
 
-  void attach_scroll_callback(const function<void(double, double)> &func);
+  void attach_scroll_callback(const std::function<void(double, double)> &func);
 
-  void attach_key_callback(const function<void(int, int, int, int)> &func);
+  void attach_key_callback(const std::function<void(int, int, int, int)> &func);
 
   void start_ui_frame();
 

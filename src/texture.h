@@ -8,15 +8,13 @@
 #include <glm/glm.hpp>
 #include <stb_image.h>
 #include <vector>
-
+#include <exception>
+#include <string>
 #include "data/shader.h"
 
-using namespace std;
-using namespace glm;
-
-class TextureException final : public runtime_error {
+class TextureException final : public std::runtime_error {
 public:
-  explicit TextureException(const string &msg) : runtime_error(msg) {}
+  explicit TextureException(const std::string &msg) : std::runtime_error(msg) {}
 };
 
 class Texture {
@@ -34,8 +32,8 @@ public:
   Meta meta;
   unsigned int id;
 
-  Texture(string path);
-  Texture(Meta meta, vector<float> &data);
+  Texture(std::string path);
+  Texture(Meta meta, std::vector<float> &data);
   Texture(Meta meta, void *data);
   ~Texture();
 
@@ -45,16 +43,16 @@ public:
   Texture(Texture &&other);
   Texture &operator=(Texture &&other);
 
-  void replace_data(vector<vector<vec4>> &color_data);
+  void replace_data(std::vector<std::vector<glm::vec4>> &color_data);
 
-  void replace_data(vector<vec4> &flat_color_data);
+  void replace_data(std::vector<glm::vec4> &flat_color_data);
 
   void partial_replace_data_f32(int xoffset, int yoffset, int width, int height,
-                                vector<float> &color_data);
+                                std::vector<float> &color_data);
 
-  vector<float> retrieve_data_from_gpu();
+  std::vector<float> retrieve_data_from_gpu();
 
-  void dump_data_to_file(string path);
+  void dump_data_to_file(std::string path);
 };
 
 class Texture3D {
@@ -72,7 +70,8 @@ public:
   unsigned int id = 0;
 
   // initialize a texture, empty data is possible
-  template <typename T> Texture3D(Meta meta, vector<T> &data) : meta(meta) {
+  template <typename T>
+  Texture3D(Meta meta, std::vector<T> &data) : meta(meta) {
     glGenTextures(1, &this->id);
     glBindTexture(GL_TEXTURE_3D, this->id);
     glTexImage3D(GL_TEXTURE_3D, 0, meta.internal_format, meta.width,
@@ -96,14 +95,14 @@ public:
   Texture3D(Texture3D &&other);
   Texture3D &operator=(Texture3D &&other);
 
-  vector<float> retrieve_data_from_gpu();
+  std::vector<float> retrieve_data_from_gpu();
   int get_index(int x, int y, int z, int ele_count);
 
-  void save(string name);
+  void save(std::string name);
 
-  void save_textfile(string name);
+  void save_textfile(std::string name);
 
-  static Texture3D load(string name);
+  static Texture3D load(std::string name);
 };
 
 class TextureRenderer {
