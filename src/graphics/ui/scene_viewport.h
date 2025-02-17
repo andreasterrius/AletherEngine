@@ -4,8 +4,9 @@
 
 #ifndef SCENE_VIEWPORT_H
 #define SCENE_VIEWPORT_H
-#include "../framebuffer.h"
-#include "src/data/ray.h"
+
+#include "src/graphics/framebuffer.h"
+#include "src/graphics/ray.h"
 #include <imgui.h>
 
 namespace ale::ui {

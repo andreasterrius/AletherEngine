@@ -1,9 +1,8 @@
 #include "basic_renderer.h"
 
-#include "../data/static_mesh.h"
-#include "../file_system.h"
+#include "src/data/file_system.h"
+#include "static_mesh.h"
 #include <format>
-#include <spdlog/fmt/bundled/format.h>
 
 namespace ale {
 
@@ -11,8 +10,10 @@ using namespace glm;
 using afs = ale::FileSystem;
 
 BasicRenderer::BasicRenderer()
-    : color_shader(afs::root("src/graphics/basic_renderer.vs").c_str(),
-                   afs::root("src/graphics/basic_renderer.fs").c_str()) {
+    : color_shader(
+          afs::root("resources_new/shaders/renderer/basic_renderer.vs").c_str(),
+          afs::root("resources_new/shaders/renderer/basic_renderer.fs")
+              .c_str()) {
   glEnable(GL_CULL_FACE);
 }
 

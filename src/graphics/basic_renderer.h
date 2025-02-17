@@ -1,14 +1,13 @@
 #ifndef BASIC_RENDERER_H
 #define BASIC_RENDERER_H
 
+#include "camera.h"
+#include "sdf/sdf_model_packed.h"
+#include "shader.h"
+#include "src/data/serde/glm.h"
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
-
-#include "../camera.h"
-#include "../data/serde/glm.h"
-#include "../data/shader.h"
-#include "../sdf_model_packed.h"
 
 namespace ale {
 

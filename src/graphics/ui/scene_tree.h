@@ -4,8 +4,8 @@
 
 #ifndef SCENE_TREE_H
 #define SCENE_TREE_H
+
 #include <entt/entt.hpp>
-#include <imgui.h>
 #include <optional>
 #include <string>
 

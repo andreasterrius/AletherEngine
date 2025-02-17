@@ -3,9 +3,9 @@
 //
 
 #include "item_inspector.h"
+
 #include "src/data/scene_node.h"
 #include "src/data/transform.h"
-
 #include <imgui.h>
 
 namespace ale::ui {

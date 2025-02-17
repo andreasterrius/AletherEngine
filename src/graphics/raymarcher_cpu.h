@@ -5,10 +5,10 @@
 #ifndef RAYMARCHER_CPU_H
 #define RAYMARCHER_CPU_H
 
-#include "../sdf_model.h"
-#include "../window.h"
+#include "camera.h"
 #include "line_renderer.h"
-#include "src/camera.h"
+#include "sdf/sdf_model.h"
+#include "window.h"
 
 namespace ale {
 // Class to debug raymarch attempts for SDF.

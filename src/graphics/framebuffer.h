@@ -5,7 +5,7 @@
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
 
-#include "../texture.h"
+#include "texture.h"
 #include <memory>
 
 namespace ale {

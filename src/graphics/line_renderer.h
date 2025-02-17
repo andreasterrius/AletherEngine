@@ -5,11 +5,9 @@
 #ifndef ALETHERENGINE_LINE_RENDERER_H
 #define ALETHERENGINE_LINE_RENDERER_H
 
-#include "../data/model.h"
-#include "../data/shader.h"
-#include <glad/glad.h>
+#include "model.h"
+#include "shader.h"
 #include <glm/glm.hpp>
-#include <utility>
 #include <vector>
 
 static glm::vec3 WHITE = glm::vec3(1.0, 1.0, 1.0);

@@ -3,7 +3,7 @@
 //
 
 #include "thumbnail_generator.h"
-#include "../camera.h"
+#include "camera.h"
 
 namespace ale {
 using namespace std;

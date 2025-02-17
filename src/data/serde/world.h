@@ -5,11 +5,10 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-#include "../../graphics/basic_renderer.h"
-#include "../scene_node.h"
-#include "../static_mesh.h"
-#include "std.h"
-
+#include "src/data/scene_node.h"
+#include "src/data/serde/std.h"
+#include "src/graphics/basic_renderer.h"
+#include "src/graphics/static_mesh.h"
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>
 
@@ -17,16 +16,16 @@ namespace ale::serde {
 
 struct Entity {
   int entity_id;
-  optional<Transform> transform;
-  optional<Light> light;
-  optional<StaticMesh::Serde> static_mesh;
-  optional<SceneNode> scene_node;
+  std::optional<Transform> transform;
+  std::optional<Light> light;
+  std::optional<StaticMesh::Serde> static_mesh;
+  std::optional<SceneNode> scene_node;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Entity, entity_id, transform, light,
                                    static_mesh, scene_node);
 
 struct Scene {
-  vector<Entity> entities;
+  std::vector<Entity> entities;
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Scene, entities);
 

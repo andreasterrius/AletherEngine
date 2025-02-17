@@ -3,6 +3,7 @@
 //
 
 #include "transform.h"
+
 using namespace glm;
 
 mat4 ale::Transform::get_model_matrix() {

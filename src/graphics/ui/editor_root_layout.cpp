@@ -18,10 +18,11 @@ EditorRootLayout::EditorRootLayout(StaticMeshLoader &sm_loader,
     : gizmo_frame(Framebuffer::Meta{.width = initial_window_size.x,
                                     .height = initial_window_size.y,
                                     .color_space = Framebuffer::LINEAR}),
-      content_browser_ui(sm_loader, afs::root("resources/content_browser")),
+      content_browser_ui(sm_loader,
+                         afs::root("resources_new/models/content_browser")),
       scene_viewport_ui(initial_window_size),
       gizmo_light(make_pair(vec3(5.0f), Light{})),
-      test_texture(afs::root("resources/textures/wood.png")),
+      test_texture(afs::root("resources_new/textures/wood.png")),
       scene_has_focus(false) {}
 
 void EditorRootLayout::start(ivec2 pos, ivec2 size) {

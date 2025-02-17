@@ -4,12 +4,12 @@
 
 #ifndef ROOT_LAYOUT_H
 #define ROOT_LAYOUT_H
+
 #include "content_browser.h"
 #include "item_inspector.h"
 #include "scene_tree.h"
 #include "scene_viewport.h"
-#include "src/gizmo/gizmo.h"
-
+#include "src/graphics/gizmo/gizmo.h"
 #include <imgui.h>
 
 namespace ale::ui {

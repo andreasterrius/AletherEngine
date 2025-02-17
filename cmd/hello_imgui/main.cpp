@@ -5,14 +5,14 @@
 
 #include <entt/entt.hpp>
 
-#include "src/camera.h"
-#include "src/data/model.h"
-#include "src/data/static_mesh.h"
-#include "src/file_system.h"
+#include "src/data/file_system.h"
 #include "src/graphics/basic_renderer.h"
-#include "src/sdf_generator_gpu.h"
-#include "src/sdf_model_packed.h"
-#include "src/window.h"
+#include "src/graphics/camera.h"
+#include "src/graphics/model.h"
+#include "src/graphics/sdf/sdf_generator_gpu.h"
+#include "src/graphics/sdf/sdf_model_packed.h"
+#include "src/graphics/static_mesh.h"
+#include "src/graphics/window.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -42,11 +42,6 @@ int main() {
       ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
   io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
-
-  ImGui_ImplGlfw_InitForOpenGL(
-      window.get(), true); // Second param install_callback=true will install
-                           // GLFW callbacks and chain to existing ones.
-  ImGui_ImplOpenGL3_Init();
 
   bool show_demo_window = true;
   bool show_another_window = false;
@@ -123,9 +118,6 @@ int main() {
     window.swap_buffer_and_poll_inputs();
   }
 
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplGlfw_Shutdown();
-  ImGui::DestroyContext();
   glfwTerminate();
   return 0;
 }

@@ -1,17 +1,18 @@
-#include <src/camera.h>
-#include <src/data/boundingbox.h>
-#include <src/data/model.h>
-#include <src/data/object.h>
-#include <src/data/ray.h>
-#include <src/data/shader.h>
-#include <src/data/transform.h>
-#include <src/file_system.h>
-#include <src/gizmo/gizmo.h>
-#include <src/graphics/line_renderer.h>
-#include <src/sdf_model.h>
-#include <src/util.h>
-#include <src/window.h>
-
+#include "src/data/boundingbox.h"
+#include "src/data/file_system.h"
+#include "src/data/transform.h"
+#include "src/data/util.h"
+#include "src/graphics/camera.h"
+#include "src/graphics/gizmo/gizmo.h"
+#include "src/graphics/line_renderer.h"
+#include "src/graphics/model.h"
+#include "src/graphics/ray.h"
+#include "src/graphics/sdf/sdf_generator_gpu_v2.h"
+#include "src/graphics/sdf/sdf_model.h"
+#include "src/graphics/shader.h"
+#include "src/graphics/texture.h"
+#include "src/graphics/window.h"
+#include <fstream>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
@@ -19,11 +20,7 @@
 #include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
-
 #include <stb_image.h>
-
-#include "src/graphics/sdf_generator_gpu_v2.h"
-#include "src/texture.h"
 
 using namespace std;
 using namespace glm;
@@ -41,6 +38,15 @@ struct WindowData {
   int screenWidth;
   int screenHeight;
   bool isCursorDisabled;
+};
+
+class Object {
+public:
+  Transform transform;
+  std::shared_ptr<Model> model;
+  bool shouldRender = true;
+
+  glm::vec4 color;
 };
 
 Ray getMouseRay(float mouseX, float mouseY, float screenWidth,
@@ -145,15 +151,16 @@ int main() {
     camera.ProcessMouseScroll(yoffset);
   });
 
-  Shader colorShader(afs::root("src/shaders/point_shadows.vs").c_str(),
-                     afs::root("src/shaders/point_shadows.fs").c_str());
+  Shader colorShader(
+      afs::root("cmd/raymarch_sdf_cpu/point_shadows.vs").c_str(),
+      afs::root("cmd/raymarch_sdf_cpu/point_shadows.fs").c_str());
   Shader linearDepthShader(
-      afs::root("src/shaders/point_shadows_depth.vs").c_str(),
-      afs::root("src/shaders/point_shadows_depth.fs").c_str(),
-      afs::root("src/shaders/point_shadows_depth.gs").c_str());
+      afs::root("cmd/raymarch_sdf_cpu/point_shadows_depth.vs").c_str(),
+      afs::root("cmd/raymarch_sdf_cpu/point_shadows_depth.fs").c_str(),
+      afs::root("cmd/raymarch_sdf_cpu/point_shadows_depth.gs").c_str());
 
   auto woodTextureOpt =
-      Util::loadTexture(afs::root("resources/textures/wood.png").c_str());
+      Util::loadTexture(afs::root("resources_new/textures/wood.png").c_str());
   if (!woodTextureOpt.has_value()) {
     cerr << "wood texture not found";
     return -2;
@@ -162,10 +169,10 @@ int main() {
 
   // load some random mesh
   // Model robot(afs::root("resources/models/cyborg/cyborg.obj"));
-  Model trophy(afs::root("resources/models/sample2.obj"));
-  Model monkey(afs::root("resources/models/monkey.obj"));
-  Model unitCube(afs::root("resources/models/unit_cube.obj"));
-  Model unitCube2(afs::root("resources/models/unit_cube.obj"));
+  Model trophy(afs::root("resources_new/models/sample2.obj"));
+  Model monkey(afs::root("resources_new/models/monkey.obj"));
+  Model unitCube(afs::root("resources_new/models/unit_cube.obj"));
+  Model unitCube2(afs::root("resources_new/models/unit_cube.obj"));
 
   // configure depth map FBO
   const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -216,10 +223,6 @@ int main() {
                      .translation = vec3(0.0f),
                  },
              .model = make_shared<Model>(std::move(monkey))}};
-  objects[0].model->meshes[0].textures.push_back(LoadedTexture{
-      .id = woodTexture,
-      .type = "texture_diffuse",
-  });
 
   SdfGeneratorGPUV2 sdf_generator_gpuv2;
   auto k = sdf_generator_gpuv2.generate_gpu(*objects[1].model, 64);
@@ -253,7 +256,7 @@ int main() {
       empty);
   bool showRaymarchResult = false;
 
-  ofstream debug_out_file(afs::root("resources/bb_debug.txt"));
+  ofstream debug_out_file(afs::root("temp/debug/bb_debug.txt"));
   trophySdf.loopOverCubes([&](int i, int j, int k, BoundingBox bb) {
     debug_out_file << "(" << bb.center.x << "," << bb.center.y << ","
                    << bb.center.z << ")\n";

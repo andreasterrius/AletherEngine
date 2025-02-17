@@ -4,14 +4,14 @@
 #include <GLFW/glfw3.h>
 // clang-format on
 
-#include "../../src/graphics/compute_shader.h"
 #include "src/config.h"
-#include "src/data/model.h"
+#include "src/graphics/compute_shader.h"
+#include "src/graphics/model.h"
 #include <glm/glm.hpp>
 #include <stdexcept>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "src/camera.h"
+#include "src/graphics/camera.h"
 
 #include <stb_image.h>
 
@@ -175,19 +175,22 @@ int main() {
 
   // Model class is similar to LearnOpenGL model class.
   auto monkey_mesh =
-      Model(std::string(ALE_ROOT_PATH) + "/resources/models/monkey.obj")
+      Model(std::string(ALE_ROOT_PATH) + "/resources_new/models/monkey.obj")
           .meshes.at(0);
   auto floor_mesh =
-      Model(std::string(ALE_ROOT_PATH) + "/resources/models/floor_cube.obj")
+      Model(std::string(ALE_ROOT_PATH) + "/resources_new/models/floor_cube.obj")
           .meshes.at(0);
 
   // Load shaders required
-  auto mdf_generator_shader = ComputeShader(
-      std::string(ALE_ROOT_PATH) + "/src/graphics/sdf_generator_gpu_v2.cs");
+  auto mdf_generator_shader =
+      ComputeShader(std::string(ALE_ROOT_PATH) +
+                    "/resources_new/shaders/sdf/sdf_generator_gpu_v2.cs");
   auto render_shader =
-      Shader((std::string(ALE_ROOT_PATH) + "/src/shaders/mdf/scene_renderer.vs")
+      Shader((std::string(ALE_ROOT_PATH) +
+              "/cmd/mesh_distance_field_tutorial/scene_renderer.vs")
                  .c_str(),
-             (std::string(ALE_ROOT_PATH) + "/src/shaders/mdf/scene_renderer.fs")
+             (std::string(ALE_ROOT_PATH) +
+              "/cmd/mesh_distance_field_tutorial/scene_renderer.fs")
                  .c_str());
 
   auto mdf = generate_mdf(monkey_mesh, 64, mdf_generator_shader);

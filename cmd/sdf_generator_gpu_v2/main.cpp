@@ -2,19 +2,20 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
-#include "src/camera.h"
-#include "src/data/model.h"
-#include "src/file_system.h"
+#include "src/data/file_system.h"
 #include "src/graphics/basic_renderer.h"
+#include "src/graphics/camera.h"
 #include "src/graphics/line_renderer.h"
-#include "src/graphics/sdf_generator_gpu_v2.h"
-#include "src/graphics/sdf_generator_gpu_v2_shared.h"
-#include "src/sdf_model.h"
-#include <src/window.h>
+#include "src/graphics/model.h"
+#include "src/graphics/sdf/sdf_generator_gpu_v2.h"
+#include "src/graphics/sdf/sdf_generator_gpu_v2_shared.h"
+#include "src/graphics/sdf/sdf_model.h"
+#include <src/graphics/window.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "src/data/static_mesh.h"
 #include "src/graphics/raymarcher_cpu.h"
+#include "src/graphics/sdf/sdf_generator_gpu_v2.h"
+#include "src/graphics/static_mesh.h"
 
 #include <corecrt_io.h>
 #include <stb_image.h>
@@ -50,7 +51,7 @@ int main() {
   auto basic_renderer = BasicRenderer();
   auto sm_loader = StaticMeshLoader();
   auto static_mesh = sm_loader.load_static_mesh(
-      afs::root("resources/content_browser/tree.obj"));
+      afs::root("resources_new/models/content_browser/tree.obj"));
   auto model = static_mesh.get_model();
 
   window.set_debug(true);

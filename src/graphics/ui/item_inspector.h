@@ -4,6 +4,7 @@
 
 #ifndef ITEM_INSPECTOR_H
 #define ITEM_INSPECTOR_H
+
 #include <entt/entity/registry.hpp>
 #include <glm/glm.hpp>
 #include <optional>

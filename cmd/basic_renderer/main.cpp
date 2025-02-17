@@ -5,20 +5,21 @@
 
 #include <entt/entt.hpp>
 
-#include "src/camera.h"
-#include "src/data/model.h"
-#include "src/data/static_mesh.h"
-#include "src/file_system.h"
+#include "src/data/file_system.h"
 #include "src/graphics/basic_renderer.h"
-#include "src/sdf_generator_gpu.h"
-#include "src/sdf_model_packed.h"
-#include "src/window.h"
+#include "src/graphics/camera.h"
+#include "src/graphics/model.h"
+#include "src/graphics/sdf/sdf_generator_gpu.h"
+#include "src/graphics/sdf/sdf_model_packed.h"
+#include "src/graphics/static_mesh.h"
+#include "src/graphics/window.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 using namespace std;
 using namespace ale;
+using namespace glm;
 using afs = ale::FileSystem;
 
 int main() {
@@ -41,9 +42,9 @@ int main() {
 
   auto sm_loader = StaticMeshLoader();
   auto sm_monkey =
-      sm_loader.load_static_mesh(afs::root("resources/models/monkey.obj"));
-  auto sm_floor =
-      sm_loader.load_static_mesh(afs::root("resources/models/floor_cube.obj"));
+      sm_loader.load_static_mesh(afs::root("resources_new/models/monkey.obj"));
+  auto sm_floor = sm_loader.load_static_mesh(
+      afs::root("resources_new/models/floor_cube.obj"));
 
   auto world = entt::registry{};
   {

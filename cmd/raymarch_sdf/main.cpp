@@ -1,22 +1,17 @@
-#include <src/camera.h>
 #include <src/data/boundingbox.h>
-#include <src/data/model.h>
-#include <src/data/object.h>
-#include <src/data/ray.h>
-#include <src/data/shader.h>
+#include <src/data/file_system.h>
 #include <src/data/transform.h>
-#include <src/file_system.h>
-#include <src/gizmo/gizmo.h>
+#include <src/graphics/camera.h>
+#include <src/graphics/gizmo/gizmo.h>
 #include <src/graphics/line_renderer.h>
-#include <src/sdf_model.h>
-#include <src/sdf_model_packed.h>
-#include <src/util.h>
-#include <src/window.h>
+#include <src/graphics/model.h>
+#include <src/graphics/sdf/sdf_model.h>
+#include <src/graphics/sdf/sdf_model_packed.h>
+#include <src/graphics/shader.h>
+#include <src/graphics/window.h>
 
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-#include <memory>
 #include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -57,8 +52,8 @@ public:
 
   Raymarcher(int screenWidth, int screenHeight)
       : Raymarcher(screenWidth, screenHeight,
-                   afs::root("src/shaders/raymarch.vert"),
-                   afs::root("src/shaders/raymarch.frag")) {
+                   afs::root("cmd/raymarch_sdf/raymarch.vert"),
+                   afs::root("cmd/raymarch_sdf/raymarch.frag")) {
     // empty
   }
 
@@ -197,9 +192,6 @@ int main() {
       });
 
   Raymarcher raymarcher(windowWidth, windowHeight);
-  Raymarcher raymarcher2d(windowWidth, windowHeight,
-                          afs::root("src/shaders/raymarch.vert"),
-                          afs::root("src/shaders/raymarch_atlas.frag"));
 
   window.attach_framebuffer_size_callback([&](int width, int height) {
     raymarcher.screenWidth = width;
@@ -209,11 +201,9 @@ int main() {
     camera.ProcessMouseScroll(yoffset);
   });
 
-  Shader colorShader(afs::root("src/shaders/point_shadows.vs").c_str(),
-                     afs::root("src/shaders/point_shadows.fs").c_str());
   // load some random mesh
-  Model monkey(afs::root("resources/models/monkey.obj"));
-  Model unitCube(afs::root("resources/models/unit_cube.obj"));
+  Model monkey(afs::root("resources_new/models/monkey.obj"));
+  Model unitCube(afs::root("resources_new/models/unit_cube.obj"));
 
   LineRenderer lineRenderer;
 

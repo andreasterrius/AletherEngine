@@ -5,10 +5,8 @@
 #ifndef CONTENT_BROWSER_H
 #define CONTENT_BROWSER_H
 
-#include "../../file_system.h"
-#include "../thumbnail_generator.h"
-
-#include <imgui.h>
+#include "src/data/file_system.h"
+#include "src/graphics/thumbnail_generator.h"
 #include <string>
 
 using afs = ale::FileSystem;

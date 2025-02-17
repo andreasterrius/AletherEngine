@@ -5,7 +5,7 @@
 #ifndef ALETHERENGINE_TRANSFORM_H
 #define ALETHERENGINE_TRANSFORM_H
 
-#include "serde/glm.h"
+#include "src/data/serde/glm.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>

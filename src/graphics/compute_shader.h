@@ -1,8 +1,8 @@
 #ifndef COMPUTE_SHADER_H
 #define COMPUTE_SHADER_H
 
-#include "../texture.h"
-#include <../../external/glad/include/glad/glad.h>
+#include "texture.h"
+#include <glad/glad.h>
 #include <string>
 
 namespace ale {

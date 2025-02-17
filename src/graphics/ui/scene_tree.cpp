@@ -4,7 +4,7 @@
 
 #include "scene_tree.h"
 
-#include "../../data/scene_node.h"
+#include "src/data/scene_node.h"
 #include <imgui.h>
 
 std::optional<SceneTree::Entry>

@@ -5,9 +5,9 @@
 #ifndef THUMBNAIL_GENERATOR_H
 #define THUMBNAIL_GENERATOR_H
 
-#include "../data/static_mesh.h"
 #include "basic_renderer.h"
 #include "framebuffer.h"
+#include "static_mesh.h"
 
 constexpr int DEFAULT_THUMBNAIL_WIDTH = 400;
 constexpr int DEFAULT_THUMBNAIL_HEIGHT = 400;

@@ -3,12 +3,13 @@
 //
 
 #include "world.h"
-#include "../../file_system.h"
-#include "../../graphics/basic_renderer.h"
-#include "../scene_node.h"
 
+#include "src/data/file_system.h"
+#include "src/data/scene_node.h"
+#include "src/graphics/basic_renderer.h"
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
+#include <fstream>
 
 using afs = ale::FileSystem;
 

@@ -2,17 +2,16 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
-#include <src/window.h>
-
-#include "src/camera.h"
-#include "src/data/model.h"
-#include "src/sdf_generator_gpu.h"
-#include "src/sdf_model.h"
+#include "src/graphics/camera.h"
+#include "src/graphics/model.h"
+#include "src/graphics/sdf/sdf_generator_gpu.h"
+#include "src/graphics/sdf/sdf_model.h"
+#include <src/graphics/window.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include "src/file_system.h"
+#include "src/data/file_system.h"
 
 using namespace ale;
 using afs = ale::FileSystem;
@@ -21,8 +20,8 @@ int main() {
   glfwInit();
   auto window = Window(1024, 100, "SDF Generator");
   window.set_debug(true);
-  Model sample(afs::root("resources/models/monkey.obj"));
-  Model unit_cube(afs::root("resources/models/unit_cube.obj"));
+  Model sample(afs::root("resources_new/models/monkey.obj"));
+  Model unit_cube(afs::root("resources_new/models/unit_cube.obj"));
 
   SdfGeneratorGPU sdfgen;
   // sdfgen.add_mesh("monkey64", sample.meshes[0], 64, 64, 64);

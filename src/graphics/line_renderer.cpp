@@ -3,11 +3,12 @@
 //
 
 #include "line_renderer.h"
-#include "../data/boundingbox.h"
-#include "../data/model.h"
-#include "../data/ray.h"
-#include "../data/transform.h"
-#include "../file_system.h"
+
+#include "model.h"
+#include "src/data/boundingbox.h"
+#include "src/data/file_system.h"
+#include "src/data/transform.h"
+#include "src/graphics/ray.h"
 #include <glad/glad.h>
 
 #define LINE_BUFFER_SIZE 300000
@@ -19,10 +20,12 @@ using namespace std;
 using afs = ale::FileSystem;
 
 LineRenderer::LineRenderer()
-    : lineShader(Shader(afs::root("src/graphics/lines.vs").c_str(),
-                        afs::root("src/graphics/lines.fs").c_str())),
-      boxShader(Shader(afs::root("src/graphics/box.vs").c_str(),
-                       afs::root("src/graphics/box.fs").c_str())) {
+    : lineShader(
+          Shader(afs::root("resources_new/shaders/renderer/lines.vs").c_str(),
+                 afs::root("resources_new/shaders/renderer/lines.fs").c_str())),
+      boxShader(
+          Shader(afs::root("resources_new/shaders/renderer/box.vs").c_str(),
+                 afs::root("resources_new/shaders/renderer/box.fs").c_str())) {
   glGenVertexArrays(1, &linesVAO);
   glGenBuffers(1, &linesVBO);
   // fill buffer

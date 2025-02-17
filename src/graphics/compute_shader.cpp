@@ -2,7 +2,8 @@
 // Created by Alether on 7/28/2024.
 //
 #include "compute_shader.h"
-#include "../texture.h"
+
+#include "texture.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
