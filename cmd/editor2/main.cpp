@@ -9,10 +9,10 @@
 #include "src/data/static_mesh.h"
 #include "src/file_system.h"
 #include "src/gizmo/gizmo.h"
-#include "src/renderer/line_renderer.h"
-#include "src/renderer/thumbnail_generator.h"
-#include "src/renderer/ui/content_browser.h"
-#include "src/renderer/ui/editor_root_layout.h"
+#include "src/graphics/line_renderer.h"
+#include "src/graphics/thumbnail_generator.h"
+#include "src/graphics/ui/content_browser.h"
+#include "src/graphics/ui/editor_root_layout.h"
 #include "src/window.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>

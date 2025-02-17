@@ -13,7 +13,7 @@ using namespace glm;
 
 namespace ale {
 SdfGeneratorGPUV2::SdfGeneratorGPUV2()
-    : sdfgen_v2(afs::root("src/renderer/sdf_generator_gpu_v2.cs")) {}
+    : sdfgen_v2(afs::root("src/graphics/sdf_generator_gpu_v2.cs")) {}
 
 vector<Texture3D> SdfGeneratorGPUV2::generate_cpu(Model &M, int resolution) {
   return {};

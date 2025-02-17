@@ -11,8 +11,8 @@ using namespace glm;
 using afs = ale::FileSystem;
 
 BasicRenderer::BasicRenderer()
-    : color_shader(afs::root("src/renderer/basic_renderer.vs").c_str(),
-                   afs::root("src/renderer/basic_renderer.fs").c_str()) {
+    : color_shader(afs::root("src/graphics/basic_renderer.vs").c_str(),
+                   afs::root("src/graphics/basic_renderer.fs").c_str()) {
   glEnable(GL_CULL_FACE);
 }
 

@@ -5,7 +5,7 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 
-#include "../renderer/sdf_generator_gpu_v2.h"
+#include "../graphics/sdf_generator_gpu_v2.h"
 #include "../sdf_generator_gpu.h"
 #include "../sdf_model.h"
 #include "../sdf_model_packed.h"

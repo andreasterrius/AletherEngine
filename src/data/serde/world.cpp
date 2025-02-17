@@ -4,7 +4,7 @@
 
 #include "world.h"
 #include "../../file_system.h"
-#include "../../renderer/basic_renderer.h"
+#include "../../graphics/basic_renderer.h"
 #include "../scene_node.h"
 
 #include <nlohmann/json.hpp>

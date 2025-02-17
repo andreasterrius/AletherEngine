@@ -7,7 +7,7 @@
 #include <src/data/transform.h>
 #include <src/file_system.h>
 #include <src/gizmo/gizmo.h>
-#include <src/renderer/line_renderer.h>
+#include <src/graphics/line_renderer.h>
 #include <src/sdf_model.h>
 #include <src/util.h>
 #include <src/window.h>
@@ -22,7 +22,7 @@
 
 #include <stb_image.h>
 
-#include "src/renderer/sdf_generator_gpu_v2.h"
+#include "src/graphics/sdf_generator_gpu_v2.h"
 #include "src/texture.h"
 
 using namespace std;

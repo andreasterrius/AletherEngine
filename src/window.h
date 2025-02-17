@@ -9,7 +9,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
-#include "renderer/ui/imgui_integration.h"
+#include "graphics/ui/imgui_integration.h"
 #include <functional>
 #include <glm/glm.hpp>
 #include <memory>

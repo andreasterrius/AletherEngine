@@ -4,8 +4,8 @@
 #include <GLFW/glfw3.h>
 // clang-format on
 
+#include "../../src/graphics/compute_shader.h"
 #include "src/config.h"
-#include "src/data/compute_shader.h"
 #include "src/data/model.h"
 #include <glm/glm.hpp>
 #include <stdexcept>
@@ -183,7 +183,7 @@ int main() {
 
   // Load shaders required
   auto mdf_generator_shader = ComputeShader(
-      std::string(ALE_ROOT_PATH) + "/src/renderer/sdf_generator_gpu_v2.cs");
+      std::string(ALE_ROOT_PATH) + "/src/graphics/sdf_generator_gpu_v2.cs");
   auto render_shader =
       Shader((std::string(ALE_ROOT_PATH) + "/src/shaders/mdf/scene_renderer.vs")
                  .c_str(),

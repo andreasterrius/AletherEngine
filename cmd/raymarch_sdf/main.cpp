@@ -7,7 +7,7 @@
 #include <src/data/transform.h>
 #include <src/file_system.h>
 #include <src/gizmo/gizmo.h>
-#include <src/renderer/line_renderer.h>
+#include <src/graphics/line_renderer.h>
 #include <src/sdf_model.h>
 #include <src/sdf_model_packed.h>
 #include <src/util.h>

@@ -19,10 +19,10 @@ using namespace std;
 using afs = ale::FileSystem;
 
 LineRenderer::LineRenderer()
-    : lineShader(Shader(afs::root("src/renderer/lines.vs").c_str(),
-                        afs::root("src/renderer/lines.fs").c_str())),
-      boxShader(Shader(afs::root("src/renderer/box.vs").c_str(),
-                       afs::root("src/renderer/box.fs").c_str())) {
+    : lineShader(Shader(afs::root("src/graphics/lines.vs").c_str(),
+                        afs::root("src/graphics/lines.fs").c_str())),
+      boxShader(Shader(afs::root("src/graphics/box.vs").c_str(),
+                       afs::root("src/graphics/box.fs").c_str())) {
   glGenVertexArrays(1, &linesVAO);
   glGenBuffers(1, &linesVBO);
   // fill buffer

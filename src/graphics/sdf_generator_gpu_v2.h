@@ -5,8 +5,8 @@
 #ifndef SDF_GENERATOR_GPU_V2_H
 #define SDF_GENERATOR_GPU_V2_H
 
-#include "../data/compute_shader.h"
 #include "../data/model.h"
+#include "compute_shader.h"
 
 namespace ale {
 class SdfGeneratorGPUV2 {

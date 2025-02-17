@@ -9,7 +9,7 @@
 #include "src/data/model.h"
 #include "src/data/static_mesh.h"
 #include "src/file_system.h"
-#include "src/renderer/basic_renderer.h"
+#include "src/graphics/basic_renderer.h"
 #include "src/sdf_generator_gpu.h"
 #include "src/sdf_model_packed.h"
 #include "src/window.h"

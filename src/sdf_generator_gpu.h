@@ -4,8 +4,8 @@
 
 #ifndef SDFGENERATOR_H
 #define SDFGENERATOR_H
-#include "data/compute_shader.h"
 #include "data/mesh.h"
+#include "graphics/compute_shader.h"
 #include <string>
 #include <unordered_map>
 

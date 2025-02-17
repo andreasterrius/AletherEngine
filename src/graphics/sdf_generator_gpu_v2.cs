@@ -28,7 +28,7 @@ layout (std140, binding = 4) uniform BoundingBox {
     vec4 outer_bb_max;
 };
 
-#include "src/renderer/sdf_generator_gpu_v2_shared.cpp"
+#include "src/graphics/sdf_generator_gpu_v2_shared.cpp"
 
 void main() {
     int vertices_size = buffer_size.x;

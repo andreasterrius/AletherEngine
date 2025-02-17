@@ -5,16 +5,16 @@
 #include "src/camera.h"
 #include "src/data/model.h"
 #include "src/file_system.h"
-#include "src/renderer/basic_renderer.h"
-#include "src/renderer/line_renderer.h"
-#include "src/renderer/sdf_generator_gpu_v2.h"
-#include "src/renderer/sdf_generator_gpu_v2_shared.h"
+#include "src/graphics/basic_renderer.h"
+#include "src/graphics/line_renderer.h"
+#include "src/graphics/sdf_generator_gpu_v2.h"
+#include "src/graphics/sdf_generator_gpu_v2_shared.h"
 #include "src/sdf_model.h"
 #include <src/window.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "src/data/static_mesh.h"
-#include "src/renderer/raymarcher_cpu.h"
+#include "src/graphics/raymarcher_cpu.h"
 
 #include <corecrt_io.h>
 #include <stb_image.h>

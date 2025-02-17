@@ -5,7 +5,7 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-#include "../../renderer/basic_renderer.h"
+#include "../../graphics/basic_renderer.h"
 #include "../scene_node.h"
 #include "../static_mesh.h"
 #include "std.h"
