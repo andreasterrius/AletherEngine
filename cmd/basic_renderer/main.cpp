@@ -29,22 +29,14 @@ int main() {
   auto window = Window(screen_size.x, screen_size.y, "Scene 01");
   auto camera = Camera(ARCBALL, screen_size.x, screen_size.y,
                        glm::vec3(3.0f, 5.0f, -7.0f));
+  camera.add_listener(&window);
 
-  window.attach_cursor_pos_callback(
-      [&](double xpos, double ypos, double xoffset, double yoffset) {
-        camera.ProcessMouseMovement(xoffset, yoffset);
-      });
-  window.attach_scroll_callback([&](double xoffset, double yoffset) {
-    camera.ProcessMouseScroll(yoffset);
-  });
-  ;
   auto basic_renderer = BasicRenderer();
-
   auto sm_loader = StaticMeshLoader();
   auto sm_monkey =
-      sm_loader.load_static_mesh(afs::root("resources_new/models/monkey.obj"));
-  auto sm_floor = sm_loader.load_static_mesh(
-      afs::root("resources_new/models/floor_cube.obj"));
+      sm_loader.load_static_mesh(afs::root("resources/models/monkey.obj"));
+  auto sm_floor =
+      sm_loader.load_static_mesh(afs::root("resources/models/floor_cube.obj"));
 
   auto world = entt::registry{};
   {
@@ -70,11 +62,6 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     basic_renderer.render(camera, world);
-
-    if (glfwGetKey(window.get(), GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
-      camera.ProcessKeyboardArcball(true);
-    else if (glfwGetKey(window.get(), GLFW_KEY_LEFT_ALT) == GLFW_RELEASE)
-      camera.ProcessKeyboardArcball(false);
 
     window.swap_buffer_and_poll_inputs();
   }

@@ -13,8 +13,8 @@ using namespace std;
 using namespace glm;
 
 TextureRenderer::TextureRenderer()
-    : shader(afs::root("resources_new/shaders/renderer/texture2d.vs").c_str(),
-             afs::root("resources_new/shaders/renderer/texture2d.fs").c_str()) {
+    : shader(afs::root("resources/shaders/renderer/texture2d.vs").c_str(),
+             afs::root("resources/shaders/renderer/texture2d.fs").c_str()) {
   float vertices[] = {
       // Positions       // Texture Coords
       -1.0f, 1.0f,  0.0f, 0.0f, 1.0f, // Top-left

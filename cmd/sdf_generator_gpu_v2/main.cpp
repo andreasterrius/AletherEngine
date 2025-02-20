@@ -51,7 +51,7 @@ int main() {
   auto basic_renderer = BasicRenderer();
   auto sm_loader = StaticMeshLoader();
   auto static_mesh = sm_loader.load_static_mesh(
-      afs::root("resources_new/models/content_browser/tree.obj"));
+      afs::root("resources/models/content_browser/tree.obj"));
   auto model = static_mesh.get_model();
 
   window.set_debug(true);
@@ -61,6 +61,7 @@ int main() {
     const auto entity = world.create();
     world.emplace<Transform>(entity, Transform{.translation = vec3()});
     world.emplace<StaticMesh>(entity, static_mesh);
+    world.emplace<BasicMaterial>(entity, BasicMaterial{});
   }
 
   SdfGeneratorGPUV2 sdfgen;
@@ -162,7 +163,7 @@ int main() {
       }
     });
     line_renderer.queue_unit_cube(Transform{.translation = closest_point});
-    line_renderer.render(camera.GetProjectionMatrix(), camera.GetViewMatrix());
+    line_renderer.render(camera.get_projection_matrix(), camera.get_view_matrix());
 
     if (debug_raymarch) {
       raymarcher_cpu.shoot_ray(window, camera, sdf_mesh);

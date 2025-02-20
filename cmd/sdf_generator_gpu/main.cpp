@@ -20,8 +20,8 @@ int main() {
   glfwInit();
   auto window = Window(1024, 100, "SDF Generator");
   window.set_debug(true);
-  Model sample(afs::root("resources_new/models/monkey.obj"));
-  Model unit_cube(afs::root("resources_new/models/unit_cube.obj"));
+  Model sample(afs::root("resources/models/monkey.obj"));
+  Model unit_cube(afs::root("resources/models/unit_cube.obj"));
 
   SdfGeneratorGPU sdfgen;
   // sdfgen.add_mesh("monkey64", sample.meshes[0], 64, 64, 64);

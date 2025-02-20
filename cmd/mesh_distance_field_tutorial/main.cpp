@@ -133,8 +133,8 @@ void render_scene(unsigned int mdf, Transform &monkey_transform,
 
   // common information
   render_shader.setVec4("diffuseColor", vec4(1.0, 1.0, 1.0, 0.0));
-  render_shader.setMat4("view", camera.GetViewMatrix());
-  render_shader.setMat4("projection", camera.GetProjectionMatrix());
+  render_shader.setMat4("view", camera.get_view_matrix());
+  render_shader.setMat4("projection", camera.get_projection_matrix());
   render_shader.setVec3("viewPos", camera.Position);
 
   // pass the mdf information
@@ -175,16 +175,16 @@ int main() {
 
   // Model class is similar to LearnOpenGL model class.
   auto monkey_mesh =
-      Model(std::string(ALE_ROOT_PATH) + "/resources_new/models/monkey.obj")
+      Model(std::string(ALE_ROOT_PATH) + "/resources/models/monkey.obj")
           .meshes.at(0);
   auto floor_mesh =
-      Model(std::string(ALE_ROOT_PATH) + "/resources_new/models/floor_cube.obj")
+      Model(std::string(ALE_ROOT_PATH) + "/resources/models/floor_cube.obj")
           .meshes.at(0);
 
   // Load shaders required
   auto mdf_generator_shader =
       ComputeShader(std::string(ALE_ROOT_PATH) +
-                    "/resources_new/shaders/sdf/sdf_generator_gpu_v2.cs");
+                    "/resources/shaders/sdf/sdf_generator_gpu_v2.cs");
   auto render_shader =
       Shader((std::string(ALE_ROOT_PATH) +
               "/cmd/mesh_distance_field_tutorial/scene_renderer.vs")

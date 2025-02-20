@@ -33,9 +33,9 @@ Window::Window(int width, int height, string caption) {
     throw WindowException("loading gl functions failed");
   }
 
-  glfwSetWindowUserPointer(this->raw_window, &this->data);
-  glfwGetCursorPos(this->raw_window, &this->data.cursor_last_x,
-                   &this->data.cursor_last_y);
+  glfwSetWindowUserPointer(this->raw_window, this);
+  this->data.width = width;
+  this->data.height = height;
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
@@ -110,6 +110,8 @@ float Window::get_content_scale() {
   return x;
 }
 
+Data &Window::get_data() { return data; }
+
 void Window::attach_mouse_button_callback(
     const function<void(int, int, int)> &func) {
   this->data.mouse_button_callback = func;
@@ -134,81 +136,104 @@ void Window::attach_key_callback(
   this->data.key_callback = func;
 }
 
-Window::~Window() { glfwDestroyWindow(raw_window); }
+Window::~Window() {
+  glfwSetWindowUserPointer(raw_window, nullptr);
+  glfwDestroyWindow(raw_window);
+}
 
-void ale::mouse_button_callback(GLFWwindow *window, int button, int action,
+void ale::mouse_button_callback(GLFWwindow *raw_window, int button, int action,
                                 int mods) {
-  Data *data = static_cast<Data *>(glfwGetWindowUserPointer(window));
-
-  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-    double xpos, ypos;
-    glfwGetCursorPos(window, &xpos, &ypos);
-    if (data->debug) {
-      cout << "Cursor Position at (" << xpos << "," << ypos << ")" << endl;
-    }
-  }
+  Window *window = static_cast<Window *>(glfwGetWindowUserPointer(raw_window));
+  Data &data = window->get_data();
 
   if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-    if (data->is_cursor_enabled) {
+    if (data.is_cursor_enabled) {
       // enable -> disable
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-      data->is_cursor_enabled = false;
+      glfwSetInputMode(raw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+      data.is_cursor_enabled = false;
     } else {
       // disable -> enable
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-      data->is_cursor_enabled = true;
+      glfwSetInputMode(raw_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+      data.is_cursor_enabled = true;
     }
   }
 
-  if (data && data->mouse_button_callback != nullptr) {
-    data->mouse_button_callback(button, action, mods);
+  if (data.mouse_button_callback != nullptr) {
+    data.mouse_button_callback(button, action, mods);
+  }
+
+  for (auto &listener : window->get_listeners()) {
+    listener->mouse_button_callback(button, action, mods);
   }
 }
 
-void ale::cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
-  auto *data = static_cast<Data *>(glfwGetWindowUserPointer(window));
+void ale::cursor_pos_callback(GLFWwindow *raw_window, double xpos,
+                              double ypos) {
+  Window *window = static_cast<Window *>(glfwGetWindowUserPointer(raw_window));
+  Data &data = window->get_data();
 
-  data->cursor_offset_x = xpos - data->cursor_last_x;
-  data->cursor_offset_y =
-      data->cursor_last_y -
+  data.cursor_offset_x = xpos - data.cursor_last_x;
+  data.cursor_offset_y =
+      data.cursor_last_y -
       ypos; // reversed since y-coordinates go from bottom to top
-  data->cursor_last_x = xpos;
-  data->cursor_last_y = ypos;
+  data.cursor_last_x = xpos;
+  data.cursor_last_y = ypos;
 
-  if (data->cursor_pos_callback != nullptr) {
-    data->cursor_pos_callback(xpos, ypos, data->cursor_offset_x,
-                              data->cursor_offset_y);
+  if (data.cursor_pos_callback != nullptr) {
+    data.cursor_pos_callback(xpos, ypos, data.cursor_offset_x,
+                             data.cursor_offset_y);
+  }
+
+  for (auto &listener : window->get_listeners()) {
+    listener->cursor_pos_callback(xpos, ypos, data.cursor_offset_x,
+                                  data.cursor_offset_y);
   }
 }
 
-void ale::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-  auto *d = static_cast<Data *>(glfwGetWindowUserPointer(window));
-  d->width = width;
-  d->height = height;
+void ale::framebuffer_size_callback(GLFWwindow *raw_window, int width,
+                                    int height) {
+  Window *window = static_cast<Window *>(glfwGetWindowUserPointer(raw_window));
+  Data &data = window->get_data();
+  data.width = width;
+  data.height = height;
 
   // make sure the viewport matches the new window dimensions; note that width
   // and height will be significantly larger than specified on retina displays.
   glViewport(0, 0, width, height);
 
-  if (d->framebuffer_size_callback) {
-    d->framebuffer_size_callback(width, height);
+  if (data.framebuffer_size_callback) {
+    data.framebuffer_size_callback(width, height);
+  }
+
+  for (auto &listener : window->get_listeners()) {
+    listener->framebuffer_size_callback(width, height);
   }
 }
 
-void ale::scroll_callback(GLFWwindow *window, double x_offset,
+void ale::scroll_callback(GLFWwindow *raw_window, double x_offset,
                           double y_offset) {
-  auto *d = (Data *)glfwGetWindowUserPointer(window);
+  Window *window = static_cast<Window *>(glfwGetWindowUserPointer(raw_window));
+  Data &data = window->get_data();
 
-  if (d->scroll_callback != nullptr) {
-    d->scroll_callback(x_offset, y_offset);
+  if (data.scroll_callback != nullptr) {
+    data.scroll_callback(x_offset, y_offset);
+  }
+
+  for (auto &listener : window->get_listeners()) {
+    listener->scroll_callback(x_offset, y_offset);
   }
 }
-void ale::key_callback(GLFWwindow *window, int key, int scancode, int action,
-                       int mods) {
-  auto *d = (Data *)glfwGetWindowUserPointer(window);
+void ale::key_callback(GLFWwindow *raw_window, int key, int scancode,
+                       int action, int mods) {
+  Window *window = static_cast<Window *>(glfwGetWindowUserPointer(raw_window));
+  Data &data = window->get_data();
 
-  if (d->key_callback != nullptr) {
-    d->key_callback(key, scancode, action, mods);
+  if (data.key_callback != nullptr) {
+    data.key_callback(key, scancode, action, mods);
+  }
+
+  for (auto &listener : window->get_listeners()) {
+    listener->key_callback(key, scancode, action, mods);
   }
 }
 

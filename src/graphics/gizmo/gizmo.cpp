@@ -19,8 +19,8 @@ using namespace glm;
 
 namespace ale {
 ale::Gizmo::Gizmo()
-    : gizmo_shader(afs::root("resources_new/shaders/gizmo/gizmo.vs").c_str(),
-                   afs::root("resources_new/shaders/gizmo/gizmo.fs").c_str()),
+    : gizmo_shader(afs::root("resources/shaders/gizmo/gizmo.vs").c_str(),
+                   afs::root("resources/shaders/gizmo/gizmo.fs").c_str()),
       isLocalSpace(false) {
 
   // load a flat shader here ?
@@ -35,29 +35,29 @@ ale::Gizmo::Gizmo()
 
   this->models.reserve(MODELS_LEN);
   this->models.emplace_back(
-      afs::root("resources_new/models/gizmo/Arrow_X+.glb")); // ArrowX
+      afs::root("resources/models/gizmo/Arrow_X+.glb")); // ArrowX
   this->models.emplace_back(
-      afs::root("resources_new/models/gizmo/Arrow_Y+.glb")); // ArrowY
+      afs::root("resources/models/gizmo/Arrow_Y+.glb")); // ArrowY
   this->models.emplace_back(
-      afs::root("resources_new/models/gizmo/Arrow_Z+.glb")); // ArrowY
+      afs::root("resources/models/gizmo/Arrow_Z+.glb")); // ArrowY
   this->models.emplace_back(
-      afs::root("resources_new/models/gizmo/Plane_XY.glb")); // PlaneXY
+      afs::root("resources/models/gizmo/Plane_XY.glb")); // PlaneXY
   this->models.emplace_back(
-      afs::root("resources_new/models/gizmo/Plane_XZ.glb")); // PlaneXZ
+      afs::root("resources/models/gizmo/Plane_XZ.glb")); // PlaneXZ
   this->models.emplace_back(
-      afs::root("resources_new/models/gizmo/Plane_YZ.glb")); // PlaneYZ
+      afs::root("resources/models/gizmo/Plane_YZ.glb")); // PlaneYZ
   this->models.emplace_back(
-      afs::root("resources_new/models/gizmo/Ring_XY.glb")); // Ring_XY
+      afs::root("resources/models/gizmo/Ring_XY.glb")); // Ring_XY
   this->models.emplace_back(
-      afs::root("resources_new/models/gizmo/Ring_XZ.glb")); // Ring_XZ
+      afs::root("resources/models/gizmo/Ring_XZ.glb")); // Ring_XZ
   this->models.emplace_back(
-      afs::root("resources_new/models/gizmo/Ring_YZ.glb")); // Ring_YZ
+      afs::root("resources/models/gizmo/Ring_YZ.glb")); // Ring_YZ
   this->models.emplace_back(
-      afs::root("resources_new/models/gizmo/Scale_X+.glb")); // ArrowX
+      afs::root("resources/models/gizmo/Scale_X+.glb")); // ArrowX
   this->models.emplace_back(
-      afs::root("resources_new/models/gizmo/Scale_Y+.glb")); // ArrowY
+      afs::root("resources/models/gizmo/Scale_Y+.glb")); // ArrowY
   this->models.emplace_back(
-      afs::root("resources_new/models/gizmo/Scale_Z+.glb")); // ArrowY
+      afs::root("resources/models/gizmo/Scale_Z+.glb")); // ArrowY
 }
 
 bool Gizmo::try_hold(Transform *transform, Ray ray) {
@@ -275,8 +275,8 @@ void Gizmo::render(Camera camera, vec3 lightPos) {
 
   gizmo_shader.use();
   gizmo_shader.setMat4("model", transform.get_model_matrix());
-  gizmo_shader.setMat4("view", camera.GetViewMatrix());
-  gizmo_shader.setMat4("projection", camera.GetProjectionMatrix());
+  gizmo_shader.setMat4("view", camera.get_view_matrix());
+  gizmo_shader.setMat4("projection", camera.get_projection_matrix());
   gizmo_shader.setVec3("lightPos", lightPos);
   gizmo_shader.setVec3("viewPos", camera.Position);
 

@@ -41,9 +41,9 @@ StaticMesh::Serde StaticMesh::to_serde() {
 StaticMeshLoader::StaticMeshLoader()
     : packed(make_shared<SdfModelPacked>(vector<SdfModel *>(), false)) {
   this->load_static_mesh(
-      afs::root("resources_new/models/default/unit_cube.obj"), {SM_UNIT_CUBE});
+      afs::root("resources/models/default/unit_cube.obj"), {SM_UNIT_CUBE});
   this->load_static_mesh(
-      afs::root("resources_new/models/default/unit_sphere.obj"),
+      afs::root("resources/models/default/unit_sphere.obj"),
       {SM_UNIT_SPHERE});
 }
 

@@ -16,7 +16,7 @@ using namespace std;
 namespace ale {
 ale::SdfGeneratorGPU::SdfGeneratorGPU()
     : compute_shader(
-          afs::root("resources_new/shaders/sdf/sdf_generator_gpu.cs")) {
+          afs::root("resources/shaders/sdf/sdf_generator_gpu.cs")) {
   // test
 }
 

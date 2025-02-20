@@ -38,6 +38,7 @@ entt::registry new_world(StaticMeshLoader &sm_loader) {
     world.emplace<Transform>(entity,
                              Transform{.translation = vec3(10.0, 10.0, 10.0)});
     world.emplace<Light>(entity, Light{});
+    world.emplace<BasicMaterial>(entity, BasicMaterial{});
 
     auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
     sphere.set_cast_shadow(false);
@@ -49,6 +50,7 @@ entt::registry new_world(StaticMeshLoader &sm_loader) {
     world.emplace<Transform>(entity,
                              Transform{.translation = vec3(10.0, 10.0, -10.0)});
     world.emplace<Light>(entity, Light{.color = vec3(3.0f, 3.0f, 3.0f)});
+    world.emplace<BasicMaterial>(entity, BasicMaterial{});
 
     auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
     sphere.set_cast_shadow(false);
@@ -66,6 +68,9 @@ int main() {
   auto window = Window(1280, 800, "Editor 2");
   auto camera = Camera(ARCBALL, window.get_size().x, window.get_size().y,
                        glm::vec3(3.0f, 5.0f, 7.0f));
+
+  // camera.add_listener(&window);
+  camera.add_listener(&window);
 
   // Declare a basic scene
   auto basic_renderer = BasicRenderer();
@@ -90,24 +95,9 @@ int main() {
                                          window.get_cursor_pos_from_top_left());
     }
   });
-  window.attach_cursor_pos_callback(
-      [&](double xpos, double ypos, double xoffset, double yoffset) {
-        if (editor_root_layout_ui.get_scene_has_focus()) {
-          camera.ProcessMouseMovement(xoffset, yoffset);
-        }
-      });
-  window.attach_scroll_callback([&](double xoffset, double yoffset) {
-    if (editor_root_layout_ui.get_scene_has_focus()) {
-      camera.ProcessMouseScroll(yoffset);
-    }
-  });
+
   window.attach_key_callback([&](int key, int scancode, int action, int mods) {
     if (editor_root_layout_ui.get_scene_has_focus()) {
-      if (key == GLFW_KEY_LEFT_ALT && action == GLFW_PRESS)
-        camera.ProcessKeyboardArcball(true);
-      else if (key == GLFW_KEY_LEFT_ALT && action == GLFW_RELEASE)
-        camera.ProcessKeyboardArcball(false);
-
       if (key == GLFW_KEY_S && action == GLFW_PRESS &&
           mods == GLFW_MOD_CONTROL) {
         serde::save_world("temp/scenes/editor2.json", world);
@@ -133,19 +123,22 @@ int main() {
     glClearColor(135.0 / 255, 206.0 / 255, 235.0 / 255, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Input stuff
+    camera.set_handle_input(editor_root_layout_ui.get_scene_has_focus());
+
     editor_root_layout_ui.tick(camera, world,
                                window.get_cursor_pos_from_top_left());
 
     // Render Scene
-    {
-      editor_root_layout_ui.start_capture_scene(camera);
-      basic_renderer.render(camera, world);
+    editor_root_layout_ui.capture_scene(
+        [&]() {
+          basic_renderer.render(camera, world);
 
-      // line_renderer.queue_line(debug_ray, WHITE);
-      line_renderer.render(camera.GetProjectionMatrix(),
-                           camera.GetViewMatrix());
-      editor_root_layout_ui.end_capture_scene();
-    }
+          // line_renderer.queue_line(debug_ray, WHITE);
+          line_renderer.render(camera.get_projection_matrix(),
+                               camera.get_view_matrix());
+        },
+        camera);
 
     // Render UI
     {
@@ -169,6 +162,7 @@ int main() {
                                      .string());
         world.emplace<Transform>(entity, Transform{});
         world.emplace<StaticMesh>(entity, events.new_object->static_mesh);
+        world.emplace<BasicMaterial>(entity, BasicMaterial{});
       }
 
       editor_root_layout_ui.end();

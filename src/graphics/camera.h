@@ -1,11 +1,11 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include "src/input_handling/window_event.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <iostream>
 
 namespace ale {
 
@@ -34,7 +34,7 @@ const float ZOOM = 45.0f;
 
 // An abstract camera class that processes input and calculates the
 // corresponding Euler Angles, Vectors and Matrices for use in OpenGL
-class Camera {
+class Camera : public WindowEventListener {
 public:
   // camera Attributes
   glm::vec3 Position;
@@ -55,47 +55,33 @@ public:
 
   Camera_InputType inputType;
   Camera_ArcballInput arcballInput;
+  bool handle_input = true;
+
+  // non owning
+  WindowEventProducer *event_producer = nullptr;
 
   // constructor with vectors
   Camera(Camera_InputType inputType, int width, int height,
          glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
          glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW,
-         float pitch = PITCH)
-      : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED),
-        MouseSensitivity(SENSITIVITY), Zoom(ZOOM), inputType(inputType),
-        Width(width), Height(height) {
-    Position = position;
-    WorldUp = up;
-    Yaw = yaw;
-    Pitch = pitch;
-    updateCameraVectors();
-  }
+         float pitch = PITCH);
 
   // constructor with scalar values
   Camera(float posX, float posY, float posZ, float upX, float upY, float upZ,
-         float yaw, float pitch)
-      : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED),
-        MouseSensitivity(SENSITIVITY), Zoom(ZOOM), inputType(FPS) {
-    Position = glm::vec3(posX, posY, posZ);
-    WorldUp = glm::vec3(upX, upY, upZ);
-    Yaw = yaw;
-    Pitch = pitch;
-    updateCameraVectors();
-  }
+         float yaw, float pitch);
+
+  ~Camera() override;
+
+  void add_listener(WindowEventProducer *event_producer);
+
+  void set_handle_input(bool handle_input);
 
   // returns the view matrix calculated using Euler Angles and the LookAt Matrix
-  glm::mat4 GetViewMatrix() {
-    return glm::lookAt(Position, Position + Front, Up);
-  }
+  glm::mat4 get_view_matrix() const;
 
-  glm::mat4 GetProjectionMatrix(float screenWidth, float screenHeight) {
-    return glm::perspective(glm::radians(Zoom), screenWidth / screenHeight,
-                            0.1f, 100.0f);
-  }
+  glm::mat4 get_projection_matrix(float screenWidth, float screenHeight) const;
 
-  glm::mat4 GetProjectionMatrix() {
-    return GetProjectionMatrix(this->Width, this->Height);
-  }
+  glm::mat4 get_projection_matrix() const;
 
   // processes input received from any keyboard-like input system. Accepts input
   // parameter in the form of camera defined ENUM (to abstract it from windowing
@@ -194,6 +180,14 @@ private:
       this->Up = glm::normalize(glm::cross(Right, Front));
     }
   }
+
+public:
+  void mouse_button_callback(int button, int action, int mods) override;
+  void scroll_callback(double x_offset, double y_offset) override;
+  void cursor_pos_callback(double xpos, double ypos, double xoffset,
+                           double yoffset) override;
+  void framebuffer_size_callback(int width, int height) override;
+  void key_callback(int key, int scancode, int action, int mods) override;
 };
 } // namespace ale
 #endif

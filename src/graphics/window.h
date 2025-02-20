@@ -9,6 +9,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
+#include "src/input_handling/window_event.h"
 #include "ui/imgui_integration.h"
 #include <functional>
 #include <glm/glm.hpp>
@@ -49,12 +50,13 @@ struct Data {
   std::function<void(int, int, int, int)> key_callback = nullptr;
 };
 
-class Window {
+class Window : public WindowEventProducer {
   GLFWwindow *raw_window = nullptr;
   std::unique_ptr<ImguiIntegration> imgui;
-  Data data; // to be passed to callbacks as well.
-
   static bool first_window_init;
+
+protected:
+  Data data; // to be passed to callbacks as well.
 
 public:
   Window(int width, int height, std::string caption);
@@ -79,6 +81,8 @@ public:
 
   // take x since x/y most likely be equal
   float get_content_scale();
+
+  Data &get_data();
 
   // input callbacks
   void
@@ -105,16 +109,16 @@ public:
 };
 
 // GLFW callback funcs
-void mouse_button_callback(GLFWwindow *window, int button, int action,
+void mouse_button_callback(GLFWwindow *raw_window, int button, int action,
                            int mods);
 
-void cursor_pos_callback(GLFWwindow *window, double xpos, double ypos);
+void cursor_pos_callback(GLFWwindow *raw_window, double xpos, double ypos);
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void framebuffer_size_callback(GLFWwindow *raw_window, int width, int height);
 
-void scroll_callback(GLFWwindow *window, double x_offset, double y_offset);
+void scroll_callback(GLFWwindow *raw_window, double x_offset, double y_offset);
 
-void key_callback(GLFWwindow *window, int key, int scancode, int action,
+void key_callback(GLFWwindow *raw_window, int key, int scancode, int action,
                   int mods);
 
 void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id,

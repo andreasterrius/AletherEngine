@@ -53,6 +53,7 @@ public:
   void handle_key(int key, int scancode, int action, int mods);
 
   void tick(Camera &camera, entt::registry &world, glm::ivec2 cursor_top_left);
+  void capture_scene(std::function<void()> exec, Camera &camera);
   void start_capture_scene(Camera &camera);
   void end_capture_scene();
 

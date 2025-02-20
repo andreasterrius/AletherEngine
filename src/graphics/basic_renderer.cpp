@@ -11,9 +11,10 @@ using afs = ale::FileSystem;
 
 BasicRenderer::BasicRenderer()
     : color_shader(
-          afs::root("resources_new/shaders/renderer/basic_renderer.vs").c_str(),
-          afs::root("resources_new/shaders/renderer/basic_renderer.fs")
-              .c_str()) {
+          afs::root("resources/shaders/renderer/basic_renderer.vs").c_str(),
+          afs::root("resources/shaders/renderer/basic_renderer.fs").c_str()),
+      single_black_pixel_texture(
+          afs::root("resources/textures/default/black1x1.png")) {
   glEnable(GL_CULL_FACE);
 }
 
@@ -23,8 +24,8 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   color_shader.use();
-  color_shader.setMat4("projection", camera.GetProjectionMatrix());
-  color_shader.setMat4("view", camera.GetViewMatrix());
+  color_shader.setMat4("projection", camera.get_projection_matrix());
+  color_shader.setMat4("view", camera.get_view_matrix());
   color_shader.setVec3("viewPos", camera.Position);
 
   auto light_view = world.view<Transform, Light>();
@@ -63,11 +64,33 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
   // End handle shadows
 
   // Render static mesh
-  auto view = world.view<Transform, StaticMesh>();
-  for (auto [entity, transform, static_mesh] : view.each()) {
+  auto view = world.view<Transform, StaticMesh, BasicMaterial>();
+  for (auto [entity, transform, static_mesh, material] : view.each()) {
     color_shader.setMat4("model", transform.get_model_matrix());
+
     color_shader.setVec4("diffuseColor", vec4(1.0, 1.0, 1.0, 0.0));
+    set_texture_with_default("diffuseTexture", 0,
+                             material.diffuse_texture.get());
+
+    if (sdf_model_packed != nullptr) {
+      auto &atlas = sdf_model_packed->get_texture_atlas();
+      for (int i = 0; i < 6; ++i) {
+        if (i < atlas.size()) {
+          set_texture_with_default(format("atlas[{}]", i), i + 6, &atlas.at(i));
+        } else {
+          set_texture_with_default(format("atlas[{}]", i), i + 6, nullptr);
+        }
+      }
+    }
+
     static_mesh.get_model()->draw(color_shader);
   }
+}
+void BasicRenderer::set_texture_with_default(string name, int location,
+                                             const Texture *texture) const {
+
+  color_shader.setTexture2D(name, location,
+                            texture == nullptr ? single_black_pixel_texture.id
+                                               : texture->id);
 }
 } // namespace ale

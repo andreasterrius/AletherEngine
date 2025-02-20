@@ -76,8 +76,9 @@ Ray getMouseRay(float mouseX, float mouseY, float screenWidth,
 vector<Ray> shootRaymarchRay(float screenWidth, float screenHeight,
                              Camera &cam) {
   vector<Ray> rays;
-  mat4 invViewProj = inverse(
-      cam.GetProjectionMatrix(screenWidth, screenHeight) * cam.GetViewMatrix());
+  mat4 invViewProj =
+      inverse(cam.get_projection_matrix(screenWidth, screenHeight) *
+              cam.get_view_matrix());
   for (float j = 0; j < screenHeight; ++j) {
     for (float i = 0; i < screenWidth; ++i) {
       vec2 uv = vec2(i / screenWidth * 2.0 - 1.0, j / screenHeight * 2.0 - 1.0);
@@ -97,8 +98,9 @@ vector<Ray> shootRaymarchRay(float screenWidth, float screenHeight,
 
 Ray shootRaymarchRaySingular(float i, float j, float screenWidth,
                              float screenHeight, Camera &cam) {
-  mat4 invViewProj = inverse(
-      cam.GetProjectionMatrix(screenWidth, screenHeight) * cam.GetViewMatrix());
+  mat4 invViewProj =
+      inverse(cam.get_projection_matrix(screenWidth, screenHeight) *
+              cam.get_view_matrix());
   vec2 uv = vec2(i / screenWidth * 2.0 - 1.0, j / screenHeight * 2.0 - 1.0);
 
   vec4 rayStartWorld = vec4(cam.Position, 1.0);
@@ -160,7 +162,7 @@ int main() {
       afs::root("cmd/raymarch_sdf_cpu/point_shadows_depth.gs").c_str());
 
   auto woodTextureOpt =
-      Util::loadTexture(afs::root("resources_new/textures/wood.png").c_str());
+      Util::loadTexture(afs::root("resources/textures/wood.png").c_str());
   if (!woodTextureOpt.has_value()) {
     cerr << "wood texture not found";
     return -2;
@@ -169,10 +171,10 @@ int main() {
 
   // load some random mesh
   // Model robot(afs::root("resources/models/cyborg/cyborg.obj"));
-  Model trophy(afs::root("resources_new/models/sample2.obj"));
-  Model monkey(afs::root("resources_new/models/monkey.obj"));
-  Model unitCube(afs::root("resources_new/models/unit_cube.obj"));
-  Model unitCube2(afs::root("resources_new/models/unit_cube.obj"));
+  Model trophy(afs::root("resources/models/sample2.obj"));
+  Model monkey(afs::root("resources/models/monkey.obj"));
+  Model unitCube(afs::root("resources/models/unit_cube.obj"));
+  Model unitCube2(afs::root("resources/models/unit_cube.obj"));
 
   // configure depth map FBO
   const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -280,8 +282,8 @@ int main() {
       raymarchDebugHitPos.clear();
       raymarchDebugRay = getMouseRay(
           xpos, ypos, wd.screenWidth, wd.screenHeight,
-          camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight),
-          camera.GetViewMatrix());
+          camera.get_projection_matrix(wd.screenWidth, wd.screenHeight),
+          camera.get_view_matrix());
       trophySdf.find_hit_positions(raymarchDebugRay, &raymarchDebugHitPos);
     }
     if (glfwGetKey(window.get(), GLFW_KEY_ENTER) == GLFW_PRESS) {
@@ -359,8 +361,8 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     colorShader.use();
     glm::mat4 projection =
-        camera.GetProjectionMatrix(wd.screenWidth, wd.screenHeight);
-    glm::mat4 view = camera.GetViewMatrix();
+        camera.get_projection_matrix(wd.screenWidth, wd.screenHeight);
+    glm::mat4 view = camera.get_view_matrix();
     colorShader.setMat4("projection", projection);
     colorShader.setMat4("view", view);
     // set lighting uniforms

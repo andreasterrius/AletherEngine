@@ -21,11 +21,11 @@ using afs = ale::FileSystem;
 
 LineRenderer::LineRenderer()
     : lineShader(
-          Shader(afs::root("resources_new/shaders/renderer/lines.vs").c_str(),
-                 afs::root("resources_new/shaders/renderer/lines.fs").c_str())),
+          Shader(afs::root("resources/shaders/renderer/lines.vs").c_str(),
+                 afs::root("resources/shaders/renderer/lines.fs").c_str())),
       boxShader(
-          Shader(afs::root("resources_new/shaders/renderer/box.vs").c_str(),
-                 afs::root("resources_new/shaders/renderer/box.fs").c_str())) {
+          Shader(afs::root("resources/shaders/renderer/box.vs").c_str(),
+                 afs::root("resources/shaders/renderer/box.fs").c_str())) {
   glGenVertexArrays(1, &linesVAO);
   glGenBuffers(1, &linesVBO);
   // fill buffer

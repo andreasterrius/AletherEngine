@@ -65,8 +65,8 @@ public:
     shader.setVec2("iResolution", vec2(screenWidth, screenHeight));
     shader.setVec3("cameraPos", camera.Position);
     mat4 invViewProj =
-        inverse(camera.GetProjectionMatrix(screenWidth, screenHeight) *
-                camera.GetViewMatrix());
+        inverse(camera.get_projection_matrix(screenWidth, screenHeight) *
+                camera.get_view_matrix());
     shader.setMat4("invViewProj", invViewProj);
     shader.setMat4("modelMat", transform.get_model_matrix());
     shader.setMat4("invModelMat", inverse(transform.get_model_matrix()));
@@ -140,8 +140,8 @@ public:
     shader.setVec2("iResolution", vec2(screenWidth, screenHeight));
     shader.setVec3("cameraPos", camera.Position);
     mat4 invViewProj =
-        inverse(camera.GetProjectionMatrix(screenWidth, screenHeight) *
-                camera.GetViewMatrix());
+        inverse(camera.get_projection_matrix(screenWidth, screenHeight) *
+                camera.get_view_matrix());
     shader.setMat4("invViewProj", invViewProj);
 
     // binds texture2D atlas[16];
@@ -202,8 +202,8 @@ int main() {
   });
 
   // load some random mesh
-  Model monkey(afs::root("resources_new/models/monkey.obj"));
-  Model unitCube(afs::root("resources_new/models/unit_cube.obj"));
+  Model monkey(afs::root("resources/models/monkey.obj"));
+  Model unitCube(afs::root("resources/models/unit_cube.obj"));
 
   LineRenderer lineRenderer;
 

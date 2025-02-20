@@ -19,10 +19,10 @@ EditorRootLayout::EditorRootLayout(StaticMeshLoader &sm_loader,
                                     .height = initial_window_size.y,
                                     .color_space = Framebuffer::LINEAR}),
       content_browser_ui(sm_loader,
-                         afs::root("resources_new/models/content_browser")),
+                         afs::root("resources/models/content_browser")),
       scene_viewport_ui(initial_window_size),
       gizmo_light(make_pair(vec3(5.0f), Light{})),
-      test_texture(afs::root("resources_new/textures/wood.png")),
+      test_texture(afs::root("resources/textures/wood.png")),
       scene_has_focus(false) {}
 
 void EditorRootLayout::start(ivec2 pos, ivec2 size) {
@@ -61,7 +61,8 @@ void EditorRootLayout::handle_press(Camera &camera, entt::registry &world,
                                     ivec2 cursor_top_left) {
   if (scene_viewport_ui.is_cursor_inside(cursor_top_left)) {
     Ray mouse_ray = scene_viewport_ui.create_mouse_ray(
-        cursor_top_left, camera.GetProjectionMatrix(), camera.GetViewMatrix());
+        cursor_top_left, camera.get_projection_matrix(),
+        camera.get_view_matrix());
     gizmo.handle_press(mouse_ray, world);
   }
 }
@@ -83,11 +84,19 @@ void EditorRootLayout::handle_key(int key, int scancode, int action, int mods) {
 void EditorRootLayout::tick(Camera &camera, entt::registry &world,
                             ivec2 cursor_top_left) {
   Ray mouse_ray = scene_viewport_ui.create_mouse_ray(
-      cursor_top_left, camera.GetProjectionMatrix(), camera.GetViewMatrix());
+      cursor_top_left, camera.get_projection_matrix(),
+      camera.get_view_matrix());
   gizmo.tick(mouse_ray, world);
 
   scene_has_focus = scene_viewport_ui.is_cursor_inside(cursor_top_left);
 }
+void EditorRootLayout::capture_scene(std::function<void()> exec,
+                                     Camera &camera) {
+  start_capture_scene(camera);
+  exec();
+  end_capture_scene();
+}
+
 void EditorRootLayout::start_capture_scene(Camera &camera) {
   {
     gizmo_frame.start_capture();
