@@ -6,7 +6,7 @@
 #include <entt/entt.hpp>
 
 #include "src/data/file_system.h"
-#include "src/graphics/basic_renderer.h"
+#include "src/graphics/renderer/basic_renderer.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/model.h"
 #include "src/graphics/sdf/sdf_generator_gpu.h"

@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 // clang-format on
 #include "src/data/file_system.h"
-#include "src/graphics/basic_renderer.h"
+#include "src/graphics/renderer/basic_renderer.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/line_renderer.h"
 #include "src/graphics/model.h"

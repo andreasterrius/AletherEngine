@@ -1,7 +1,8 @@
 #include "basic_renderer.h"
 
 #include "src/data/file_system.h"
-#include "static_mesh.h"
+#include "src/graphics/static_mesh.h"
+
 #include <format>
 
 namespace ale {
@@ -17,6 +18,45 @@ BasicRenderer::BasicRenderer(ivec2 screen_size)
           afs::root("resources/textures/default/black1x1.png")),
       deferred_framebuffer(
           Framebuffer::Meta{.width = screen_size.x, .height = screen_size.y}) {
+
+  // position buffer
+  deferred_framebuffer.create_extra_color_attachment(make_shared<Texture>(
+      Texture::Meta{
+          .width = screen_size.x,
+          .height = screen_size.y,
+          .internal_format = GL_RGBA16F,
+          .input_format = GL_RGBA,
+          .input_type = GL_FLOAT,
+          .min_filter = GL_NEAREST,
+          .max_filter = GL_NEAREST,
+      },
+      nullptr));
+  // normal buffer
+  deferred_framebuffer.create_extra_color_attachment(make_shared<Texture>(
+      Texture::Meta{
+          .width = screen_size.x,
+          .height = screen_size.y,
+          .internal_format = GL_RGBA16F,
+          .input_format = GL_RGBA,
+          .input_type = GL_FLOAT,
+          .min_filter = GL_NEAREST,
+          .max_filter = GL_NEAREST,
+      },
+      nullptr));
+  // color + specular
+  deferred_framebuffer.create_extra_color_attachment(make_shared<Texture>(
+      Texture::Meta{
+          .width = screen_size.x,
+          .height = screen_size.y,
+          .internal_format = GL_RGBA,
+          .input_format = GL_RGBA,
+          .input_type = GL_UNSIGNED_BYTE,
+          .min_filter = GL_NEAREST,
+          .max_filter = GL_NEAREST,
+      },
+      nullptr));
+  deferred_framebuffer.set_draw_buffers(
+      {GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3});
   glEnable(GL_CULL_FACE);
 }
 
@@ -31,7 +71,7 @@ void BasicRenderer::add_listener(WindowEventProducer *event_producer) {
 }
 
 void BasicRenderer::render(Camera &camera, entt::registry &world) {
-
+  deferred_framebuffer.start_capture();
   glClearColor(135.0 / 255, 206.0 / 255, 235.0 / 255, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -42,7 +82,7 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
 
   auto light_view = world.view<Transform, Light>();
   int light_index = 0;
-  for (auto [entity, transform, light] : light_view.each()) {
+  for (const auto &[entity, transform, light] : light_view.each()) {
     color_shader.setVec3(format("lights[{}].position", light_index),
                          transform.translation);
     color_shader.setVec3(format("lights[{}].color", light_index), light.color);
@@ -76,7 +116,7 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
   // End handle shadows
 
   // Render static mesh
-  auto view = world.view<Transform, StaticMesh, BasicMaterial>();
+  const auto view = world.view<Transform, StaticMesh, BasicMaterial>();
   for (auto [entity, transform, static_mesh, material] : view.each()) {
     color_shader.setMat4("model", transform.get_model_matrix());
 
@@ -97,6 +137,7 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
 
     static_mesh.get_model()->draw(color_shader);
   }
+  deferred_framebuffer.end_capture();
 }
 void BasicRenderer::set_texture_with_default(string name, int location,
                                              const Texture *texture) const {

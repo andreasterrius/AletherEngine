@@ -6,6 +6,7 @@
 #define FRAMEBUFFER_H
 
 #include "texture.h"
+#include <external/assimp/code/AssetLib/Blender/BlenderDNA.h>
 #include <memory>
 
 namespace ale {
@@ -36,12 +37,17 @@ private:
   unsigned int framebuffer_id = 0;
   unsigned int depth_renderbuffer_id = 0;
   Meta meta;
+
+  // this is the default color attachment
   std::shared_ptr<Texture> color_attachment0;
+  std::vector<std::shared_ptr<Texture>> color_attachments;
 
 public:
   Framebuffer(Meta meta);
 
-  std::shared_ptr<Texture> create_new_color_attachment0();
+  std::shared_ptr<Texture> recreate_color_attachment0();
+  void create_extra_color_attachment(std::shared_ptr<Texture> attachment);
+  void set_draw_buffers(const std::vector<unsigned int> &draw_buffers);
 
   void start_capture();
 

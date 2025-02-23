@@ -1,11 +1,11 @@
 #ifndef BASIC_RENDERER_H
 #define BASIC_RENDERER_H
 
-#include "camera.h"
-#include "framebuffer.h"
-#include "sdf/sdf_model_packed.h"
-#include "shader.h"
 #include "src/data/serde/glm.h"
+#include "src/graphics/camera.h"
+#include "src/graphics/framebuffer.h"
+#include "src/graphics/sdf/sdf_model_packed.h"
+#include "src/graphics/shader.h"
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>
 #include <string>

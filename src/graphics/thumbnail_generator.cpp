@@ -48,6 +48,6 @@ shared_ptr<Texture> ThumbnailGenerator::generate(StaticMesh static_mesh) {
 
     framebuffer.end_capture();
   }
-  return this->framebuffer.create_new_color_attachment0();
+  return this->framebuffer.recreate_color_attachment0();
 }
 } // namespace ale

@@ -71,6 +71,7 @@ int main() {
 
   // Declare a basic scene
   auto basic_renderer = BasicRenderer(window.get_size());
+  auto texture_renderer = TextureRenderer();
   auto line_renderer = LineRenderer();
   auto sm_loader = StaticMeshLoader();
 

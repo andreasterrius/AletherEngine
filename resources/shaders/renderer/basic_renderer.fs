@@ -1,6 +1,10 @@
 #version 430 core
 out vec4 FragColor;
 
+layout(location = 1) out vec3 gPosition;
+layout(location = 2) out vec3 gNormal;
+layout(location = 3) out vec4 gAlbedoSpec;
+
 in VS_OUT {
     vec3 FragPos;
     vec3 Normal;
@@ -55,6 +59,8 @@ void main()
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
     vec3 lighting = vec3(0.0);  // Accumulate lighting contributions
 
+    vec3 diffuseFinal = vec3(0.0);
+    vec3 specularFinal = vec3(0.0);
     for(int i = 0; i < numLights; ++i) {
         vec3 lightColor = lights[i].color;
         vec3 lightPos = lights[i].position;
@@ -85,9 +91,14 @@ void main()
         specular *= attenuation;
 
         lighting += (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+        specularFinal += specular;
+        diffuseFinal += diffuse;
     }
 
     lighting *= color;
 
     FragColor = vec4(lighting, 1.0);
+    gPosition = fs_in.FragPos;
+    gNormal = normalize(fs_in.Normal);
+    gAlbedoSpec = vec4(diffuseFinal, specularFinal);
 }

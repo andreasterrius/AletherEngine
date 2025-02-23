@@ -6,9 +6,9 @@
 #include <entt/entt.hpp>
 
 #include "src/data/file_system.h"
-#include "src/graphics/basic_renderer.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/model.h"
+#include "src/graphics/renderer/basic_renderer.h"
 #include "src/graphics/sdf/sdf_generator_gpu.h"
 #include "src/graphics/sdf/sdf_model_packed.h"
 #include "src/graphics/static_mesh.h"
@@ -31,7 +31,7 @@ int main() {
                        glm::vec3(3.0f, 5.0f, -7.0f));
   camera.add_listener(&window);
 
-  auto basic_renderer = BasicRenderer();
+  auto basic_renderer = BasicRenderer(window.get_size());
   auto sm_loader = StaticMeshLoader();
   auto sm_monkey =
       sm_loader.load_static_mesh(afs::root("resources/models/monkey.obj"));
@@ -43,6 +43,7 @@ int main() {
     const auto entity = world.create();
     world.emplace<Transform>(entity, Transform{});
     world.emplace<StaticMesh>(entity, sm_monkey);
+    world.emplace<BasicMaterial>(entity, BasicMaterial{});
   }
   {
     const auto entity = world.create();
@@ -50,6 +51,7 @@ int main() {
                                          .translation = vec3(0.0, -5.0, 0.0),
                                      });
     world.emplace<StaticMesh>(entity, sm_floor);
+    world.emplace<BasicMaterial>(entity, BasicMaterial{});
   }
   {
     const auto entity = world.create();

@@ -56,7 +56,7 @@ ale::Framebuffer::Framebuffer(Meta meta) : meta(meta) {
   SPDLOG_TRACE("Created framebuffer {} {}", meta.width, meta.height);
 }
 
-shared_ptr<Texture> ale::Framebuffer::create_new_color_attachment0() {
+shared_ptr<Texture> ale::Framebuffer::recreate_color_attachment0() {
   auto before = this->color_attachment0;
 
   auto empty = vector<float>();
@@ -69,6 +69,33 @@ shared_ptr<Texture> ale::Framebuffer::create_new_color_attachment0() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return before;
+}
+void ale::Framebuffer::create_extra_color_attachment(
+    std::shared_ptr<Texture> attachment) {
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER,
+                         GL_COLOR_ATTACHMENT1 + color_attachments.size(),
+                         GL_TEXTURE_2D, attachment->id, 0);
+  color_attachments.emplace_back(attachment);
+
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    throw FramebufferException("Framebuffer is not complete");
+  }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void ale::Framebuffer::set_draw_buffers(
+    const std::vector<unsigned int> &draw_buffers) {
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
+
+  glDrawBuffers(draw_buffers.size(), draw_buffers.data());
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    throw FramebufferException("Framebuffer is not complete");
+  }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void ale::Framebuffer::start_capture() {
