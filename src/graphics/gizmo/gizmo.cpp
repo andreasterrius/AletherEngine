@@ -58,9 +58,11 @@ ale::Gizmo::Gizmo()
       afs::root("resources/models/gizmo/Scale_Y+.glb")); // ArrowY
   this->models.emplace_back(
       afs::root("resources/models/gizmo/Scale_Z+.glb")); // ArrowY
+  this->models.emplace_back(afs::root("resources/models/gizmo/Scale_All.glb"));
 }
 
-bool Gizmo::try_hold(Transform *transform, Ray ray) {
+bool Gizmo::try_hold(Transform *transform, Camera &camera, vec2 mousePos,
+                     Ray ray) {
 
   // There's an active selected object
   // Show & set gizmo position properly
@@ -85,7 +87,7 @@ bool Gizmo::try_hold(Transform *transform, Ray ray) {
 
     // Get a ray to plane intersection.
     optional<vec3> rayPlaneHit = this->ray_plane_intersection(
-        ray, grabAxis.activeAxis, this->transform.translation);
+        ray, grabAxis.activeAxis, this->transform.translation, camera);
 
     if (!rayPlaneHit.has_value()) { // no planes were clicked
       return false;
@@ -98,13 +100,16 @@ bool Gizmo::try_hold(Transform *transform, Ray ray) {
         .firstRayPlaneHitPos = rayPlaneHit.value(),
         .initialSelfPos = this->transform.translation,
         .lastFrameRayPlaneHitPos = rayPlaneHit.value(),
+        .initialMousePos = mousePos,
+        .lastFrameMousePos = mousePos,
     };
     return true;
   }
 
   // This is no longer initial hit, but is a dragging movement
-  optional<vec3> rayPlaneHit = this->ray_plane_intersection(
-      ray, this->initial_click_info.activeAxis, this->transform.translation);
+  optional<vec3> rayPlaneHit =
+      this->ray_plane_intersection(ray, this->initial_click_info.activeAxis,
+                                   this->transform.translation, camera);
 
   // Ignore ray-plane parallel cases
   if (rayPlaneHit.has_value()) {
@@ -113,10 +118,17 @@ bool Gizmo::try_hold(Transform *transform, Ray ray) {
                                            rayPlaneHit.value());
       transform->translation = newPos;
     } else if (this->gizmoType == Scale) {
-      // unlike translate, we just return delta here
-      vec3 delta = rayPlaneHit.value() -
-                   this->initial_click_info.lastFrameRayPlaneHitPos;
-      transform->scale = transform->scale + delta;
+      if (this->initial_click_info.activeAxis) {
+        // uniform scale
+        float delta =
+            (this->initial_click_info.lastFrameMousePos.y - mousePos.y) / 10.0f;
+        transform->scale = transform->scale + vec3(delta);
+      } else {
+        // unlike translate, we just return delta here
+        vec3 delta = rayPlaneHit.value() -
+                     this->initial_click_info.lastFrameRayPlaneHitPos;
+        transform->scale = transform->scale + delta;
+      }
     } else if (this->gizmoType == Rotate) {
       vec3 unitVecA =
           normalize(rayPlaneHit.value() - this->transform.translation);
@@ -128,6 +140,7 @@ bool Gizmo::try_hold(Transform *transform, Ray ray) {
     }
     this->initial_click_info.lastFrameRayPlaneHitPos = rayPlaneHit.value();
   }
+  this->initial_click_info.lastFrameMousePos = mousePos;
 
   return true;
 }
@@ -202,6 +215,11 @@ optional<Gizmo_GrabAxis> Gizmo::grab_axis(Ray ray) {
       return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
                             .activeAxis = XY};
     }
+    coll = tray.intersect(this->models[ScaleAll].meshes[0].boundingBox);
+    if (coll.has_value()) {
+      return Gizmo_GrabAxis{.rayCollisionPosition = ray.resolve(coll.value()),
+                            .activeAxis = All};
+    }
   } else if (this->gizmoType == Rotate) {
     auto coll = tray.intersect(this->models[RotationYZ].meshes[0].boundingBox);
     if (coll.has_value()) {
@@ -225,7 +243,7 @@ optional<Gizmo_GrabAxis> Gizmo::grab_axis(Ray ray) {
 
 optional<vec3> Gizmo::ray_plane_intersection(Ray ray,
                                              Gizmo_ActiveAxis activeAxis,
-                                             vec3 planeCoord) {
+                                             vec3 planeCoord, Camera &camera) {
 
   vec3 activeAxisDir;
   float t = 0.0f;
@@ -238,6 +256,9 @@ optional<vec3> Gizmo::ray_plane_intersection(Ray ray,
   } else if (activeAxis == Z || activeAxis == YZ) {
     activeAxisDir = vec3{0.0f, 0.0f, 1.0f};
     t = (planeCoord.x - ray.origin.x) / ray.dir.x;
+  } else if (activeAxis == All) {
+    activeAxisDir = vec3{0.0f, 0.0f, 0.0f};
+    t = distance(planeCoord, ray.origin);
   } else {
     return nullopt;
   }
@@ -263,6 +284,8 @@ optional<vec3> Gizmo::ray_plane_intersection(Ray ray,
   } else if (activeAxis == XZ) {
     intersectionCoord.x = ray.origin.x + t * ray.dir.x;
     intersectionCoord.z = ray.origin.z + t * ray.dir.z;
+  } else if (activeAxis == All) {
+    intersectionCoord = ray.origin + t * ray.dir;
   }
 
   return make_optional(intersectionCoord);
@@ -304,6 +327,9 @@ void Gizmo::render(Camera camera, vec3 lightPos) {
     gizmo_shader.setVec3("color", RED_Z);
     this->models[ScaleZ].draw(gizmo_shader);
     this->models[PlaneXY].draw(gizmo_shader);
+
+    gizmo_shader.setVec3("color", YELLOW_ALL);
+    this->models[ScaleAll].draw(gizmo_shader);
 
   } else if (this->gizmoType == Rotate) {
     gizmo_shader.setVec3("color", RED_Z);
@@ -362,20 +388,22 @@ void Gizmo::show(Transform transform) {
 
 void Gizmo::hide() { this->is_hidden = true; }
 
-void Gizmo::tick(const Ray &mouse_ray, entt::registry &world) {
+void Gizmo::tick(const Ray &mouse_ray, Camera &camera, vec2 mouse_pos,
+                 entt::registry &world) {
   if (selected_entity && is_dragging) {
     auto &transform = world.get<Transform>(*selected_entity);
-    try_hold(&transform, mouse_ray);
+    try_hold(&transform, camera, mouse_pos, mouse_ray);
   }
 }
 
-bool Gizmo::handle_press(Ray &mouse_ray, entt::registry &world) {
+bool Gizmo::handle_press(Ray &mouse_ray, Camera &camera, vec2 mouse_pos,
+                         entt::registry &world) {
 
   // are we clicking the arrow/plane of the gizmo?
   if (selected_entity.has_value()) {
     // means gizmo is showing
     auto transform = world.get<Transform>(*selected_entity);
-    if (try_hold(&transform, mouse_ray)) {
+    if (try_hold(&transform, camera, mouse_pos, mouse_ray)) {
       is_dragging = true;
       // don't propagate this click
       return false;

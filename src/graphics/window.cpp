@@ -23,7 +23,7 @@ Window::Window(int width, int height, string caption) {
 #endif
 
   this->raw_window =
-      glfwCreateWindow(width, height, caption.c_str(), NULL, NULL);
+      glfwCreateWindow(width, height, caption.c_str(), nullptr, nullptr);
   if (this->raw_window == nullptr) {
     throw WindowException("glfwCreateWindow returns null");
   }
@@ -36,6 +36,8 @@ Window::Window(int width, int height, string caption) {
   glfwSetWindowUserPointer(this->raw_window, this);
   this->data.width = width;
   this->data.height = height;
+  this->data.last_resize_width = width;
+  this->data.last_resize_height = height;
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
@@ -66,15 +68,15 @@ void Window::set_debug(bool flag) {
   }
 }
 
-bool Window::should_close() { return glfwWindowShouldClose(this->raw_window); }
+bool Window::get_should_close() {
+  return glfwWindowShouldClose(this->raw_window);
+}
 
 void Window::set_should_close(bool flag) {
   glfwSetWindowShouldClose(raw_window, flag);
 }
 
 void Window::swap_buffer_and_poll_inputs() {
-  // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
-  // etc.)
   glfwSwapBuffers(this->raw_window);
   glfwPollEvents();
 }
@@ -246,6 +248,7 @@ void Window::start_ui_frame() {
 void Window::end_ui_frame() {
   glDisable(GL_FRAMEBUFFER_SRGB);
   if (imgui != nullptr) {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     imgui->end_frame();
   }
   glEnable(GL_FRAMEBUFFER_SRGB);

@@ -9,13 +9,25 @@ namespace ale {
 using namespace glm;
 using afs = ale::FileSystem;
 
-BasicRenderer::BasicRenderer()
+BasicRenderer::BasicRenderer(ivec2 screen_size)
     : color_shader(
           afs::root("resources/shaders/renderer/basic_renderer.vs").c_str(),
           afs::root("resources/shaders/renderer/basic_renderer.fs").c_str()),
       single_black_pixel_texture(
-          afs::root("resources/textures/default/black1x1.png")) {
+          afs::root("resources/textures/default/black1x1.png")),
+      deferred_framebuffer(
+          Framebuffer::Meta{.width = screen_size.x, .height = screen_size.y}) {
   glEnable(GL_CULL_FACE);
+}
+
+BasicRenderer::~BasicRenderer() {
+  if (event_producer)
+    event_producer->remove_listener(this);
+}
+
+void BasicRenderer::add_listener(WindowEventProducer *event_producer) {
+  this->event_producer = event_producer;
+  this->event_producer->add_listener(this);
 }
 
 void BasicRenderer::render(Camera &camera, entt::registry &world) {
@@ -93,4 +105,14 @@ void BasicRenderer::set_texture_with_default(string name, int location,
                             texture == nullptr ? single_black_pixel_texture.id
                                                : texture->id);
 }
+
+void BasicRenderer::mouse_button_callback(int button, int action, int mods) {}
+void BasicRenderer::cursor_pos_callback(double xpos, double ypos,
+                                        double xoffset, double yoffset) {}
+void BasicRenderer::framebuffer_size_callback(int width, int height) {
+  this->deferred_framebuffer =
+      Framebuffer(Framebuffer::Meta{.width = width, .height = height});
+}
+void BasicRenderer::scroll_callback(double x_offset, double y_offset) {}
+void BasicRenderer::key_callback(int key, int scancode, int action, int mods) {}
 } // namespace ale

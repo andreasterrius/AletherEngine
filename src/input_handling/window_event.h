@@ -6,17 +6,8 @@
 #define WINDOW_EVENT_LISTENER_H
 
 #include <set>
-#include <vector>
 
 namespace ale {
-
-enum WindowEventCallbackType {
-  MOUSE_BUTTON,
-  CURSOR_POSITION,
-  FRAMEBUFFER_SIZE,
-  SCROLL,
-  KEY
-};
 
 class WindowEventListener {
 public:
@@ -36,18 +27,10 @@ protected:
   std::set<WindowEventListener *> listeners;
 
 public:
-  std::set<WindowEventListener *> &get_listeners();
   void add_listener(WindowEventListener *listener);
   void remove_listener(WindowEventListener *listener);
+  std::set<WindowEventListener *> &get_listeners();
 };
 }; // namespace ale
-
-// class WindowEventListener {
-//   // This is a weak pointer
-//   WindowEventProducer *producer = nullptr;
-//
-// public:
-//
-// };
 
 #endif // WINDOW_EVENT_LISTENER_H

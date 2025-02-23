@@ -121,7 +121,7 @@ int main() {
     }
   });
 
-  while (!window.should_close()) {
+  while (!window.get_should_close()) {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

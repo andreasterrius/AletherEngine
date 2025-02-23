@@ -36,22 +36,34 @@ public:
   // std::shared_ptr<Texture> ao_texture;
 };
 
-class BasicRenderer {
+class BasicRenderer : public WindowEventListener {
 private:
   Shader color_shader;
   Texture single_black_pixel_texture;
 
-  // Framebuffer deferred_framebuffer;
+  Framebuffer deferred_framebuffer;
+  WindowEventProducer *event_producer = nullptr;
 
   bool debug_mode = true;
 
 public:
-  BasicRenderer();
+  BasicRenderer(glm::ivec2 screen_size);
+  ~BasicRenderer();
+
+  void add_listener(WindowEventProducer *event_producer);
 
   void render(Camera &camera, entt::registry &world);
 
   void set_texture_with_default(std::string name, int location,
                                 const Texture *texture) const;
+
+public:
+  void mouse_button_callback(int button, int action, int mods) override;
+  void cursor_pos_callback(double xpos, double ypos, double xoffset,
+                           double yoffset) override;
+  void framebuffer_size_callback(int width, int) override;
+  void scroll_callback(double x_offset, double y_offset) override;
+  void key_callback(int key, int scancode, int action, int mods) override;
 };
 } // namespace ale
 

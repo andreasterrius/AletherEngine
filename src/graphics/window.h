@@ -36,6 +36,9 @@ struct Data {
 
   int width, height;
 
+  // Resize information
+  int last_resize_width, last_resize_height;
+
   // Cursor Information
   bool is_cursor_enabled = true;
   double cursor_last_x = 0.0, cursor_last_y = 0.0; // exact coord on window
@@ -61,29 +64,22 @@ protected:
 public:
   Window(int width, int height, std::string caption);
 
+public:
   void set_default_inputs(DefaultInputs default_inputs);
-
   void set_debug(bool flag);
-
-  bool should_close();
-
   void set_should_close(bool flag);
 
-  void swap_buffer_and_poll_inputs();
-
+public:
+  bool get_should_close();
   glm::ivec2 get_position();
-
   glm::ivec2 get_size();
-
   glm::vec2 get_cursor_pos_from_top_left();
-
   glm::vec2 get_cursor_pos();
-
-  // take x since x/y most likely be equal
-  float get_content_scale();
-
+  float get_content_scale(); // take x since x/y most likely be equal
   Data &get_data();
 
+public:
+  void swap_buffer_and_poll_inputs();
   // input callbacks
   void
   attach_mouse_button_callback(const std::function<void(int, int, int)> &func);
@@ -98,12 +94,13 @@ public:
 
   void attach_key_callback(const std::function<void(int, int, int, int)> &func);
 
+public:
   void start_ui_frame();
 
   void end_ui_frame();
 
-  // TODO: Remove
-  GLFWwindow *get() { return raw_window; }
+  // // TODO: Remove
+  // GLFWwindow *get() { return raw_window; }
 
   ~Window();
 };

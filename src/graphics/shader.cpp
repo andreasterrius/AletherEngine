@@ -7,6 +7,72 @@
 
 using afs = ale::FileSystem;
 
+Shader::Shader(const char *vertexPath, const char *fragmentPath,
+               const char *geometryPath) {
+  // 1. retrieve the vertex/fragment source code from filePath
+  std::string vertexCode = load_file_with_include(IncludeDirective{vertexPath});
+  std::string fragmentCode =
+      load_file_with_include(IncludeDirective{fragmentPath});
+  const char *vShaderCode = vertexCode.c_str();
+  const char *fShaderCode = fragmentCode.c_str();
+
+  // std::cout << "Vertex Code: \n" << vertexCode << std::endl;
+  // std::cout << "Fragment Code: \n" << fragmentCode << std::endl;
+
+  // 2. compile shaders
+  unsigned int vertex = 0, fragment = 0;
+  // vertex shader
+  vertex = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vertex, 1, &vShaderCode, nullptr);
+  glCompileShader(vertex);
+  checkCompileErrors(vertex, "VERTEX", vertexPath);
+  // fragment Shader
+  fragment = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragment, 1, &fShaderCode, nullptr);
+  glCompileShader(fragment);
+  checkCompileErrors(fragment, "FRAGMENT", fragmentPath);
+  // if geometry shader is given, compile geometry shader
+  unsigned int geometry = 0;
+  if (geometryPath != nullptr) {
+    std::string geometryCode =
+        load_file_with_include(IncludeDirective{geometryPath});
+    const char *gShaderCode = geometryCode.c_str();
+    geometry = glCreateShader(GL_GEOMETRY_SHADER);
+    glShaderSource(geometry, 1, &gShaderCode, nullptr);
+    glCompileShader(geometry);
+    checkCompileErrors(geometry, "GEOMETRY", geometryPath);
+  }
+  // shader Program
+  ID = glCreateProgram();
+  glAttachShader(ID, vertex);
+  glAttachShader(ID, fragment);
+  if (geometryPath != nullptr)
+    glAttachShader(ID, geometry);
+  glLinkProgram(ID);
+  checkCompileErrors(ID, "PROGRAM", "");
+  // delete the shaders as they're linked into our program now and no longer
+  // necessary
+  glDeleteShader(vertex);
+  glDeleteShader(fragment);
+  if (geometryPath != nullptr)
+    glDeleteShader(geometry);
+}
+
+Shader::Shader(Shader &&other) noexcept {
+  if (this == &other)
+    return;
+  std::swap(this->ID, other.ID);
+}
+
+Shader &Shader::operator=(Shader &&other) {
+  if (this == &other)
+    return *this;
+  std::swap(this->ID, other.ID);
+  return *this;
+}
+
+Shader::~Shader() { glDeleteProgram(ID); }
+
 std::string Shader::load_file_with_include(IncludeDirective include_directive) {
   using namespace std;
 

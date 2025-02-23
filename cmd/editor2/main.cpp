@@ -69,11 +69,8 @@ int main() {
   auto camera = Camera(ARCBALL, window.get_size().x, window.get_size().y,
                        glm::vec3(3.0f, 5.0f, 7.0f));
 
-  // camera.add_listener(&window);
-  camera.add_listener(&window);
-
   // Declare a basic scene
-  auto basic_renderer = BasicRenderer();
+  auto basic_renderer = BasicRenderer(window.get_size());
   auto line_renderer = LineRenderer();
   auto sm_loader = StaticMeshLoader();
 
@@ -83,18 +80,9 @@ int main() {
   auto editor_root_layout_ui =
       ui::EditorRootLayout(sm_loader, window.get_size());
 
-  // Attach event listeners here
-  window.attach_mouse_button_callback([&](int button, int action, int mods) {
-    // Release if we are holding something
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-      editor_root_layout_ui.handle_release();
-    }
-
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-      editor_root_layout_ui.handle_press(camera, world,
-                                         window.get_cursor_pos_from_top_left());
-    }
-  });
+  camera.add_listener(&window);
+  editor_root_layout_ui.add_listener(&window);
+  basic_renderer.add_listener(&window);
 
   window.attach_key_callback([&](int key, int scancode, int action, int mods) {
     if (editor_root_layout_ui.get_scene_has_focus()) {
@@ -115,19 +103,19 @@ int main() {
         }
       }
     }
-
-    editor_root_layout_ui.handle_key(key, scancode, action, mods);
   });
 
-  while (!window.should_close()) {
+  while (!window.get_should_close()) {
     glClearColor(135.0 / 255, 206.0 / 255, 235.0 / 255, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Input stuff
     camera.set_handle_input(editor_root_layout_ui.get_scene_has_focus());
-
-    editor_root_layout_ui.tick(camera, world,
-                               window.get_cursor_pos_from_top_left());
+    editor_root_layout_ui.set_tick_data(ui::EditorRootLayout::TickData{
+        .camera = &camera,
+        .world = &world,
+        .cursor_pos_topleft = window.get_cursor_pos_from_top_left()});
+    editor_root_layout_ui.tick();
 
     // Render Scene
     editor_root_layout_ui.capture_scene(

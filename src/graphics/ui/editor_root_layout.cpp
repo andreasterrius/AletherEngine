@@ -25,6 +25,12 @@ EditorRootLayout::EditorRootLayout(StaticMeshLoader &sm_loader,
       test_texture(afs::root("resources/textures/wood.png")),
       scene_has_focus(false) {}
 
+EditorRootLayout::~EditorRootLayout() {
+  if (this->event_producer) {
+    this->event_producer->remove_listener(this);
+  }
+}
+
 void EditorRootLayout::start(ivec2 pos, ivec2 size) {
   auto x = pos.x;
   auto y = pos.y;
@@ -63,32 +69,20 @@ void EditorRootLayout::handle_press(Camera &camera, entt::registry &world,
     Ray mouse_ray = scene_viewport_ui.create_mouse_ray(
         cursor_top_left, camera.get_projection_matrix(),
         camera.get_view_matrix());
-    gizmo.handle_press(mouse_ray, world);
+    gizmo.handle_press(mouse_ray, camera, cursor_top_left, world);
   }
 }
 
 void EditorRootLayout::handle_release() { gizmo.handle_release(); }
 
-void EditorRootLayout::handle_key(int key, int scancode, int action, int mods) {
-  if (!ImGui::GetIO().WantTextInput) {
-    if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-      gizmo.change_mode(Translate);
-    } else if (key == GLFW_KEY_E && action == GLFW_PRESS) {
-      gizmo.change_mode(Scale);
-    } else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-      gizmo.change_mode(Rotate);
-    }
-  }
-}
-
-void EditorRootLayout::tick(Camera &camera, entt::registry &world,
-                            ivec2 cursor_top_left) {
+void EditorRootLayout::tick() {
+  auto &t = tick_data;
   Ray mouse_ray = scene_viewport_ui.create_mouse_ray(
-      cursor_top_left, camera.get_projection_matrix(),
-      camera.get_view_matrix());
-  gizmo.tick(mouse_ray, world);
+      t.cursor_pos_topleft, t.camera->get_projection_matrix(),
+      t.camera->get_view_matrix());
+  gizmo.tick(mouse_ray, *t.camera, t.cursor_pos_topleft, *t.world);
 
-  scene_has_focus = scene_viewport_ui.is_cursor_inside(cursor_top_left);
+  scene_has_focus = scene_viewport_ui.is_cursor_inside(t.cursor_pos_topleft);
 }
 void EditorRootLayout::capture_scene(std::function<void()> exec,
                                      Camera &camera) {
@@ -115,11 +109,20 @@ void EditorRootLayout::end_capture_scene() {
 
 bool EditorRootLayout::get_scene_has_focus() { return scene_has_focus; }
 
+void EditorRootLayout::set_tick_data(TickData tick_data) {
+  this->tick_data = tick_data;
+}
+
 void EditorRootLayout::debug() {
   glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   texture_renderer.render(*gizmo_frame.get_color_attachment0(),
                           TextureRenderer::RenderMeta{.discard_alpha = false});
+}
+
+void EditorRootLayout::add_listener(Window *window) {
+  this->event_producer = window;
+  window->add_listener(this);
 }
 
 EditorRootLayout::Event
@@ -171,6 +174,32 @@ EditorRootLayout::draw_and_handle_events(entt::registry &world) {
   ImGui::DockBuilderFinish(dockspace_id);
 
   return event;
+}
+
+void EditorRootLayout::mouse_button_callback(int button, int action, int mods) {
+  auto &t = tick_data;
+  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+    handle_release();
+  }
+  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+    handle_press(*t.camera, *t.world, t.cursor_pos_topleft);
+  }
+}
+void EditorRootLayout::cursor_pos_callback(double xpos, double ypos,
+                                           double xoffset, double yoffset) {}
+void EditorRootLayout::framebuffer_size_callback(int width, int height) {}
+void EditorRootLayout::scroll_callback(double x_offset, double y_offset) {}
+void EditorRootLayout::key_callback(int key, int scancode, int action,
+                                    int mods) {
+  if (!ImGui::GetIO().WantTextInput) {
+    if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+      gizmo.change_mode(Translate);
+    } else if (key == GLFW_KEY_E && action == GLFW_PRESS) {
+      gizmo.change_mode(Scale);
+    } else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+      gizmo.change_mode(Rotate);
+    }
+  }
 }
 
 } // namespace ale::ui

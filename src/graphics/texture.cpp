@@ -5,8 +5,9 @@
 #include "texture.h"
 
 #include "src/data/file_system.h"
-#include <glad/glad.h>
 #include <fstream>
+#include <glad/glad.h>
+#include <stb_image.h>
 
 using afs = ale::FileSystem;
 using namespace std;
@@ -40,14 +41,19 @@ TextureRenderer::TextureRenderer()
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
                GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
+                        static_cast<void *>(nullptr));
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
-                        (void *)(3 * sizeof(float)));
+                        reinterpret_cast<void *>(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
+
+  if (vao == 0 || vbo == 0 || ebo == 0) {
+    throw TextureRendererException("failed to initialize texture renderer");
+  }
 }
 
 TextureRenderer::~TextureRenderer() {
@@ -56,13 +62,13 @@ TextureRenderer::~TextureRenderer() {
   glDeleteBuffers(1, &ebo);
 }
 
-TextureRenderer::TextureRenderer(TextureRenderer &&other)
-    : vao(other.vao), vbo(other.vbo), shader(other.shader) {
+TextureRenderer::TextureRenderer(TextureRenderer &&other) noexcept
+    : vao(other.vao), vbo(other.vbo), shader(std::move(other.shader)) {
   other.vao = 0;
   other.vbo = 0;
 }
 
-TextureRenderer &TextureRenderer::operator=(TextureRenderer &&other) {
+TextureRenderer &TextureRenderer::operator=(TextureRenderer &&other) noexcept {
   if (this != &other) {
     swap(this->vao, other.vao);
     swap(this->vbo, other.vbo);
@@ -82,7 +88,7 @@ void TextureRenderer::render(Texture &texture, RenderMeta render_meta) {
   glActiveTexture(GL_TEXTURE0 + 0); // active proper texture unit before binding
   glBindTexture(GL_TEXTURE_2D, texture.id);
   glBindVertexArray(vao);
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
   glBindVertexArray(0);
 
   glDisable(GL_BLEND);
@@ -140,7 +146,7 @@ Texture::Texture(Meta meta, void *data) : meta(meta) {
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-Texture::~Texture() { glDeleteBuffers(1, &this->id); }
+Texture::~Texture() { glDeleteTextures(1, &this->id); }
 
 void Texture::replace_data(vector<vector<vec4>> &color_data) {
   // Flatten the 2D vector to a 1D array
@@ -218,16 +224,16 @@ void Texture::dump_data_to_file(string path) {
   out_file.close();
 }
 
-Texture::Texture(Texture &&other) : meta(std::move(other.meta)), id(other.id) {
+Texture::Texture(Texture &&other) noexcept
+    : meta(std::move(other.meta)), id(other.id) {
   other.id = 0;
 }
 
-Texture &Texture::operator=(Texture &&other) {
+Texture &Texture::operator=(Texture &&other) noexcept {
   if (this != &other) {
     swap(this->id, other.id);
     swap(this->meta, other.meta);
   }
-
   return *this;
 }
 
@@ -324,11 +330,12 @@ Texture3D Texture3D::load(string name) {
   return std::move(Texture3D(meta, pixels));
 }
 
-Texture3D::Texture3D(Texture3D &&other) : meta(other.meta), id(other.id) {
+Texture3D::Texture3D(Texture3D &&other) noexcept
+    : meta(other.meta), id(other.id) {
   other.id = 0;
 }
 
-Texture3D &Texture3D::operator=(Texture3D &&other) {
+Texture3D &Texture3D::operator=(Texture3D &&other) noexcept {
   if (this != &other) {
     swap(this->id, other.id);
     swap(this->meta, other.meta);

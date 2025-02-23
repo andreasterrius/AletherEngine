@@ -5,11 +5,14 @@
 #include "imgui_integration.h"
 
 //clang-format off
+#include <glad/glad.h>
+//clang-format off
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 //clang-format on
+#include <iostream>
 
 void ale::ImguiIntegration::start_frame() {
   ImGui_ImplOpenGL3_NewFrame();
@@ -19,7 +22,10 @@ void ale::ImguiIntegration::start_frame() {
 
 void ale::ImguiIntegration::end_frame() {
   ImGui::Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  auto draw_data = ImGui::GetDrawData();
+  if (draw_data != nullptr) {
+    ImGui_ImplOpenGL3_RenderDrawData(draw_data);
+  }
 
   auto &io = ImGui::GetIO();
   if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {

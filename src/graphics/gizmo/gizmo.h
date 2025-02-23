@@ -1,8 +1,8 @@
 #ifndef HELLO_C_GIZMO_H
 #define HELLO_C_GIZMO_H
 
-#include "src/graphics/shader.h"
 #include "src/data/transform.h"
+#include "src/graphics/shader.h"
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
 #include <optional>
@@ -26,10 +26,11 @@ typedef enum Gizmo_ModelType {
   RotationYZ,
   ScaleX,
   ScaleY,
-  ScaleZ
+  ScaleZ,
+  ScaleAll,
 } Gizmo_ModelType;
 
-typedef enum Gizmo_ActiveAxis { X, Y, Z, XY, XZ, YZ } Gizmo_ActiveAxis;
+typedef enum Gizmo_ActiveAxis { X, Y, Z, XY, XZ, YZ, All } Gizmo_ActiveAxis;
 
 typedef enum Gizmo_Type { Translate, Scale, Rotate } Gizmo_Type;
 
@@ -46,6 +47,9 @@ typedef struct Gizmo_InitialClickInfo {
   // This is the position of last frame ray-plane intersection (only returns
   // value for activeAxis)
   glm::vec3 lastFrameRayPlaneHitPos;
+
+  glm::vec2 initialMousePos;
+  glm::vec2 lastFrameMousePos;
 } Gizmo_InitialClickInfo;
 
 typedef struct Gizmo_GrabAxis {
@@ -54,7 +58,7 @@ typedef struct Gizmo_GrabAxis {
 } Gizmo_GrabAxis;
 
 class Gizmo {
-#define MODELS_LEN 12
+#define MODELS_LEN 13
 public:
   // Meshes
   std::vector<Model> models;
@@ -62,6 +66,7 @@ public:
   const glm::vec3 RED_Z = glm::vec3(1.0, 0.0, 0.0);
   const glm::vec3 GREEN_X = glm::vec3(0.0, 1.0, 0.0);
   const glm::vec3 BLUE_Y = glm::vec3(0.0, 0.0, 1.0);
+  const glm::vec3 YELLOW_ALL = glm::vec3(1.0, 1.0, 0.0);
 
   // State
   bool is_hidden;
@@ -88,7 +93,8 @@ private:
   /// This usually happens when user press and holding left click (handled by
   /// caller) This function is paired with release() Return bool if it's holding
   /// something
-  bool try_hold(Transform *transform, Ray mouseRay);
+  bool try_hold(Transform *transform, Camera &camera, glm::vec2 mousePos,
+                Ray mouseRay);
 
   void show(Transform transform);
 
@@ -96,9 +102,11 @@ private:
 
 public:
   // returns whether the press should be propagated or not
-  bool handle_press(Ray &mouse_ray, entt::registry &world);
+  bool handle_press(Ray &mouse_ray, Camera &camera, glm::vec2 mouse_pos,
+                    entt::registry &world);
   void handle_release();
-  void tick(const Ray &mouse_ray, entt::registry &world);
+  void tick(const Ray &mouse_ray, Camera &camera, glm::vec2 mouse_pos,
+            entt::registry &world);
   void render(Camera camera, glm::vec3 lightPos);
   void change_mode(Gizmo_Type gizmoType);
   void change_space(bool isLocalSpace);
@@ -112,7 +120,8 @@ private:
   /// be 0)
   std::optional<glm::vec3> ray_plane_intersection(Ray ray,
                                                   Gizmo_ActiveAxis activeAxis,
-                                                  glm::vec3 planeCoord);
+                                                  glm::vec3 planeCoord,
+                                                  Camera &camera);
 
   /// This will return the new position (not the delta)
   /// I want it to snap to the where the mouse ray is intersecting the

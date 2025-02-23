@@ -2,7 +2,9 @@
 // Created by Alether on 2/20/2025.
 //
 #include "camera.h"
+
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 namespace ale {
 Camera::Camera(Camera_InputType inputType, int width, int height,
@@ -56,7 +58,9 @@ glm::mat4 Camera::get_projection_matrix() const {
   return get_projection_matrix(this->Width, this->Height);
 }
 
-void Camera::mouse_button_callback(int button, int action, int mods) {}
+void Camera::mouse_button_callback(int button, int action, int mods) {
+  std::cout << "called" << std::endl;
+}
 void Camera::scroll_callback(double x_offset, double y_offset) {
   ProcessMouseScroll(y_offset);
 }
