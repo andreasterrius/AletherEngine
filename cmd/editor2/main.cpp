@@ -70,7 +70,7 @@ int main() {
                        glm::vec3(3.0f, 5.0f, 7.0f));
 
   // Declare a basic scene
-  auto basic_renderer = BasicRenderer(window.get_size());
+  auto basic_renderer = BasicRenderer();
   auto texture_renderer = TextureRenderer();
   auto line_renderer = LineRenderer();
   auto sm_loader = StaticMeshLoader();
@@ -83,7 +83,6 @@ int main() {
 
   camera.add_listener(&window);
   editor_root_layout_ui.add_listener(&window);
-  basic_renderer.add_listener(&window);
 
   window.attach_key_callback([&](int key, int scancode, int action, int mods) {
     if (editor_root_layout_ui.get_scene_has_focus()) {

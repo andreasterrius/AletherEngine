@@ -12,9 +12,9 @@
 
 namespace ale {
 
-class BasicRendererException final : public std::runtime_error {
+class DeferredRendererException final : public std::runtime_error {
 public:
-  explicit BasicRendererException(const std::string &msg)
+  explicit DeferredRendererException(const std::string &msg)
       : runtime_error(msg) {}
 };
 
@@ -28,29 +28,43 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Light, color, radius, attenuation);
 struct BasicMaterial {
 public:
   glm::vec3 diffuse_color = glm::vec3(1.0f);
+  float specular_color = 1.0f;
   std::shared_ptr<Texture> diffuse_texture = nullptr;
-  // std::shared_ptr<Texture> specular_texture;
+  std::shared_ptr<Texture> specular_texture = nullptr;
   // std::shared_ptr<Texture> roughness_texture;
   // std::shared_ptr<Texture> metalness_texture;
   // std::shared_ptr<Texture> normal_texture;
   // std::shared_ptr<Texture> ao_texture;
 };
 
-class BasicRenderer {
+class DeferredRenderer : public WindowEventListener {
 private:
-  Shader color_shader;
+  Shader first_pass;
+  Shader second_pass;
   Texture single_black_pixel_texture;
+
+  Framebuffer deferred_framebuffer;
+  TextureRenderer texture_renderer;
   WindowEventProducer *event_producer = nullptr;
 
-  bool debug_mode = true;
-
 public:
-  BasicRenderer();
+  DeferredRenderer(glm::ivec2 screen_size);
+  ~DeferredRenderer();
+
+  void add_listener(WindowEventProducer *event_producer);
 
   void render(Camera &camera, entt::registry &world);
 
   void set_texture_with_default(std::string name, int location,
                                 const Texture *texture) const;
+
+public:
+  void mouse_button_callback(int button, int action, int mods) override;
+  void cursor_pos_callback(double xpos, double ypos, double xoffset,
+                           double yoffset) override;
+  void framebuffer_size_callback(int width, int) override;
+  void scroll_callback(double x_offset, double y_offset) override;
+  void key_callback(int key, int scancode, int action, int mods) override;
 };
 } // namespace ale
 

@@ -113,6 +113,7 @@ class TextureRenderer {
 public:
   struct RenderMeta {
     bool discard_alpha = false;
+    bool disable_blending = false;
   };
   unsigned int vao{}, vbo{}, ebo{};
   Shader shader;
@@ -127,6 +128,7 @@ public:
   TextureRenderer &operator=(TextureRenderer &&other) noexcept;
 
   void render(Texture &texture, RenderMeta render_meta = {});
+  void render_quad(Shader &override_shader);
 };
 
 #endif // TEXTURE_H

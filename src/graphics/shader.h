@@ -26,7 +26,7 @@ public:
   Shader &operator=(Shader &other) = delete;
 
   Shader(Shader &&other) noexcept;
-  Shader &operator=(Shader &&other);
+  Shader &operator=(Shader &&other) noexcept;
 
   ~Shader();
 

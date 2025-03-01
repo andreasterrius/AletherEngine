@@ -64,7 +64,7 @@ Shader::Shader(Shader &&other) noexcept {
   std::swap(this->ID, other.ID);
 }
 
-Shader &Shader::operator=(Shader &&other) {
+Shader &Shader::operator=(Shader &&other) noexcept {
   if (this == &other)
     return *this;
   std::swap(this->ID, other.ID);

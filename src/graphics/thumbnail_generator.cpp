@@ -11,8 +11,7 @@ using namespace glm;
 
 ThumbnailGenerator::ThumbnailGenerator(int thumbnail_width,
                                        int thumbnail_height)
-    : renderer(ivec2(thumbnail_width, thumbnail_height)),
-      framebuffer(Framebuffer::Meta{.width = thumbnail_width,
+    : framebuffer(Framebuffer::Meta{.width = thumbnail_width,
                                     .height = thumbnail_height,
                                     .color_space = Framebuffer::SRGB}) {}
 

@@ -41,12 +41,29 @@ ale::Framebuffer::Framebuffer(Meta meta) : meta(meta) {
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          color_attachment0->id, 0);
 
-  glGenRenderbuffers(1, &depth_renderbuffer_id);
-  glBindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_id);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, meta.width,
-                        meta.height);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-                            GL_RENDERBUFFER, depth_renderbuffer_id);
+  if (meta.depthbuffer_texture) {
+    auto depth_texture = make_shared<Texture>(
+        Texture::Meta{
+            .width = meta.width,
+            .height = meta.height,
+            .internal_format = GL_DEPTH_COMPONENT,
+            .input_format = GL_DEPTH_COMPONENT,
+            .input_type = GL_FLOAT,
+        },
+        empty);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+                           depth_texture->id, 0);
+    depth_buffer = depth_texture;
+  } else {
+    unsigned int rbo = 0;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, meta.width,
+                          meta.height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                              GL_RENDERBUFFER, rbo);
+    depth_buffer = rbo;
+  }
 
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     throw FramebufferException("framebuffer is not complete");
@@ -119,27 +136,38 @@ shared_ptr<Texture> ale::Framebuffer::get_color_attachment0() {
   return color_attachment0;
 }
 
-ivec2 ale::Framebuffer::get_size() { return ivec2(meta.width, meta.height); }
-
-ale::Framebuffer::~Framebuffer() {
-  glDeleteRenderbuffers(1, &depth_renderbuffer_id);
-  glDeleteFramebuffers(1, &framebuffer_id);
+std::vector<std::shared_ptr<Texture>> &
+ale::Framebuffer::get_color_attachments() {
+  return color_attachments;
 }
 
+std::shared_ptr<Texture> ale::Framebuffer::get_depth_attachment() {
+  if (meta.depthbuffer_texture) {
+    return std::get<shared_ptr<Texture>>(this->depth_buffer);
+  }
+  throw FramebufferException(
+      "Framebuffer does not use depth texture as depth attachment");
+}
+
+ivec2 ale::Framebuffer::get_size() { return ivec2(meta.width, meta.height); }
+
+ale::Framebuffer::~Framebuffer() { glDeleteFramebuffers(1, &framebuffer_id); }
+
 ale::Framebuffer::Framebuffer(Framebuffer &&other) noexcept
-    : framebuffer_id{other.framebuffer_id},
-      depth_renderbuffer_id{other.depth_renderbuffer_id},
-      color_attachment0{std::move(other.color_attachment0)}, meta(other.meta),
-      start_frame_width(other.start_frame_width),
-      start_frame_height(other.start_frame_height) {
+    : start_frame_width(other.start_frame_width),
+      start_frame_height(other.start_frame_height),
+      framebuffer_id{other.framebuffer_id},
+      depth_buffer(std::move(other.depth_buffer)), meta(other.meta),
+      color_attachment0{std::move(other.color_attachment0)},
+      color_attachments(std::move(other.color_attachments)) {
   other.framebuffer_id = 0;
-  other.depth_renderbuffer_id = 0;
 }
 
 ale::Framebuffer &ale::Framebuffer::operator=(Framebuffer &&other) noexcept {
   if (this != &other) {
     swap(this->color_attachment0, other.color_attachment0);
-    swap(this->depth_renderbuffer_id, other.depth_renderbuffer_id);
+    swap(this->color_attachments, other.color_attachments);
+    swap(this->depth_buffer, other.depth_buffer);
     swap(this->meta, other.meta);
     swap(this->framebuffer_id, other.framebuffer_id);
     swap(this->start_frame_width, other.start_frame_width);

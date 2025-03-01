@@ -6,8 +6,8 @@
 #define FRAMEBUFFER_H
 
 #include "texture.h"
-#include <external/assimp/code/AssetLib/Blender/BlenderDNA.h>
 #include <memory>
+#include <variant>
 
 namespace ale {
 
@@ -27,6 +27,7 @@ public:
     int width = 0;
     int height = 0;
     ColorSpace color_space = SRGB;
+    bool depthbuffer_texture = false;
   };
 
 private:
@@ -35,12 +36,15 @@ private:
   int start_frame_height = 0;
 
   unsigned int framebuffer_id = 0;
-  unsigned int depth_renderbuffer_id = 0;
+  // unsigned int depth_renderbuffer_id = 0;
   Meta meta;
+
+  // depth attachment (texture or rbo)
+  std::variant<unsigned int, std::shared_ptr<Texture>> depth_buffer;
 
   // this is the default color attachment
   std::shared_ptr<Texture> color_attachment0;
-  std::vector<std::shared_ptr<Texture>> color_attachments;
+  std::vector<std::shared_ptr<Texture>> color_attachments; // extra attachments
 
 public:
   Framebuffer(Meta meta);
@@ -54,6 +58,8 @@ public:
   void end_capture();
 
   std::shared_ptr<Texture> get_color_attachment0();
+  std::vector<std::shared_ptr<Texture>> &get_color_attachments();
+  std::shared_ptr<Texture> get_depth_attachment();
 
   glm::ivec2 get_size();
 

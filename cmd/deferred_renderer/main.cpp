@@ -8,7 +8,7 @@
 #include "src/data/file_system.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/model.h"
-#include "src/graphics/renderer/basic_renderer.h"
+#include "src/graphics/renderer/deferred_renderer.h"
 #include "src/graphics/sdf/sdf_generator_gpu.h"
 #include "src/graphics/sdf/sdf_model_packed.h"
 #include "src/graphics/static_mesh.h"
@@ -31,12 +31,14 @@ int main() {
                        glm::vec3(3.0f, 5.0f, -7.0f));
   camera.add_listener(&window);
 
-  auto basic_renderer = BasicRenderer();
+  auto deferred_renderer = DeferredRenderer(window.get_size());
   auto sm_loader = StaticMeshLoader();
   auto sm_monkey =
       sm_loader.load_static_mesh(afs::root("resources/models/monkey.obj"));
   auto sm_floor =
       sm_loader.load_static_mesh(afs::root("resources/models/floor_cube.obj"));
+
+  deferred_renderer.add_listener(&window);
 
   auto world = entt::registry{};
   {
@@ -51,7 +53,8 @@ int main() {
                                          .translation = vec3(0.0, -5.0, 0.0),
                                      });
     world.emplace<StaticMesh>(entity, sm_floor);
-    world.emplace<BasicMaterial>(entity, BasicMaterial{});
+    world.emplace<BasicMaterial>(
+        entity, BasicMaterial{.diffuse_color = vec3(0.7f, 0.0f, 0.0f)});
   }
   {
     const auto entity = world.create();
@@ -63,7 +66,7 @@ int main() {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    basic_renderer.render(camera, world);
+    deferred_renderer.render(camera, world);
 
     window.swap_buffer_and_poll_inputs();
   }

@@ -63,15 +63,18 @@ TextureRenderer::~TextureRenderer() {
 }
 
 TextureRenderer::TextureRenderer(TextureRenderer &&other) noexcept
-    : vao(other.vao), vbo(other.vbo), shader(std::move(other.shader)) {
+    : vao(other.vao), vbo(other.vbo), ebo(other.ebo),
+      shader(std::move(other.shader)) {
   other.vao = 0;
   other.vbo = 0;
+  other.ebo = 0;
 }
 
 TextureRenderer &TextureRenderer::operator=(TextureRenderer &&other) noexcept {
   if (this != &other) {
     swap(this->vao, other.vao);
     swap(this->vbo, other.vbo);
+    swap(this->ebo, other.ebo);
     this->shader = std::move(other.shader);
   }
 
@@ -79,19 +82,28 @@ TextureRenderer &TextureRenderer::operator=(TextureRenderer &&other) noexcept {
 }
 
 void TextureRenderer::render(Texture &texture, RenderMeta render_meta) {
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
   shader.use();
-  shader.setInt("texture1", 0);
   shader.setBool("discard_alpha", render_meta.discard_alpha);
-  glActiveTexture(GL_TEXTURE0 + 0); // active proper texture unit before binding
-  glBindTexture(GL_TEXTURE_2D, texture.id);
+
+  if (!render_meta.disable_blending) {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  }
+
+  this->shader.setTexture2D("texture1", 0, texture.id);
+  this->render_quad(this->shader);
+
+  if (!render_meta.disable_blending) {
+    glDisable(GL_BLEND);
+  }
+}
+
+void TextureRenderer::render_quad(Shader &override_shader) {
+  override_shader.use();
+
   glBindVertexArray(vao);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
   glBindVertexArray(0);
-
-  glDisable(GL_BLEND);
 }
 
 Texture::Texture(string path) {
