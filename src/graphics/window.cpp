@@ -113,6 +113,7 @@ float Window::get_content_scale() {
 }
 
 Data &Window::get_data() { return data; }
+GLFWwindow *Window::get() { return raw_window; }
 
 void Window::attach_mouse_button_callback(
     const function<void(int, int, int)> &func) {

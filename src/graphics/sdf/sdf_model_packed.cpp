@@ -101,7 +101,8 @@ ale::SdfModelPacked &ale::SdfModelPacked::operator=(SdfModelPacked &&other) {
 }
 
 void ale::SdfModelPacked::bind_to_shader(
-    Shader &shader, vector<pair<Transform, vector<unsigned int>>> &entries) {
+    Shader &shader, vector<pair<Transform, vector<unsigned int>>> &entries,
+    int atlas_start_index) {
   glDisable(GL_CULL_FACE);
 
   auto details = vector<GPUObject>();
@@ -135,23 +136,25 @@ void ale::SdfModelPacked::bind_to_shader(
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
 
   shader.use();
+  shader.setInt("atlasStartIndex", atlas_start_index);
   shader.setInt("atlasSize", this->texture_atlas.size());
   if (this->texture_atlas.empty()) {
     return;
   }
 
-  int texture_units[16] = {0};
+  int texture_units[6] = {0};
   for (int i = 0; i < this->texture_atlas.size(); ++i) {
-    texture_units[i] = i;
+    texture_units[i] = i + atlas_start_index;
   }
   GLint location = glGetUniformLocation(shader.ID, "atlas");
   glUniform1iv(location, this->texture_atlas.size(), texture_units);
 
   for (int i = 0; i < this->texture_atlas.size(); ++i) {
-    glActiveTexture(GL_TEXTURE0 + i);
-    glBindTexture(GL_TEXTURE_2D, this->texture_atlas[i].id);
+    glActiveTexture(GL_TEXTURE0 + atlas_start_index + i);
+    glBindTexture(GL_TEXTURE_2D, texture_atlas[i].id);
   }
 }
+
 unsigned int SdfModelPacked::add(SdfModel &sdf_model) {
   auto [latest_index, latest_count] =
       offsets.empty() ? make_pair(0, 0)

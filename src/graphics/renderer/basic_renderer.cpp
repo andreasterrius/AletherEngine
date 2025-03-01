@@ -43,7 +43,7 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
   // Handle shadows, can only handle 1 sdf model packed for now.
   auto sdf_model_packed = std::shared_ptr<SdfModelPacked>(nullptr);
   auto entries = vector<pair<Transform, vector<unsigned int>>>();
-  auto shadow_view = world.view<Transform, StaticMesh>();   
+  auto shadow_view = world.view<Transform, StaticMesh>();
   for (auto [entity, transform, static_mesh] : shadow_view.each()) {
     auto [packed, packed_index] = static_mesh.get_model_shadow();
     if (static_mesh.get_cast_shadow() && packed != nullptr) {
@@ -57,7 +57,7 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
     }
   }
   if (sdf_model_packed != nullptr) {
-    sdf_model_packed->bind_to_shader(color_shader, entries);
+    sdf_model_packed->bind_to_shader(color_shader, entries, 5);
   }
   // End handle shadows
 
@@ -69,17 +69,6 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
     color_shader.setVec4("diffuseColor", vec4(1.0, 1.0, 1.0, 0.0));
     set_texture_with_default("diffuseTexture", 0,
                              material.diffuse_texture.get());
-
-    if (sdf_model_packed != nullptr) {
-      auto &atlas = sdf_model_packed->get_texture_atlas();
-      for (int i = 0; i < 6; ++i) {
-        if (i < atlas.size()) {
-          set_texture_with_default(format("atlas[{}]", i), i + 6, &atlas.at(i));
-        } else {
-          set_texture_with_default(format("atlas[{}]", i), i + 6, nullptr);
-        }
-      }
-    }
 
     static_mesh.get_model()->draw(color_shader);
   }

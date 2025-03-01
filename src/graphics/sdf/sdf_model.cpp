@@ -141,7 +141,7 @@ void SdfModel::loopOverCubes(function<void(int, int, int, BoundingBox)> func) {
   }
 }
 
-void SdfModel::bind_to_shader(Shader shader) {
+void SdfModel::bind_to_shader(Shader &shader) {
   if (texture3D.has_value()) {
     vec3 outerSize = this->outerBB.max - this->outerBB.min;
     shader.setVec3("outerBBMin", this->outerBB.min);

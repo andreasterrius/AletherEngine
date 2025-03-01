@@ -232,7 +232,7 @@ int main() {
   int sdfModel = 1;
 
   float deltaTime, lastFrame = glfwGetTime();
-  while (!glfwWindowShouldClose(window.get())) {
+  while (!window.get_should_close()) {
     // per-frame time logic
     // --------------------
     float currentFrame = (float)(glfwGetTime());

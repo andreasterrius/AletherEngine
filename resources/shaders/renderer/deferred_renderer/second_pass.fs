@@ -54,8 +54,7 @@ void main()
         discard;
     }
 
-    vec3 diffuseFinal = vec3(0.0);
-    vec3 specularFinal = vec3(0.0);
+    float shadowFinal = 0.0;
     for(int i = 0; i < numLights; ++i) {
         vec3 lightColor = lights[i].color;
         vec3 lightPos = lights[i].position;
@@ -76,20 +75,18 @@ void main()
         vec3 specular = spec * lightColor;
 
         // calculate shadow
-//        float distance = length(lightPos - position);
-//        float attenuation = 1.0 / (lights[i].attenuation.x + lights[i].attenuation.y * distance +
-//        lights[i].attenuation.z * (distance * distance));
-//        float shadow = ShadowCalculation(position, lightPos, normal);
-//
-//        ambient *= attenuation;
-//        diffuse *= attenuation;
-//        specular *= attenuation;
-        float shadow = 0.0;
+        float distance = length(lightPos - position);
+        float attenuation = 1.0 / (lights[i].attenuation.x + lights[i].attenuation.y * distance +
+        lights[i].attenuation.z * (distance * distance));
+        float shadow = ShadowCalculation(position, lightPos, normal);
+
+        ambient *= attenuation;
+        diffuse *= attenuation;
+        specular *= attenuation;
 
         lighting += (ambient + (1.0 - shadow) * (diffuse + specular));
-//        lighting = ambient;
     }
     lighting *= color;
 
-    FragColor = vec4(vec3(depth), 1.0);
+    FragColor = vec4(vec3(lighting), 1.0);
 }

@@ -4,6 +4,7 @@
 #include "src/data/serde/glm.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/framebuffer.h"
+#include "src/graphics/light.h"
 #include "src/graphics/sdf/sdf_model_packed.h"
 #include "src/graphics/shader.h"
 #include <entt/entt.hpp>
@@ -17,13 +18,6 @@ public:
   explicit BasicRendererException(const std::string &msg)
       : runtime_error(msg) {}
 };
-
-struct Light {
-  glm::vec3 color = glm::vec3(1.0f);
-  float radius = 1.0f;
-  glm::vec3 attenuation = glm::vec3(1.0f, 0.09f, 0.032f);
-};
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Light, color, radius, attenuation);
 
 struct BasicMaterial {
 public:

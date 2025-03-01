@@ -54,7 +54,7 @@ public:
   // returns small cubes that creates the sdf
   void loopOverCubes(std::function<void(int, int, int, BoundingBox)> func);
 
-  void bind_to_shader(Shader shader);
+  void bind_to_shader(Shader &shader);
 
   void writeToFile(std::string path);
 

@@ -2,6 +2,7 @@
 
 uniform sampler2D atlas[6];
 uniform int atlasSize;
+uniform int atlasStartIndex;
 
 struct PackedSdfOffsetDetail {
     mat4 modelMat;

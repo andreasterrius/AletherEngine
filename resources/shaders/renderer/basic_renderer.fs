@@ -1,10 +1,6 @@
 #version 430 core
 out vec4 FragColor;
 
-layout(location = 1) out vec3 gPosition;
-layout(location = 2) out vec3 gNormal;
-layout(location = 3) out vec4 gAlbedoSpec;
-
 in VS_OUT {
     vec3 FragPos;
     vec3 Normal;
@@ -25,16 +21,7 @@ uniform int numLights;
 uniform Light lights[20];
 
 uniform vec3 viewPos;
-uniform vec3 diffuseColor;
-uniform float specularColor;
-
-uniform sampler2D diffuseTexture;
-uniform sampler2D specularTexture;
-uniform sampler2D normalTexture;
-//uniform sampler2D specularTexture;
-//uniform sampler2D roughnessTexture;
-//uniform sampler2D metalnessTexture;
-//uniform sampler2D aoTexture;
+uniform vec4 diffuseColor;
 
 #include "resources/shaders/sdf/sdf_atlas_partial.fs"
 
@@ -61,8 +48,6 @@ void main()
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
     vec3 lighting = vec3(0.0);  // Accumulate lighting contributions
 
-    vec3 diffuseFinal = vec3(0.0);
-    vec3 specularFinal = vec3(0.0);
     for(int i = 0; i < numLights; ++i) {
         vec3 lightColor = lights[i].color;
         vec3 lightPos = lights[i].position;
@@ -85,22 +70,16 @@ void main()
         // calculate shadow
         float distance = length(lightPos - fs_in.FragPos);
         float attenuation = 1.0 / (lights[i].attenuation.x + lights[i].attenuation.y * distance +
-            lights[i].attenuation.z * (distance * distance));
+        lights[i].attenuation.z * (distance * distance));
         float shadow = ShadowCalculation(fs_in.FragPos, lightPos, normal);
 
         ambient *= attenuation;
         diffuse *= attenuation;
         specular *= attenuation;
 
-        lighting += (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
-        specularFinal += specular;
-        diffuseFinal += diffuse;
+        lighting += (ambient + (1.0 - shadow) * (diffuse + specular));
     }
-
     lighting *= color;
 
     FragColor = vec4(lighting, 1.0);
-    gPosition = fs_in.FragPos;
-    gNormal = normalize(fs_in.Normal);
-    gAlbedoSpec = vec4(diffuseFinal, specularFinal);
 }

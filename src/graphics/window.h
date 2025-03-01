@@ -78,6 +78,8 @@ public:
   float get_content_scale(); // take x since x/y most likely be equal
   Data &get_data();
 
+  GLFWwindow *get();
+
 public:
   void swap_buffer_and_poll_inputs();
   // input callbacks

@@ -93,6 +93,11 @@ void DeferredRenderer::add_listener(WindowEventProducer *event_producer) {
 }
 
 void DeferredRenderer::render(Camera &camera, entt::registry &world) {
+
+  // can only accommodate 1 sdf_model_packed for now
+  shared_ptr<SdfModelPacked> sdf_model_packed = nullptr;
+  auto entries = vector<pair<Transform, vector<unsigned int>>>();
+
   deferred_framebuffer.start_capture();
   {
     first_pass.use();
@@ -105,25 +110,29 @@ void DeferredRenderer::render(Camera &camera, entt::registry &world) {
       first_pass.setInt("entityId", to_integral(entity));
 
       first_pass.setVec3("diffuseColor", material.diffuse_color);
-      set_texture_with_default("diffuseTexture", 0,
-                               material.diffuse_texture.get());
+      first_pass.setTexture2D("diffuseTexture", 0,
+                              material.diffuse_texture == nullptr
+                                  ? single_black_pixel_texture.id
+                                  : material.diffuse_texture->id);
       first_pass.setFloat("specularColor", 0.0f);
-      set_texture_with_default("specularTexture", 1,
-                               material.specular_texture.get());
-
-      // if (sdf_model_packed != nullptr) {
-      //   auto &atlas = sdf_model_packed->get_texture_atlas();
-      //   for (int i = 0; i < 6; ++i) {
-      //     if (i < atlas.size()) {
-      //       set_texture_with_default(format("atlas[{}]", i), i + 6,
-      //                                &atlas.at(i));
-      //     } else {
-      //       set_texture_with_default(format("atlas[{}]", i), i + 6, nullptr);
-      //     }
-      //   }
-      // }
+      first_pass.setTexture2D("specularTexture", 1,
+                              material.specular_texture == nullptr
+                                  ? single_black_pixel_texture.id
+                                  : material.specular_texture->id);
 
       static_mesh.get_model()->draw(first_pass);
+
+      auto [packed, packed_index] = static_mesh.get_model_shadow();
+      if (static_mesh.get_cast_shadow() && packed != nullptr) {
+        if (sdf_model_packed != nullptr &&
+            sdf_model_packed.get() != packed.get()) {
+          throw DeferredRendererException(
+              "multiple different sdf model packed on "
+              "deferred renderer not supported");
+        }
+        sdf_model_packed = packed;
+        entries.emplace_back(transform, packed_index);
+      }
     }
   }
   deferred_framebuffer.end_capture();
@@ -156,21 +165,14 @@ void DeferredRenderer::render(Camera &camera, entt::registry &world) {
     second_pass.setTexture2D("gDepth", 4,
                              deferred_framebuffer.get_depth_attachment()->id);
 
+    if (sdf_model_packed != nullptr) {
+      sdf_model_packed->bind_to_shader(second_pass, entries, 5);
+    }
+
     glEnable(GL_BLEND);
     texture_renderer.render_quad(second_pass);
     glDisable(GL_BLEND);
   }
-  // texture_renderer.render(
-  //     *deferred_framebuffer.get_color_attachments().at(1).get(),
-  //     TextureRenderer::RenderMeta{.disable_blending = true});
-}
-
-void DeferredRenderer::set_texture_with_default(string name, int location,
-                                                const Texture *texture) const {
-
-  first_pass.setTexture2D(name, location,
-                          texture == nullptr ? single_black_pixel_texture.id
-                                             : texture->id);
 }
 
 void DeferredRenderer::mouse_button_callback(int button, int action, int mods) {
@@ -178,8 +180,8 @@ void DeferredRenderer::mouse_button_callback(int button, int action, int mods) {
 void DeferredRenderer::cursor_pos_callback(double xpos, double ypos,
                                            double xoffset, double yoffset) {}
 void DeferredRenderer::framebuffer_size_callback(int width, int height) {
-  this->deferred_framebuffer =
-      Framebuffer(Framebuffer::Meta{.width = width, .height = height});
+  // this->deferred_framebuffer =
+  //     Framebuffer(Framebuffer::Meta{.width = width, .height = height});
 }
 void DeferredRenderer::scroll_callback(double x_offset, double y_offset) {}
 void DeferredRenderer::key_callback(int key, int scancode, int action,

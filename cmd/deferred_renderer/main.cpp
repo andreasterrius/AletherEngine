@@ -37,6 +37,8 @@ int main() {
       sm_loader.load_static_mesh(afs::root("resources/models/monkey.obj"));
   auto sm_floor =
       sm_loader.load_static_mesh(afs::root("resources/models/floor_cube.obj"));
+  auto sm_unit_cube =
+      sm_loader.load_static_mesh(afs::root("resources/models/unit_cube.obj"));
 
   deferred_renderer.add_listener(&window);
 
@@ -53,12 +55,14 @@ int main() {
                                          .translation = vec3(0.0, -5.0, 0.0),
                                      });
     world.emplace<StaticMesh>(entity, sm_floor);
-    world.emplace<BasicMaterial>(
-        entity, BasicMaterial{.diffuse_color = vec3(0.7f, 0.0f, 0.0f)});
+    world.emplace<BasicMaterial>(entity, BasicMaterial{});
   }
   {
     const auto entity = world.create();
-    world.emplace<Transform>(entity, Transform{});
+    world.emplace<Transform>(entity, Transform{vec3(5.0f, 5.0f, 5.0f)});
+    // world.emplace<StaticMesh>(entity, sm_unit_cube);
+    world.emplace<BasicMaterial>(
+        entity, BasicMaterial{.diffuse_color = vec3(1.0f, 0.0f, 0.0f)});
     world.emplace<Light>(entity, Light{vec3(5.0f, 5.0f, 5.0f)});
   }
 

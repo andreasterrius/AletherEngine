@@ -59,7 +59,8 @@ public:
   void bind_to_shader(
       Shader &shader,
       // transform -> shadow mesh index
-      std::vector<std::pair<Transform, std::vector<unsigned int>>> &entries);
+      std::vector<std::pair<Transform, std::vector<unsigned int>>> &entries,
+      int atlas_start_index);
 
   unsigned int add(SdfModel &sdf_model);
 

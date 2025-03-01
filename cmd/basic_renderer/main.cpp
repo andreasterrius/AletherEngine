@@ -55,7 +55,8 @@ int main() {
   }
   {
     const auto entity = world.create();
-    world.emplace<Transform>(entity, Transform{});
+    world.emplace<Transform>(entity,
+                             Transform{.translation = vec3(7.0f, 7.0f, 7.0f)});
     world.emplace<Light>(entity, Light{vec3(5.0f, 5.0f, 5.0f)});
   }
 
