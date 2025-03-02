@@ -7,6 +7,11 @@ set(CMAKE_CXX_STANDARD 20)
 configure_file(config.in ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
 
+## Modules support
+if (MSVC)
+    add_compile_options(/experimental:module)
+endif ()
+
 ## dependency
 set(BUILD_SHARED_LIBS ON)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -54,6 +59,7 @@ set(IMGUI_HEADER
 #file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
 file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
 file(GLOB_RECURSE ENGINE_HEADER ./src/*.h)
+file(GLOB_RECURSE ENGINE_CPP_MODULES ./src./*.cppm)
 
 ## stb needs to be added manualy to executable
 #file(GLOB_RECURSE STB_SOURCE_HEADER ./external/stb/stb_image.h)
@@ -69,6 +75,10 @@ function(create_exe name folder_name)
             ${IMGUI_SOURCE}
             ${IMGUI_HEADER}
     )
+    target_sources(${name}
+            PRIVATE
+            FILE_SET CXX_MODULES FILES
+            ${ENGINE_CPP_MODULES})
     target_include_directories(${name} PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}
             external/glm
