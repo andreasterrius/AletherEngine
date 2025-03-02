@@ -3,8 +3,6 @@
 
 #include "src/data/serde/glm.h"
 #include "src/graphics/camera.h"
-#include "src/graphics/framebuffer.h"
-#include "src/graphics/light.h"
 #include "src/graphics/sdf/sdf_model_packed.h"
 #include "src/graphics/shader.h"
 #include <entt/entt.hpp>
@@ -17,17 +15,6 @@ class BasicRendererException final : public std::runtime_error {
 public:
   explicit BasicRendererException(const std::string &msg)
       : runtime_error(msg) {}
-};
-
-struct BasicMaterial {
-public:
-  glm::vec3 diffuse_color = glm::vec3(1.0f);
-  std::shared_ptr<Texture> diffuse_texture = nullptr;
-  // std::shared_ptr<Texture> specular_texture;
-  // std::shared_ptr<Texture> roughness_texture;
-  // std::shared_ptr<Texture> metalness_texture;
-  // std::shared_ptr<Texture> normal_texture;
-  // std::shared_ptr<Texture> ao_texture;
 };
 
 class BasicRenderer {

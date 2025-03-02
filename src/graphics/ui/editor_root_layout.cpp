@@ -103,7 +103,8 @@ void EditorRootLayout::start_capture_scene(Camera &camera) {
 
 void EditorRootLayout::end_capture_scene() {
   texture_renderer.render(*gizmo_frame.get_color_attachment0(),
-                          TextureRenderer::RenderMeta{.discard_alpha = true});
+                          TextureRenderer::RenderMeta{
+                              .discard_alpha = true, .enable_blending = false});
   scene_viewport_ui.end_capture();
 }
 

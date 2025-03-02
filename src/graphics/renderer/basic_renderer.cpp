@@ -1,8 +1,10 @@
 #include "basic_renderer.h"
 
-#include "src/data/file_system.h"
-#include "src/graphics/static_mesh.h"
+import material;
 
+#include "src/data/file_system.h"
+#include "src/graphics/light.h"
+#include "src/graphics/static_mesh.h"
 #include <format>
 
 namespace ale {

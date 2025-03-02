@@ -1,3 +1,6 @@
+import material;
+import deferred_renderer;
+
 // clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -7,7 +10,9 @@
 #include "src/data/file_system.h"
 #include "src/data/scene_node.h"
 #include "src/data/serde/world.h"
+#include "src/graphics/camera.h"
 #include "src/graphics/gizmo/gizmo.h"
+#include "src/graphics/light.h"
 #include "src/graphics/line_renderer.h"
 #include "src/graphics/static_mesh.h"
 #include "src/graphics/thumbnail_generator.h"
@@ -70,7 +75,7 @@ int main() {
                        glm::vec3(3.0f, 5.0f, 7.0f));
 
   // Declare a basic scene
-  auto basic_renderer = BasicRenderer();
+  auto deferred_renderer = DeferredRenderer(window.get_size());
   auto texture_renderer = TextureRenderer();
   auto line_renderer = LineRenderer();
   auto sm_loader = StaticMeshLoader();
@@ -117,12 +122,13 @@ int main() {
         .cursor_pos_topleft = window.get_cursor_pos_from_top_left()});
     editor_root_layout_ui.tick();
 
+    deferred_renderer.render_first_pass(camera, world);
+
     // Render Scene
     editor_root_layout_ui.capture_scene(
         [&]() {
-          basic_renderer.render(camera, world);
+          deferred_renderer.render_second_pass(camera, world);
 
-          // line_renderer.queue_line(debug_ray, WHITE);
           line_renderer.render(camera.get_projection_matrix(),
                                camera.get_view_matrix());
         },

@@ -1,18 +1,19 @@
+import material;
+import deferred_renderer;
+
 // clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
 
-#include <entt/entt.hpp>
-
 #include "src/data/file_system.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/model.h"
-#include "src/graphics/renderer/deferred_renderer.h"
 #include "src/graphics/sdf/sdf_generator_gpu.h"
 #include "src/graphics/sdf/sdf_model_packed.h"
 #include "src/graphics/static_mesh.h"
 #include "src/graphics/window.h"
+#include <entt/entt.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -70,7 +71,7 @@ int main() {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    deferred_renderer.render(camera, world);
+    deferred_renderer.render_both_pass(camera, world);
 
     window.swap_buffer_and_poll_inputs();
   }

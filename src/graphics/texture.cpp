@@ -85,7 +85,7 @@ void TextureRenderer::render(Texture &texture, RenderMeta render_meta) {
   shader.use();
   shader.setBool("discard_alpha", render_meta.discard_alpha);
 
-  if (!render_meta.disable_blending) {
+  if (render_meta.enable_blending) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   }
@@ -93,7 +93,7 @@ void TextureRenderer::render(Texture &texture, RenderMeta render_meta) {
   this->shader.setTexture2D("texture1", 0, texture.id);
   this->render_quad(this->shader);
 
-  if (!render_meta.disable_blending) {
+  if (render_meta.enable_blending) {
     glDisable(GL_BLEND);
   }
 }

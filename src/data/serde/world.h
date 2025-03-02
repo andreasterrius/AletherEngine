@@ -7,7 +7,7 @@
 
 #include "src/data/scene_node.h"
 #include "src/data/serde/std.h"
-#include "src/graphics/renderer/basic_renderer.h"
+#include "src/graphics/light.h"
 #include "src/graphics/static_mesh.h"
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>

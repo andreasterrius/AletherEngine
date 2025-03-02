@@ -113,7 +113,7 @@ class TextureRenderer {
 public:
   struct RenderMeta {
     bool discard_alpha = false;
-    bool disable_blending = false;
+    bool enable_blending = true;
   };
   unsigned int vao{}, vbo{}, ebo{};
   Shader shader;

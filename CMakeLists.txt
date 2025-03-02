@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22.1)
+cmake_minimum_required(VERSION 3.30.0)
 
 project(AletherEngine)
 
@@ -11,6 +11,7 @@ configure_file(config.in ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 if (MSVC)
     add_compile_options(/experimental:module)
 endif ()
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "TRUE")
 
 ## dependency
 set(BUILD_SHARED_LIBS ON)
@@ -20,7 +21,7 @@ set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/assimp)
 add_subdirectory(external/glfw)
 add_subdirectory(external/json)
-
+set(ZSTD_BUILD_SHARED ON)
 add_subdirectory(external/zstd/build/cmake)
 
 option(SPDLOG_BUILD_SHARED "Build spdlog as shared library" ON)
@@ -59,7 +60,7 @@ set(IMGUI_HEADER
 #file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
 file(GLOB_RECURSE ENGINE_SOURCE ./src/*.cpp external/glad/src/glad.c)
 file(GLOB_RECURSE ENGINE_HEADER ./src/*.h)
-file(GLOB_RECURSE ENGINE_CPP_MODULES ./src./*.cppm)
+file(GLOB_RECURSE ENGINE_CPP_MODULES ./src/*.cppm)
 
 ## stb needs to be added manualy to executable
 #file(GLOB_RECURSE STB_SOURCE_HEADER ./external/stb/stb_image.h)
@@ -77,9 +78,9 @@ function(create_exe name folder_name)
     )
     target_sources(${name}
             PRIVATE
-            FILE_SET CXX_MODULES FILES
-            ${ENGINE_CPP_MODULES})
-    target_include_directories(${name} PRIVATE
+            FILE_SET CXX_MODULES TYPE CXX_MODULES FILES ${ENGINE_CPP_MODULES}
+    )
+    target_include_directories(${name} SYSTEM PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}
             external/glm
             external/stb
@@ -92,7 +93,7 @@ function(create_exe name folder_name)
             external/zstd/lib
             external/json/include
     )
-    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT spdlog::spdlog nlohmann_json::nlohmann_json zstdd)
+    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT spdlog::spdlog nlohmann_json::nlohmann_json)
     target_compile_definitions(${name} PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE GLM_ENABLE_EXPERIMENTAL)
 endfunction()
 

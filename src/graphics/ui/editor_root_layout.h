@@ -10,6 +10,7 @@
 #include "scene_tree.h"
 #include "scene_viewport.h"
 #include "src/graphics/gizmo/gizmo.h"
+#include "src/graphics/light.h"
 #include "src/graphics/window.h"
 #include <imgui.h>
 
