@@ -58,21 +58,28 @@ float distance_from_box_minmax(vec3 p, vec3 bbMin, vec3 bbMax) {
     return outsideDist + insideDist;
 }
 
-bool raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, out vec3 objectCenter) {
-    float total_distance_traveled = 0.0;
-    const int NUMBER_OF_STEPS = 100;
+float get_scale_factor(mat4 invTransform, vec3 dir) {
+    return (length(mat3(invTransform) * dir) + 0.00001);
+}
+
+float raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, out vec3 objectCenter) {
+    const int NUMBER_OF_STEPS = 256;
     const float MINIMUM_HIT_DISTANCE = 0.001;
     const float MAXIMUM_TRACE_DISTANCE = maxTraceDist;
     const vec3 NO_HIT_COLOR = vec3(0.52, 0.8, 0.92);
     const vec3 SDF_COLOR =  vec3(0.89, 0.89, 0.56);
     const vec3 oriRayWo = rayWo;
+    const float k = 32;
+    float t = 0.0;
+
+    // for soft shadows
+    float accumDist = 0.0;
+    float shadow = 1.0;
 
     for (int i = 0; i < NUMBER_OF_STEPS; ++i)
     {
         float closestDist = 1000000;
         int closestDistIndex = -1;
-        vec3 closestRayLo = vec3(0.0);
-        vec3 closestRayLd = vec3(0.0);
         for(int j = 0; j < offsetSize; ++j)
         {
             mat4 invModelMat = offsets[j].invModelMat;
@@ -82,34 +89,33 @@ bool raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, out
             vec3 outerBBMax = vec3(offsets[j].outerBBMax);
             int atlasIndex = offsets[j].atlasIndex;
             int atlasOffset = offsets[j].atlasOffset;
+            float scale_factor = get_scale_factor(invModelMat, rayWd);
 
             vec3 rayLo = vec3(invModelMat * vec4(rayWo, 1.0));
             vec3 rayLd = vec3(normalize(invModelMat * vec4(rayWd, 0.0)));
 
             float dist = distance_from_box_minmax(rayLo, innerBBMin, innerBBMax);
-            float outerDist = distance_from_box_minmax(rayLo, outerBBMin, outerBBMax);
-            if(outerDist < 0.0) {
-                dist = distance_from_texture3D(rayLo, atlasIndex, atlasOffset, outerBBMin, outerBBMax);
-            }
+//            float dist = distance_from_box_minmax(rayLo, outerBBMin, outerBBMax);
+//            if(dist < 0.0) {
+//                dist = distance_from_texture3D(rayLo, atlasIndex, atlasOffset, outerBBMin, outerBBMax);
+//            }
 
+            // transform dist to world space
+            dist = dist / scale_factor;
             if(dist < closestDist) {
                 closestDist = dist;
                 closestDistIndex = j;
-                closestRayLo = rayLo;
-                closestRayLd = rayLd;
             }
         }
-        rayWo = vec3(offsets[closestDistIndex].modelMat * vec4(closestRayLo+closestRayLd*closestDist, 1.0));
-        if(distance(rayWo, oriRayWo) > MAXIMUM_TRACE_DISTANCE) {
-            return false;
-        }
-        if(closestDist < MINIMUM_HIT_DISTANCE)
-        {
-            isectPos = rayWo;
-            objectCenter = (vec3(offsets[closestDistIndex].innerBBMin) + vec3(offsets[closestDistIndex].innerBBMax))/2.0;
-            return true;
+
+        shadow = min(shadow, closestDist*k/(t+0.0001));
+        t += clamp(closestDist * 0.5, 0.002, 0.05);
+        rayWo = oriRayWo + rayWd * t;
+        if (shadow < -1.0 || closestDist > MAXIMUM_TRACE_DISTANCE) {
+            break;
         }
     }
-    return false;
+    shadow = max(shadow, -1.0);
+    return 0.25*(1.0+shadow)*(1.0+shadow)*(2.0-shadow);
 }
 
