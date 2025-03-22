@@ -69,6 +69,8 @@ float raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, ou
     const int NUMBER_OF_STEPS = 128;
     const float MINIMUM_HIT_DISTANCE = 0.001;
     const float MAXIMUM_TRACE_DISTANCE = maxTraceDist;
+    const float MAX_STEP_DIST = max(2.0, maxTraceDist/NUMBER_OF_STEPS/2.0);
+    const float MIN_STEP_DIST = 0.02;
     const vec3 NO_HIT_COLOR = vec3(0.52, 0.8, 0.92);
     const vec3 SDF_COLOR =  vec3(0.89, 0.89, 0.56);
     const vec3 oriRayWo = rayWo;
@@ -103,8 +105,6 @@ float raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, ou
             if(outerDist < 0.0) {
                 // inside the sdf
                 dist = distance_from_texture3D(rayLo, atlasIndex, atlasOffset, outerBBMin, outerBBMax);
-            } else {
-                dist += distance_from_texture3D(rayLo + dist * rayLd, atlasIndex, atlasOffset, outerBBMin, outerBBMax);
             }
 
             // transform dist to world space
@@ -119,7 +119,8 @@ float raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, ou
         }
 
         shadow = min(shadow, shadowDist*k/(t+0.0001));
-        t += clamp(closestDist * 0.5, 0.02, 2.0);
+        t += clamp(closestDist * 0.5, MIN_STEP_DIST, MAX_STEP_DIST);
+//        t += closestDist;
         rayWo = oriRayWo + rayWd * t;
         if (shadow < -1.0) {
             break;
@@ -127,9 +128,9 @@ float raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, ou
         if (distance(rayWo, oriRayWo) > maxTraceDist) {
             break;
         }
-        if (closestDist < MINIMUM_HIT_DISTANCE) {
-            break;
-        }
+//        if (closestDist < MINIMUM_HIT_DISTANCE) {
+//            break;
+//        }
     }
     shadow = max(shadow, -1.0);
     return 0.25*(1.0+shadow)*(1.0+shadow)*(2.0-shadow);
