@@ -64,6 +64,35 @@ entt::registry new_world(StaticMeshLoader &sm_loader) {
   return world;
 }
 
+void handle_ui_events(ui::EditorRootLayout::Event &events, Window &window,
+                      StaticMeshLoader &sm_loader, entt::registry &world) {
+  // we can handle the events from UI here
+  if (events.is_exit_clicked) {
+    window.set_should_close(true);
+  }
+  if (events.is_new_clicked) {
+    world.clear<>();
+    world = new_world(sm_loader);
+  }
+  if (events.new_object.has_value()) {
+    const auto entity = world.create();
+    world.emplace<SceneNode>(
+        entity,
+        events.new_object->static_mesh.get_model()->path.filename().string());
+    world.emplace<Transform>(entity, Transform{});
+    world.emplace<StaticMesh>(entity, events.new_object->static_mesh);
+    world.emplace<BasicMaterial>(entity, BasicMaterial{});
+  }
+  if (events.item_inspector_event.load_diffuse.has_value()) {
+    auto texture =
+        make_shared<Texture>(events.item_inspector_event.load_diffuse->path);
+    auto basic_material = world.try_get<BasicMaterial>(
+        events.item_inspector_event.load_diffuse->entity_to_load);
+    basic_material->diffuse_texture = texture;
+    basic_material->diffuse_color = glm::vec3(0.0f);
+  }
+}
+
 int main() {
   glfwInit();
 
@@ -140,24 +169,7 @@ int main() {
       editor_root_layout_ui.start(window.get_position(), window.get_size());
 
       auto events = editor_root_layout_ui.draw_and_handle_events(world);
-      // we can handle the events from UI here
-      if (events.is_exit_clicked) {
-        window.set_should_close(true);
-      }
-      if (events.is_new_clicked) {
-        world.clear<>();
-        world = new_world(sm_loader);
-      }
-      if (events.new_object.has_value()) {
-        const auto entity = world.create();
-        world.emplace<SceneNode>(entity,
-                                 events.new_object->static_mesh.get_model()
-                                     ->path.filename()
-                                     .string());
-        world.emplace<Transform>(entity, Transform{});
-        world.emplace<StaticMesh>(entity, events.new_object->static_mesh);
-        world.emplace<BasicMaterial>(entity, BasicMaterial{});
-      }
+      handle_ui_events(events, window, sm_loader, world);
 
       editor_root_layout_ui.end();
       window.end_ui_frame();

@@ -6,13 +6,14 @@
 #include <entt/entt.hpp>
 
 #include "src/data/file_system.h"
-#include "src/graphics/renderer/basic_renderer.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/model.h"
+#include "src/graphics/renderer/basic_renderer.h"
 #include "src/graphics/sdf/sdf_generator_gpu.h"
 #include "src/graphics/sdf/sdf_model_packed.h"
 #include "src/graphics/static_mesh.h"
 #include "src/graphics/window.h"
+#include <nfd.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -29,6 +30,7 @@ using afs = ale::FileSystem;
 
 int main() {
   glfwInit();
+  NFD_Init();
 
   auto screen_size = glm::ivec2(1200, 800);
   auto window = Window(screen_size.x, screen_size.y, "Hello Imgui");
@@ -86,6 +88,18 @@ int main() {
 
       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                   1000.0f / io.Framerate, io.Framerate);
+
+      if (ImGui::Button("Open File")) {
+        NFD::UniquePath outPath;
+        nfdresult_t result = NFD::OpenDialog(outPath, nullptr);
+
+        if (result == NFD_OKAY) {
+          std::cout << "Selected file: " << outPath.get() << std::endl;
+        } else if (result == NFD_CANCEL) {
+          std::cout << "User canceled the dialog." << std::endl;
+        }
+      }
+
       ImGui::End();
     }
 
@@ -118,6 +132,7 @@ int main() {
     window.swap_buffer_and_poll_inputs();
   }
 
+  NFD_Quit();
   glfwTerminate();
   return 0;
 }

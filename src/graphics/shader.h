@@ -84,9 +84,9 @@ public:
   }
   void setTexture2D(const std::string &name, int slot,
                     const GLuint &textureId) const {
-    setInt(name, slot);
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, textureId);
+    setInt(name, slot);
   };
 
 private:

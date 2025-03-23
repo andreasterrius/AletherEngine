@@ -32,7 +32,7 @@ void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
   for (auto &file_meta : file_metas) {
     if (entries.find(file_meta.full_path) == entries.end()) {
       // STATIC MESH
-      if (file_meta.extension == ".obj") {
+      if (file_meta.extension == ".obj" || file_meta.extension == ".gltf") {
         // load static_mesh
         auto static_mesh = sm_loader.load_static_mesh(file_meta.full_path);
 

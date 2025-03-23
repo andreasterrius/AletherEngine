@@ -36,7 +36,7 @@ public:
   Meta meta;
   unsigned int id = 0;
 
-  Texture(std::string path);
+  explicit Texture(std::string path);
   Texture(Meta meta, std::vector<float> &data);
   Texture(Meta meta, void *data);
   ~Texture();

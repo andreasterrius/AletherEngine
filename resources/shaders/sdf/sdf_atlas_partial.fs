@@ -76,7 +76,7 @@ float raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, ou
     const vec3 oriRayWo = rayWo;
 
     // for soft shadows
-    const float k = 8;
+    const float k = 16;
     float t = 0.0;
     float shadow = 1.0;
 

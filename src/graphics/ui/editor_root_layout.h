@@ -5,8 +5,9 @@
 #ifndef ROOT_LAYOUT_H
 #define ROOT_LAYOUT_H
 
+import item_inspector;
+
 #include "content_browser.h"
-#include "item_inspector.h"
 #include "scene_tree.h"
 #include "scene_viewport.h"
 #include "src/graphics/gizmo/gizmo.h"
@@ -21,6 +22,7 @@ public:
     bool is_exit_clicked = false;
     bool is_new_clicked = false;
     optional<ContentBrowser::Entry> new_object;
+    ItemInspector::Event item_inspector_event;
   };
 
   // Data needed in a frame

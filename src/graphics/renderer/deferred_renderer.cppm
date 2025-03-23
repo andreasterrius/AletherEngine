@@ -117,6 +117,7 @@ public:
          GL_COLOR_ATTACHMENT4});
     glEnable(GL_CULL_FACE);
   }
+
   ~DeferredRenderer() {
     if (event_producer)
       event_producer->remove_listener(this);
@@ -152,7 +153,7 @@ public:
                               material.diffuse_texture == nullptr
                                   ? single_black_pixel_texture.id
                                   : material.diffuse_texture->id);
-      first_pass.setFloat("specularColor", 0.0f);
+      first_pass.setFloat("specularColor", material.specular_color);
       first_pass.setTexture2D("specularTexture", 1,
                               material.specular_texture == nullptr
                                   ? single_black_pixel_texture.id

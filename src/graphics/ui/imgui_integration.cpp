@@ -13,6 +13,7 @@
 #include <imgui_impl_opengl3.h>
 //clang-format on
 #include <iostream>
+#include <nfd.hpp>
 
 void ale::ImguiIntegration::start_frame() {
   ImGui_ImplOpenGL3_NewFrame();
@@ -57,6 +58,7 @@ ale::ImguiIntegration::ImguiIntegration(GLFWwindow *raw, float content_scale) {
   // GLFW callbacks and chain to existing ones.
   ImGui_ImplGlfw_InitForOpenGL(raw, true);
   ImGui_ImplOpenGL3_Init();
+  NFD_Init();
 
   ImGui::GetStyle().ScaleAllSizes(content_scale);
   ImGui::GetIO().FontGlobalScale = content_scale;
@@ -64,6 +66,7 @@ ale::ImguiIntegration::ImguiIntegration(GLFWwindow *raw, float content_scale) {
 
 ale::ImguiIntegration::~ImguiIntegration() {
   if (has_init) {
+    NFD_Quit();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
