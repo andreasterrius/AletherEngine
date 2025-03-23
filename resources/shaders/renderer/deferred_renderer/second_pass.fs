@@ -83,8 +83,8 @@ void main()
         lighting += (ambient + (shadow) * (diffuse + specular));
         shadowFinal = shadow;
     }
-//    lighting *= color;
-    lighting = vec3(shadowFinal);
+    lighting *= color;
+//    lighting = vec3(shadowFinal);
 
     float dither = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
     lighting += (1.0 / 255.0) * dither - (0.5 / 255.0);;

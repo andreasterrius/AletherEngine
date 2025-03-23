@@ -74,11 +74,10 @@ float raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, ou
     const vec3 NO_HIT_COLOR = vec3(0.52, 0.8, 0.92);
     const vec3 SDF_COLOR =  vec3(0.89, 0.89, 0.56);
     const vec3 oriRayWo = rayWo;
-    const float k = 32;
-    float t = 0.0;
 
     // for soft shadows
-    float accumDist = 0.0;
+    const float k = 8;
+    float t = 0.0;
     float shadow = 1.0;
 
     for (int i = 0; i < NUMBER_OF_STEPS; ++i)
@@ -120,19 +119,15 @@ float raymarch(vec3 rayWo, vec3 rayWd, float maxTraceDist, out vec3 isectPos, ou
 
         shadow = min(shadow, shadowDist*k/(t+0.0001));
         t += clamp(closestDist * 0.5, MIN_STEP_DIST, MAX_STEP_DIST);
-//        t += closestDist;
         rayWo = oriRayWo + rayWd * t;
-        if (shadow < -1.0) {
+        if (shadow < 0.0) {
             break;
         }
         if (distance(rayWo, oriRayWo) > maxTraceDist) {
             break;
         }
-//        if (closestDist < MINIMUM_HIT_DISTANCE) {
-//            break;
-//        }
     }
-    shadow = max(shadow, -1.0);
-    return 0.25*(1.0+shadow)*(1.0+shadow)*(2.0-shadow);
+    shadow = max(shadow, 0.0);
+    return (shadow * shadow * (3.0 - 2.0 * shadow)); //smoothstep function from 0 to 1
 }
 

@@ -10,7 +10,7 @@ in VS_OUT {
 uniform vec3 viewPos;
 uniform vec4 diffuseColor;
 
-#include "cmd/mesh_distance_field_tutorial/sdf_atlas_3d.fs"
+#include "cmd/mesh_distance_field_tutorial/sdf_atlas_3d_softshadow.fs"
 
 float ShadowCalculation(vec3 fragPos, vec3 lightPos, vec3 normalDir)
 {
@@ -20,12 +20,7 @@ float ShadowCalculation(vec3 fragPos, vec3 lightPos, vec3 normalDir)
 
     // + (normalDir * 0.05) -> prevents self intersect but cannot ignore self intersection fully because of possible self shadow
     // + (lightDir * 0.05) -> prevents bleeding by escaping the really close to boundaries sdfs
-    bool occluded = raymarch(fragPos + (normalDir * 0.05) + (lightDir * 0.05), lightDir, distance(lightPos, fragPos), isectPos, boxCenter);
-
-    if (occluded) {
-        return 1.0;
-    }
-    return 0.0;
+    return raymarch(fragPos + (normalDir * 0.05) + (lightDir * 0.05), lightDir, distance(lightPos, fragPos), isectPos, boxCenter);
 }
 
 void main()
@@ -65,8 +60,12 @@ void main()
     diffuse *= attenuation;
     specular *= attenuation;
 
-    lighting += (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+    lighting += (ambient + (shadow) * (diffuse + specular)) * color;
     lighting *= color;
 
+    float dither = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+    lighting += (1.0 / 255.0) * dither - (0.5 / 255.0);;
+
     FragColor = vec4(lighting, 1.0);
+//    FragColor = vec4(vec3(shadow), 1.0);
 }

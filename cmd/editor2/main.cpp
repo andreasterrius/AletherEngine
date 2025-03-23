@@ -37,19 +37,18 @@ entt::registry new_world(StaticMeshLoader &sm_loader) {
   auto world = entt::registry{};
 
   // Lights
-  // {
-  //   const auto entity = world.create();
-  //   world.emplace<SceneNode>(entity, SceneNode("light"));
-  //   world.emplace<Transform>(entity,
-  //                            Transform{.translation =
-  //                            vec3(10.0, 10.0, 10.0)});
-  //   world.emplace<Light>(entity, Light{});
-  //   world.emplace<BasicMaterial>(entity, BasicMaterial{});
-  //
-  //   auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
-  //   sphere.set_cast_shadow(false);
-  //   world.emplace<StaticMesh>(entity, sphere);
-  // }
+  {
+    const auto entity = world.create();
+    world.emplace<SceneNode>(entity, SceneNode("light"));
+    world.emplace<Transform>(entity,
+                             Transform{.translation = vec3(10.0, 10.0, 10.0)});
+    world.emplace<Light>(entity, Light{});
+    world.emplace<BasicMaterial>(entity, BasicMaterial{});
+
+    auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
+    sphere.set_cast_shadow(false);
+    world.emplace<StaticMesh>(entity, sphere);
+  }
   {
     const auto entity = world.create();
     world.emplace<SceneNode>(entity, SceneNode("light"));
