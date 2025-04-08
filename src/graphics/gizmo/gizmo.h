@@ -80,6 +80,11 @@ public:
   // if exist = true, then user has selected one of the axis
   Gizmo_InitialClickInfo initial_click_info;
 
+  // Remember the first and last transform
+  Transform initial_transform;
+  Transform last_transform;
+  bool just_released; // don't like this but ok for now I guess.
+
   Shader gizmo_shader;
 
 public:
@@ -110,6 +115,8 @@ public:
   void render(Camera camera, glm::vec3 lightPos);
   void change_mode(Gizmo_Type gizmoType);
   void change_space(bool isLocalSpace);
+  std::optional<std::tuple<entt::entity, Transform, Transform>>
+  get_release_info();
 
 private:
   void scale_all();
@@ -150,6 +157,7 @@ private:
   /// self->initialClickInfo.initialSelfPos.z; /    }
   //}
 };
+
 } // namespace ale
 
 #endif // HELLO_C_GIZMO_H

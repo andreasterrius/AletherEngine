@@ -13,9 +13,7 @@ namespace ale {
 Model::Model(const string &path, bool gamma) : gammaCorrection(gamma) {
   loadModel(path);
 }
-
-Model::Model(vector<LoadedTexture> textures, vector<Mesh> meshes)
-    : textures_loaded(textures), meshes(meshes) {}
+Model::Model(vector<Mesh> meshes) : meshes(meshes) {}
 
 void Model::draw(Shader &shader) {
   for (unsigned int i = 0; i < meshes.size(); i++)
@@ -64,7 +62,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
   // data to fill
   vector<Vertex> vertices;
   vector<unsigned int> indices;
-  vector<LoadedTexture> textures;
+  vector<PendingTexturePath> textures;
 
   // walk through each of the mesh's vertices
   for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
@@ -118,109 +116,29 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
       indices.push_back(face.mIndices[j]);
   }
   // process materials
-  aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-  // we assume a convention for sampler names in the shaders. Each diffuse
-  // texture should be named as 'texture_diffuseN' where N is a sequential
-  // number ranging from 1 to MAX_SAMPLER_NUMBER. Same applies to other texture
-  // as the following list summarizes: diffuse: texture_diffuseN specular:
-  // texture_specularN normal: texture_normalN
+  aiMaterial *mat = scene->mMaterials[mesh->mMaterialIndex];
 
-  // 1. diffuse maps
-  vector<LoadedTexture> diffuseMaps =
-      loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-  textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-  // 2. specular maps
-  vector<LoadedTexture> specularMaps = loadMaterialTextures(
-      material, aiTextureType_SPECULAR, "texture_specular");
-  textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-  // 3. normal maps
-  std::vector<LoadedTexture> normalMaps =
-      loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-  textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-  // 4. height maps
-  std::vector<LoadedTexture> heightMaps =
-      loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-  textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+  auto pending_texture_paths = PendingTexturePath();
+  if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
+    aiString raw_path;
+    mat->GetTexture(aiTextureType_DIFFUSE, 0, &raw_path);
+    pending_texture_paths.diffuse =
+        (path.parent_path() / raw_path.C_Str()).string();
+  }
+
+  if (mat->GetTextureCount(aiTextureType_SPECULAR) > 0) {
+    aiString raw_path;
+    mat->GetTexture(aiTextureType_SPECULAR, 0, &raw_path);
+    pending_texture_paths.specular =
+        (path.parent_path() / raw_path.C_Str()).string();
+  }
 
   BoundingBox boundingBox = BoundingBox(
       glm::vec3(mesh->mAABB.mMin.x, mesh->mAABB.mMin.y, mesh->mAABB.mMin.z),
       glm::vec3(mesh->mAABB.mMax.x, mesh->mAABB.mMax.y, mesh->mAABB.mMax.z));
 
   // return a mesh object created from the extracted mesh data
-  return Mesh(vertices, indices, textures, boundingBox);
+  return Mesh(vertices, indices, pending_texture_paths, boundingBox);
 }
 
-vector<LoadedTexture> Model::loadMaterialTextures(aiMaterial *mat,
-                                                  aiTextureType type,
-                                                  string typeName) {
-  vector<LoadedTexture> textures;
-  for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
-    aiString str;
-    mat->GetTexture(type, i, &str);
-    // check if texture was loaded before and if so, continue to next iteration:
-    // skip loading a new texture
-    bool skip = false;
-    for (unsigned int j = 0; j < textures_loaded.size(); j++) {
-      if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0) {
-        textures.push_back(textures_loaded[j]);
-        skip = true;
-        // a texture with the same filepath has already been loaded, continue to
-        // next one. (optimization)
-        break;
-      }
-    }
-    if (!skip) {
-      // if texture hasn't been loaded already, load it
-      LoadedTexture texture;
-      texture.id = TextureFromFile(str.C_Str(), this->directory);
-      texture.type = typeName;
-      texture.path = str.C_Str();
-      textures.push_back(texture);
-      textures_loaded.push_back(texture);
-      // store it as texture loaded for entire model, to ensure we won't
-      // unnecessary load duplicate textures.
-    }
-  }
-  return textures;
-}
-
-unsigned int ale::TextureFromFile(const char *path, const string &directory,
-                                  bool gamma) {
-  string filename = string(path);
-  filename = directory + '/' + filename;
-
-  unsigned int textureID;
-  glGenTextures(1, &textureID);
-
-  int width, height, nrComponents;
-  unsigned char *data =
-      stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-  if (data) {
-    GLenum format;
-    if (nrComponents == 1)
-      format = GL_RED;
-    else if (nrComponents == 3)
-      format = GL_RGB;
-    else if (nrComponents == 4)
-      format = GL_RGBA;
-
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,
-                 GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                    GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    stbi_image_free(data);
-  } else {
-    std::cout << "Texture failed to load at path: " << path << std::endl;
-    stbi_image_free(data);
-  }
-
-  return textureID;
-}
 } // namespace ale

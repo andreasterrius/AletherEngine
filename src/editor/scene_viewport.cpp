@@ -4,7 +4,7 @@
 
 #include "scene_viewport.h"
 
-namespace ale::ui {
+namespace ale::editor {
 
 using namespace glm;
 using namespace std;

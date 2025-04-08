@@ -9,7 +9,7 @@
 #include "src/graphics/ray.h"
 #include <imgui.h>
 
-namespace ale::ui {
+namespace ale::editor {
 class SceneViewport {
 private:
   Framebuffer framebuffer;

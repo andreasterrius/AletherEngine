@@ -11,8 +11,8 @@
 
 using namespace ale;
 
-ui::ContentBrowser::ContentBrowser(StaticMeshLoader &sm_loader,
-                                   string browse_path)
+editor::ContentBrowser::ContentBrowser(StaticMeshLoader &sm_loader,
+                                       string browse_path)
     : browse_path(browse_path) {
 
   for (auto &[id, sm] : sm_loader.get_static_meshes()) {
@@ -26,7 +26,7 @@ ui::ContentBrowser::ContentBrowser(StaticMeshLoader &sm_loader,
   refresh_files(sm_loader);
 }
 
-void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
+void editor::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
   SPDLOG_TRACE("Refreshing contents of {}", browse_path);
   auto file_metas = afs::list(browse_path);
   for (auto &file_meta : file_metas) {
@@ -34,7 +34,8 @@ void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
       // STATIC MESH
       if (file_meta.extension == ".obj" || file_meta.extension == ".gltf") {
         // load static_mesh
-        auto static_mesh = sm_loader.load_static_mesh(file_meta.full_path);
+        auto [static_mesh, basic_material] =
+            sm_loader.load_static_mesh_with_basic_material(file_meta.full_path);
 
         // generate thumbnail
         auto thumbnail = thumbnail_generator.generate(static_mesh);
@@ -43,6 +44,7 @@ void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
             .name = file_meta.file_name,
             .thumbnail = thumbnail,
             .static_mesh = static_mesh,
+            .basic_material = basic_material,
             .file_meta = file_meta,
         };
 
@@ -53,8 +55,8 @@ void ui::ContentBrowser::refresh_files(StaticMeshLoader &sm_loader) {
   SPDLOG_TRACE("Finish refreshing contents of {}", browse_path);
 }
 
-optional<ui::ContentBrowser::Entry>
-ui::ContentBrowser::draw_and_handle_clicks() {
+optional<editor::ContentBrowser::Entry>
+editor::ContentBrowser::draw_and_handle_clicks() {
   optional<Entry> clicked = nullopt;
 
   ImGui::Begin(panel_name.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);

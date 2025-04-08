@@ -13,6 +13,7 @@ module;
 #include <nfd.hpp>
 #include <optional>
 #include <string>
+#include <variant>
 
 export module item_inspector;
 
@@ -27,28 +28,31 @@ int inspect_text_string_resize(ImGuiInputTextCallbackData *data) {
   return 0;
 }
 
-export namespace ale::ui {
+export namespace ale::editor {
+
+const std::string DIFFUSE = "Diffuse";
+const std::string SPECULAR = "Specular";
+
 class ItemInspector {
+
 public:
-  struct LoadTextureEvent {
+  struct LoadTextureCmd {
+    std::string type;
     std::string path;
     entt::entity entity_to_load;
   };
 
-  struct Event {
-    std::optional<LoadTextureEvent> load_diffuse = std::nullopt;
-    std::optional<LoadTextureEvent> load_specular = std::nullopt;
-  };
+  using Cmd = std::variant<LoadTextureCmd>;
 
 public:
   std::string panel_name = "Item Inspector";
 
   ItemInspector() {};
 
-  Event draw_and_handle(entt::registry &world,
-                        std::optional<entt::entity> entity) {
+  std::vector<Cmd> draw_and_handle(entt::registry &world,
+                                   std::optional<entt::entity> entity) {
 
-    auto event = Event{};
+    auto cmds = std::vector<Cmd>();
     ImGui::Begin(panel_name.c_str());
     if (entity.has_value()) {
       auto [scene_node, transform, basic_material] =
@@ -63,18 +67,20 @@ public:
       }
       if (create_section("Basic Material", basic_material)) {
         inspect_vec3f("Diffuse Color", basic_material->diffuse_color);
-        event.load_diffuse =
-            inspect_image("Diffuse", basic_material->diffuse_texture, *entity);
 
-        // inspect_vec3f("Specular Color", basic_material->specular_color);
-        event.load_specular = inspect_image(
-            "Specular", basic_material->specular_texture, *entity);
+        if (auto load_diffuse = inspect_image(
+                DIFFUSE, basic_material->diffuse_texture, *entity)) {
+          cmds.emplace_back(*load_diffuse);
+        }
+        if (auto load_specular = inspect_image(
+                SPECULAR, basic_material->specular_texture, *entity)) {
+          cmds.emplace_back(*load_specular);
+        }
       }
     }
-
     ImGui::End();
 
-    return event;
+    return cmds;
   }
 
 private:
@@ -122,12 +128,12 @@ private:
     });
   }
 
-  std::optional<LoadTextureEvent>
-  inspect_image(std::string name, std::shared_ptr<Texture> texture,
-                entt::entity entity) {
+  std::optional<LoadTextureCmd> inspect_image(std::string name,
+                                              std::shared_ptr<Texture> texture,
+                                              entt::entity entity) {
     float width = 160;
     float height = 160;
-    std::optional<LoadTextureEvent> load_event = std::nullopt;
+    std::optional<LoadTextureCmd> load_event = std::nullopt;
     separate_two(name, [&]() {
       if (texture != nullptr) {
         ImGui::Image(texture.get()->id, ImVec2(width, height));
@@ -142,7 +148,7 @@ private:
         if (result == NFD_OKAY) {
           std::cout << "Selected file: " << out_path.get() << std::endl;
           load_event =
-              std::make_optional<LoadTextureEvent>(out_path.get(), entity);
+              std::make_optional<LoadTextureCmd>(name, out_path.get(), entity);
         }
       }
     });
@@ -151,4 +157,4 @@ private:
   }
 };
 
-} // namespace ale::ui
+} // namespace ale::editor

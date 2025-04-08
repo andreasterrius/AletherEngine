@@ -25,7 +25,7 @@ add_subdirectory(external/nativefiledialog-extended)
 set(ZSTD_BUILD_SHARED ON)
 add_subdirectory(external/zstd/build/cmake)
 
-option(SPDLOG_BUILD_SHARED "Build spdlog as shared library" ON)
+option(SPDLOG_BUILD_SHARED "Build spdlog as shared library" OFF)
 add_subdirectory(external/spdlog)
 
 set(BUILD_SHARED_LIBS OFF)

@@ -38,13 +38,14 @@ StaticMesh::Serde StaticMesh::to_serde() {
   };
 }
 
-StaticMeshLoader::StaticMeshLoader()
-    : packed(make_shared<SdfModelPacked>(vector<SdfModel *>(), false)) {
-  this->load_static_mesh(
-      afs::root("resources/models/default/unit_cube.obj"), {SM_UNIT_CUBE});
-  this->load_static_mesh(
-      afs::root("resources/models/default/unit_sphere.obj"),
-      {SM_UNIT_SPHERE});
+StaticMeshLoader::StaticMeshLoader(
+    const shared_ptr<Stash<Texture>> &texture_stash)
+    : packed(make_shared<SdfModelPacked>(vector<SdfModel *>(), false)),
+      texture_stash(texture_stash) {
+  this->load_static_mesh(afs::root("resources/models/default/unit_cube.obj"),
+                         {SM_UNIT_CUBE});
+  this->load_static_mesh(afs::root("resources/models/default/unit_sphere.obj"),
+                         {SM_UNIT_SPHERE});
 }
 
 StaticMesh StaticMeshLoader::load_static_mesh(string path) {
@@ -104,6 +105,28 @@ StaticMesh StaticMeshLoader::load_static_mesh(string path,
   }
 
   return static_mesh;
+}
+pair<StaticMesh, BasicMaterial>
+StaticMeshLoader::load_static_mesh_with_basic_material(string path) {
+  auto static_mesh = load_static_mesh(path, {});
+  auto basic_material = BasicMaterial{};
+
+  // let's load the basic material if we can here
+  for (auto &mesh : static_mesh.get_model()->meshes) {
+    if (auto diffuse = mesh.textures.diffuse) {
+      auto diffuse_texture = texture_stash->get_or(
+          *diffuse, [&](std::string &path) { return Texture(path); });
+      basic_material.add_diffuse(diffuse_texture);
+    }
+
+    if (auto specular = mesh.textures.specular) {
+      auto specular_texture = texture_stash->get_or(
+          *specular, [&](std::string &path) { return Texture(path); });
+      basic_material.add_specular(specular_texture);
+    }
+  }
+
+  return make_pair(static_mesh, basic_material);
 }
 
 optional<StaticMesh> StaticMeshLoader::get_static_mesh(string id) {

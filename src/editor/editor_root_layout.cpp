@@ -9,7 +9,7 @@
 #include <imgui_internal.h>
 #include <spdlog/spdlog.h>
 
-namespace ale::ui {
+namespace ale::editor {
 using namespace glm;
 using namespace std;
 
@@ -126,30 +126,43 @@ void EditorRootLayout::add_listener(Window *window) {
   window->add_listener(this);
 }
 
-EditorRootLayout::Event
-EditorRootLayout::draw_and_handle_events(entt::registry &world) {
+vector<EditorRootLayout::Cmd>
+EditorRootLayout::draw_and_handle_cmds(entt::registry &world) {
 
-  Event event;
+  vector<Cmd> cmds;
+
+  // if (auto release_info = gizmo.get_release_info()) {
+  //   auto [a, b, c] = release_info.value();
+  //   event.transform_change_cmd = TransformChangeCommand{a, b, c};
+  //   events.push_back(TransformChangeCmd{a, b, c});
+  // }
+
   if (show_menubar) {
     // Do a menu bar with an exit menu
     if (ImGui::BeginMenuBar()) {
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("New"))
-          event.is_new_clicked = true;
+          cmds.emplace_back(NewWorldCmd{});
         if (ImGui::MenuItem("Exit"))
-          event.is_exit_clicked = true;
+          cmds.emplace_back(ExitCmd{});
         ImGui::EndMenu();
       }
       ImGui::EndMenuBar();
     }
   }
 
-  event.new_object = content_browser_ui.draw_and_handle_clicks();
+  if (auto entry = content_browser_ui.draw_and_handle_clicks()) {
+    cmds.emplace_back(NewObjectCmd{*entry});
+  }
 
   // Show the scene
   scene_viewport_ui.draw();
-  event.item_inspector_event =
-      item_inspector.draw_and_handle(world, gizmo.selected_entity);
+
+  for (auto &cmd :
+       item_inspector.draw_and_handle(world, gizmo.selected_entity)) {
+    cmds.emplace_back(cmd);
+  }
+
   scene_tree_ui.draw_and_handle_clicks(world, gizmo.selected_entity);
 
   // Assign specific windows to each dock
@@ -175,7 +188,10 @@ EditorRootLayout::draw_and_handle_events(entt::registry &world) {
   // Finalize the layout
   ImGui::DockBuilderFinish(dockspace_id);
 
-  return event;
+  cmds.insert(cmds.end(), callback_cmds.begin(), callback_cmds.end());
+  callback_cmds.clear();
+
+  return cmds;
 }
 
 void EditorRootLayout::mouse_button_callback(int button, int action, int mods) {
@@ -193,6 +209,7 @@ void EditorRootLayout::framebuffer_size_callback(int width, int height) {}
 void EditorRootLayout::scroll_callback(double x_offset, double y_offset) {}
 void EditorRootLayout::key_callback(int key, int scancode, int action,
                                     int mods) {
+  // Handle Gizmo
   if (!ImGui::GetIO().WantTextInput) {
     if (key == GLFW_KEY_W && action == GLFW_PRESS) {
       gizmo.change_mode(Translate);
@@ -202,6 +219,26 @@ void EditorRootLayout::key_callback(int key, int scancode, int action,
       gizmo.change_mode(Rotate);
     }
   }
+
+  if (get_scene_has_focus()) {
+    if (key == GLFW_KEY_S && action == GLFW_PRESS && mods == GLFW_MOD_CONTROL) {
+      callback_cmds.emplace_back(SaveWorldCmd{});
+    }
+    if (key == GLFW_KEY_N && action == GLFW_PRESS && mods == GLFW_MOD_CONTROL) {
+      callback_cmds.emplace_back(NewWorldCmd{});
+    }
+    if (key == GLFW_KEY_O && action == GLFW_PRESS && mods == GLFW_MOD_CONTROL) {
+      callback_cmds.emplace_back(LoadWorldCmd{});
+    }
+    if (key == GLFW_KEY_Z && action == GLFW_PRESS && mods == GLFW_MOD_CONTROL) {
+      callback_cmds.emplace_back(UndoCmd{});
+    } else if (key == GLFW_KEY_Z && action == GLFW_PRESS &&
+               (mods & GLFW_MOD_CONTROL) && (mods & GLFW_MOD_SHIFT)) {
+      callback_cmds.emplace_back(RedoCmd{});
+    }
+  }
+
+  // Handle world save/load
 }
 
-} // namespace ale::ui
+} // namespace ale::editor

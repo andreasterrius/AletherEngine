@@ -9,8 +9,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
+#include "src/editor/imgui_integration.h"
 #include "src/input_handling/window_event.h"
-#include "ui/imgui_integration.h"
 #include <functional>
 #include <glm/glm.hpp>
 #include <memory>

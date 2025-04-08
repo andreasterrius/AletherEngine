@@ -16,9 +16,6 @@ unsigned int TextureFromFile(const char *path, const string &directory,
 class Model {
 public:
   // model data
-  vector<LoadedTexture>
-      textures_loaded; // stores all the textures loaded so far, optimization
-                       // to make sure textures aren't loaded more than once.
   vector<Mesh> meshes;
   string id;
   string directory;
@@ -28,7 +25,7 @@ public:
   // constructor, expects a filepath to a 3D model.
   Model(string const &path, bool gamma = false);
 
-  Model(vector<LoadedTexture> textures, vector<Mesh> meshes);
+  Model(vector<Mesh> meshes);
 
   // draws the model, and thus all its meshes
   void draw(Shader &shader);
@@ -47,8 +44,8 @@ private:
 
   // checks all material textures of a given type and loads the textures if
   // they're not loaded yet. the required info is returned as a Texture struct.
-  vector<LoadedTexture>
-  loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
+  // vector<PendingTexturePath>
+  // loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
 };
 } // namespace ale
 

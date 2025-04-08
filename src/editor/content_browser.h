@@ -11,7 +11,7 @@
 
 using afs = ale::FileSystem;
 
-namespace ale::ui {
+namespace ale::editor {
 
 // TODO: This class is too big, somehow it also handles loading and stuff.
 // But I am not sure how to refactor this right now
@@ -26,6 +26,7 @@ public:
 
     // if entry contains a static mesh;
     StaticMesh static_mesh;
+    BasicMaterial basic_material;
 
     // if entry is from a file
     optional<FileMeta> file_meta;
@@ -44,6 +45,6 @@ public:
 
   optional<Entry> draw_and_handle_clicks();
 };
-} // namespace ale::ui
+} // namespace ale::editor
 
 #endif // CONTENT_BROWSER_H

@@ -9,6 +9,9 @@
 #include "src/graphics/sdf/sdf_model_packed.h"
 #include <memory>
 
+import material;
+import stash;
+
 namespace ale {
 
 // This class is safe to be copied.
@@ -64,12 +67,18 @@ class StaticMeshLoader {
   // refer to static meshes keys
   unordered_map<string, string> alternate_names;
 
+  // stashes
+  shared_ptr<Stash<Texture>> texture_stash;
+
 public:
-  StaticMeshLoader();
+  StaticMeshLoader(const shared_ptr<Stash<Texture>> &texture_stash);
 
   StaticMesh load_static_mesh(string path);
 
   StaticMesh load_static_mesh(string path, vector<string> alternate_names);
+
+  pair<StaticMesh, BasicMaterial>
+  load_static_mesh_with_basic_material(string path);
 
   optional<StaticMesh> get_static_mesh(string id);
 

@@ -15,15 +15,27 @@ import item_inspector;
 #include "src/graphics/window.h"
 #include <imgui.h>
 
-namespace ale::ui {
+namespace ale::editor {
 class EditorRootLayout : public WindowEventListener {
 public:
-  struct Event {
-    bool is_exit_clicked = false;
-    bool is_new_clicked = false;
-    optional<ContentBrowser::Entry> new_object;
-    ItemInspector::Event item_inspector_event;
+  struct ExitCmd {};
+  struct NewWorldCmd {};
+  struct NewObjectCmd {
+    ContentBrowser::Entry new_object;
   };
+  struct TransformChangeHistoryCmd {
+    entt::entity entity;
+    Transform before;
+    Transform after;
+  };
+  struct UndoCmd {};
+  struct RedoCmd {};
+  struct SaveWorldCmd {};
+  struct LoadWorldCmd {};
+
+  using Cmd = std::variant<ExitCmd, NewWorldCmd, NewObjectCmd,
+                           ItemInspector::Cmd, TransformChangeHistoryCmd,
+                           UndoCmd, RedoCmd, SaveWorldCmd, LoadWorldCmd>;
 
   // Data needed in a frame
   // All pointers are non owning
@@ -55,12 +67,14 @@ private:
   // non owning
   WindowEventProducer *event_producer = nullptr;
 
+  vector<Cmd> callback_cmds;
+
 public:
   EditorRootLayout(StaticMeshLoader &sm_loader, glm::ivec2 initial_window_size);
   ~EditorRootLayout();
 
   void start(glm::ivec2 pos, glm::ivec2 size);
-  Event draw_and_handle_events(entt::registry &world);
+  std::vector<Cmd> draw_and_handle_cmds(entt::registry &world);
   void end();
 
   // input
@@ -88,6 +102,6 @@ public:
   void scroll_callback(double x_offset, double y_offset) override;
   void key_callback(int key, int scancode, int action, int mods) override;
 };
-} // namespace ale::ui
+} // namespace ale::editor
 
 #endif // ROOT_LAYOUT_H

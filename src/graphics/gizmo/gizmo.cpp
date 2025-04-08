@@ -93,6 +93,7 @@ bool Gizmo::try_hold(Transform *transform, Camera &camera, vec2 mousePos,
       return false;
     }
 
+    this->initial_transform = this->last_transform = *transform;
     this->initial_click_info = Gizmo_InitialClickInfo{
         .exist = true,
         .activeAxis = grabAxis.activeAxis,
@@ -139,6 +140,7 @@ bool Gizmo::try_hold(Transform *transform, Camera &camera, vec2 mousePos,
       transform->rotation = rot * transform->rotation;
     }
     this->initial_click_info.lastFrameRayPlaneHitPos = rayPlaneHit.value();
+    last_transform = *transform;
   }
   this->initial_click_info.lastFrameMousePos = mousePos;
 
@@ -148,6 +150,16 @@ bool Gizmo::try_hold(Transform *transform, Camera &camera, vec2 mousePos,
 void Gizmo::handle_release() {
   this->initial_click_info = Gizmo_InitialClickInfo{0};
   this->is_dragging = false;
+  this->just_released = true;
+}
+
+std::optional<std::tuple<entt::entity, Transform, Transform>>
+Gizmo::get_release_info() {
+  if (just_released && this->selected_entity.has_value()) {
+    return make_tuple(*this->selected_entity, initial_transform,
+                      last_transform);
+  }
+  return nullopt;
 }
 
 optional<Gizmo_GrabAxis> Gizmo::grab_axis(Ray ray) {
@@ -394,6 +406,7 @@ void Gizmo::tick(const Ray &mouse_ray, Camera &camera, vec2 mouse_pos,
     auto &transform = world.get<Transform>(*selected_entity);
     try_hold(&transform, camera, mouse_pos, mouse_ray);
   }
+  this->just_released = false;
 }
 
 bool Gizmo::handle_press(Ray &mouse_ray, Camera &camera, vec2 mouse_pos,

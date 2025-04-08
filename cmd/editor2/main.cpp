@@ -1,23 +1,28 @@
 import material;
 import deferred_renderer;
+import history_stack;
+import util;
+import logger;
+import stash;
 
 // clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
 
+#include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 #include "src/data/file_system.h"
 #include "src/data/scene_node.h"
 #include "src/data/serde/world.h"
+#include "src/editor/content_browser.h"
+#include "src/editor/editor_root_layout.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/gizmo/gizmo.h"
 #include "src/graphics/light.h"
 #include "src/graphics/line_renderer.h"
 #include "src/graphics/static_mesh.h"
 #include "src/graphics/thumbnail_generator.h"
-#include "src/graphics/ui/content_browser.h"
-#include "src/graphics/ui/editor_root_layout.h"
 #include "src/graphics/window.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -64,80 +69,93 @@ entt::registry new_world(StaticMeshLoader &sm_loader) {
   return world;
 }
 
-void handle_ui_events(ui::EditorRootLayout::Event &events, Window &window,
-                      StaticMeshLoader &sm_loader, entt::registry &world) {
-  // we can handle the events from UI here
-  if (events.is_exit_clicked) {
-    window.set_should_close(true);
-  }
-  if (events.is_new_clicked) {
-    world.clear<>();
-    world = new_world(sm_loader);
-  }
-  if (events.new_object.has_value()) {
-    const auto entity = world.create();
-    world.emplace<SceneNode>(
-        entity,
-        events.new_object->static_mesh.get_model()->path.filename().string());
-    world.emplace<Transform>(entity, Transform{});
-    world.emplace<StaticMesh>(entity, events.new_object->static_mesh);
-    world.emplace<BasicMaterial>(entity, BasicMaterial{});
-  }
-  if (events.item_inspector_event.load_diffuse.has_value()) {
-    auto texture =
-        make_shared<Texture>(events.item_inspector_event.load_diffuse->path);
-    auto basic_material = world.try_get<BasicMaterial>(
-        events.item_inspector_event.load_diffuse->entity_to_load);
-    basic_material->diffuse_texture = texture;
-    basic_material->diffuse_color = glm::vec3(0.0f);
+void handle_editor_cmds(
+    Window &window, StaticMeshLoader &sm_loader, entt::registry &world,
+    editor::HistoryStack &history_stack,
+    std::vector<editor::EditorRootLayout::Cmd> &editor_cmds) {
+  while (!editor_cmds.empty()) {
+    auto cmd = editor_cmds.back();
+    editor_cmds.pop_back();
+
+    match(
+        cmd,
+        [&](editor::EditorRootLayout::ExitCmd &arg) {
+          window.set_should_close(true);
+        },
+        [&](editor::EditorRootLayout::NewWorldCmd &arg) {
+          world.clear<>();
+          world = new_world(sm_loader);
+        },
+        [&](editor::EditorRootLayout::NewObjectCmd &arg) {
+          const auto entity = world.create();
+          world.emplace<SceneNode>(
+              entity,
+              arg.new_object.static_mesh.get_model()->path.filename().string());
+          world.emplace<Transform>(entity, Transform{});
+          world.emplace<StaticMesh>(entity, arg.new_object.static_mesh);
+          world.emplace<BasicMaterial>(entity, arg.new_object.basic_material);
+        },
+        [&](editor::ItemInspector::Cmd &arg) {
+          match(arg, [&](editor::ItemInspector::LoadTextureCmd &arg) {
+            auto texture = make_shared<Texture>(arg.path);
+            auto basic_material =
+                world.try_get<BasicMaterial>(arg.entity_to_load);
+            if (editor::DIFFUSE == arg.type) {
+              basic_material->add_diffuse(texture);
+            } else if (editor::SPECULAR == arg.type) {
+              basic_material->add_specular(texture);
+            }
+          });
+        },
+        [&](editor::EditorRootLayout::TransformChangeHistoryCmd &arg) {},
+        [&](editor::EditorRootLayout::UndoCmd &arg) {
+          std::cout << "Undo cmd called" << std::endl;
+        },
+        [&](editor::EditorRootLayout::RedoCmd &arg) {
+          std::cout << "Redo cmd called" << std::endl;
+        },
+        [&](editor::EditorRootLayout::SaveWorldCmd &arg) {
+          std::cout << "Save world called" << std::endl;
+          serde::save_world("temp/scenes/editor2.json", world);
+        },
+        [&](editor::EditorRootLayout::LoadWorldCmd &arg) {
+          std::cout << "Load world called" << std::endl;
+          try {
+            world = serde::load_world("temp/scenes/editor2.json", sm_loader);
+          } catch (const std::exception &e) {
+            ale::logger::get()->info("{}", e.what());
+          }
+        });
   }
 }
 
 int main() {
   glfwInit();
 
-  spdlog::set_level(spdlog::level::trace);
-  SPDLOG_INFO("Starting Editor2");
+  ale::logger::init();
 
   auto window = Window(1280, 800, "Editor 2");
   auto camera = Camera(ARCBALL, window.get_size().x, window.get_size().y,
                        glm::vec3(3.0f, 5.0f, 7.0f));
 
+  // Stashes
+  auto texture_stash = make_shared<Stash<Texture>>();
+
   // Declare a basic scene
   auto deferred_renderer = DeferredRenderer(window.get_size());
   auto texture_renderer = TextureRenderer();
   auto line_renderer = LineRenderer();
-  auto sm_loader = StaticMeshLoader();
+  auto sm_loader = StaticMeshLoader(texture_stash);
+  auto history_stack = editor::HistoryStack();
 
   auto world = new_world(sm_loader);
 
   // Declare UI related
   auto editor_root_layout_ui =
-      ui::EditorRootLayout(sm_loader, window.get_size());
+      editor::EditorRootLayout(sm_loader, window.get_size());
 
   camera.add_listener(&window);
   editor_root_layout_ui.add_listener(&window);
-
-  window.attach_key_callback([&](int key, int scancode, int action, int mods) {
-    if (editor_root_layout_ui.get_scene_has_focus()) {
-      if (key == GLFW_KEY_S && action == GLFW_PRESS &&
-          mods == GLFW_MOD_CONTROL) {
-        serde::save_world("temp/scenes/editor2.json", world);
-      }
-      if (key == GLFW_KEY_N && action == GLFW_PRESS &&
-          mods == GLFW_MOD_CONTROL) {
-        world = new_world(sm_loader);
-      }
-      if (key == GLFW_KEY_O && action == GLFW_PRESS &&
-          mods == GLFW_MOD_CONTROL) {
-        try {
-          world = serde::load_world("temp/scenes/editor2.json", sm_loader);
-        } catch (const std::exception &e) {
-          SPDLOG_ERROR("{}", e.what());
-        }
-      }
-    }
-  });
 
   while (!window.get_should_close()) {
     glClearColor(135.0 / 255, 206.0 / 255, 235.0 / 255, 1.0f);
@@ -145,7 +163,7 @@ int main() {
 
     // Input stuff
     camera.set_handle_input(editor_root_layout_ui.get_scene_has_focus());
-    editor_root_layout_ui.set_tick_data(ui::EditorRootLayout::TickData{
+    editor_root_layout_ui.set_tick_data(editor::EditorRootLayout::TickData{
         .camera = &camera,
         .world = &world,
         .cursor_pos_topleft = window.get_cursor_pos_from_top_left()});
@@ -168,8 +186,8 @@ int main() {
       window.start_ui_frame();
       editor_root_layout_ui.start(window.get_position(), window.get_size());
 
-      auto events = editor_root_layout_ui.draw_and_handle_events(world);
-      handle_ui_events(events, window, sm_loader, world);
+      auto cmds = editor_root_layout_ui.draw_and_handle_cmds(world);
+      handle_editor_cmds(window, sm_loader, world, history_stack, cmds);
 
       editor_root_layout_ui.end();
       window.end_ui_frame();

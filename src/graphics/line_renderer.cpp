@@ -263,7 +263,7 @@ Model LineRenderer::create_box() {
   };
 
   BoundingBox bb(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f));
-  Mesh mesh(vertices, vector<unsigned int>(), vector<LoadedTexture>(), bb);
+  Mesh mesh(vertices, vector<unsigned int>(), PendingTexturePath(), bb);
 
-  return Model(vector<LoadedTexture>(), vector<Mesh>{std::move(mesh)});
+  return Model(vector<Mesh>{std::move(mesh)});
 }
