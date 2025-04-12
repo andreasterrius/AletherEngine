@@ -1,22 +1,26 @@
 import material;
 import deferred_renderer;
-import history_stack;
 import util;
 import logger;
 import stash;
+import command;
+import command_stack;
+import content_browser;
+import editor_root_layout;
+import item_inspector;
 
 // clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 #include "src/data/file_system.h"
 #include "src/data/scene_node.h"
 #include "src/data/serde/world.h"
-#include "src/editor/content_browser.h"
-#include "src/editor/editor_root_layout.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/gizmo/gizmo.h"
 #include "src/graphics/light.h"
@@ -24,8 +28,6 @@ import stash;
 #include "src/graphics/static_mesh.h"
 #include "src/graphics/thumbnail_generator.h"
 #include "src/graphics/window.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 // clang-format off
 #define STB_IMAGE_IMPLEMENTATION
@@ -69,24 +71,21 @@ entt::registry new_world(StaticMeshLoader &sm_loader) {
   return world;
 }
 
-void handle_editor_cmds(
-    Window &window, StaticMeshLoader &sm_loader, entt::registry &world,
-    editor::HistoryStack &history_stack,
-    std::vector<editor::EditorRootLayout::Cmd> &editor_cmds) {
+void handle_editor_cmds(Window &window, StaticMeshLoader &sm_loader,
+                        entt::registry &world,
+                        editor::HistoryStack &history_stack,
+                        vector<editor::Cmd> &editor_cmds) {
   while (!editor_cmds.empty()) {
     auto cmd = editor_cmds.back();
     editor_cmds.pop_back();
 
     match(
-        cmd,
-        [&](editor::EditorRootLayout::ExitCmd &arg) {
-          window.set_should_close(true);
-        },
-        [&](editor::EditorRootLayout::NewWorldCmd &arg) {
+        cmd, [&](editor::ExitCmd &arg) { window.set_should_close(true); },
+        [&](editor::NewWorldCmd &arg) {
           world.clear<>();
           world = new_world(sm_loader);
         },
-        [&](editor::EditorRootLayout::NewObjectCmd &arg) {
+        [&](editor::NewObjectCmd &arg) {
           const auto entity = world.create();
           world.emplace<SceneNode>(
               entity,
@@ -107,18 +106,20 @@ void handle_editor_cmds(
             }
           });
         },
-        [&](editor::EditorRootLayout::TransformChangeHistoryCmd &arg) {},
-        [&](editor::EditorRootLayout::UndoCmd &arg) {
+        [&](editor::TransformChangeHistoryCmd &arg) { history_stack.add(arg); },
+        [&](editor::UndoCmd &arg) {
           std::cout << "Undo cmd called" << std::endl;
+          history_stack.undo();
         },
-        [&](editor::EditorRootLayout::RedoCmd &arg) {
+        [&](editor::RedoCmd &arg) {
           std::cout << "Redo cmd called" << std::endl;
+          history_stack.redo();
         },
-        [&](editor::EditorRootLayout::SaveWorldCmd &arg) {
+        [&](editor::SaveWorldCmd &arg) {
           std::cout << "Save world called" << std::endl;
           serde::save_world("temp/scenes/editor2.json", world);
         },
-        [&](editor::EditorRootLayout::LoadWorldCmd &arg) {
+        [&](editor::LoadWorldCmd &arg) {
           std::cout << "Load world called" << std::endl;
           try {
             world = serde::load_world("temp/scenes/editor2.json", sm_loader);

@@ -58,6 +58,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(StaticMesh::Serde, meta, model_path)
 const string SM_UNIT_CUBE = "default_cube";
 const string SM_UNIT_SPHERE = "default_sphere";
 
+// not Send/Sync
 class StaticMeshLoader {
   // SdfGeneratorGPU sdf_generator_gpu;
   SdfGeneratorGPUV2 sdf_generator_gpu_v2;
