@@ -2,15 +2,15 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
+#include <src/graphics/window.h>
 #include "src/data/file_system.h"
-#include "src/graphics/renderer/basic_renderer.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/line_renderer.h"
 #include "src/graphics/model.h"
+#include "src/graphics/renderer/basic_renderer.h"
 #include "src/graphics/sdf/sdf_generator_gpu_v2.h"
 #include "src/graphics/sdf/sdf_generator_gpu_v2_shared.h"
 #include "src/graphics/sdf/sdf_model.h"
-#include <src/graphics/window.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "src/graphics/raymarcher_cpu.h"
@@ -19,6 +19,8 @@
 
 #include <corecrt_io.h>
 #include <stb_image.h>
+
+#include "src/graphics/light.h"
 
 using namespace ale;
 using namespace std;
@@ -163,7 +165,8 @@ int main() {
       }
     });
     line_renderer.queue_unit_cube(Transform{.translation = closest_point});
-    line_renderer.render(camera.get_projection_matrix(), camera.get_view_matrix());
+    line_renderer.render(camera.get_projection_matrix(),
+                         camera.get_view_matrix());
 
     if (debug_raymarch) {
       raymarcher_cpu.shoot_ray(window, camera, sdf_mesh);

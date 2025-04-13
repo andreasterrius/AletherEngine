@@ -5,16 +5,12 @@
 #ifndef ALETHERENGINE_LINE_RENDERER_H
 #define ALETHERENGINE_LINE_RENDERER_H
 
-#include "model.h"
-#include "shader.h"
 #include <glm/glm.hpp>
 #include <vector>
+#include "model.h"
+#include "shader.h"
 
-static glm::vec3 WHITE = glm::vec3(1.0, 1.0, 1.0);
-static glm::vec3 RED = glm::vec3(1.0, 0.0, 0.0);
-static glm::vec3 GREEN = glm::vec3(0.0, 1.0, 0.0);
-static glm::vec3 BLUE = glm::vec3(0.0, 0.0, 1.0);
-static glm::vec3 YELLOW = glm::vec3(1.0, 1.0, 0.0);
+import color;
 
 namespace ale {
 

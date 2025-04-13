@@ -1,4 +1,9 @@
 module;
+#include <entt/entt.hpp>
+#include <format>
+#include <memory>
+#include <nlohmann/json.hpp>
+#include <string>
 #include "src/data/file_system.h"
 #include "src/data/serde/glm.h"
 #include "src/graphics/camera.h"
@@ -7,11 +12,6 @@ module;
 #include "src/graphics/sdf/sdf_model_packed.h"
 #include "src/graphics/shader.h"
 #include "src/graphics/static_mesh.h"
-#include <entt/entt.hpp>
-#include <format>
-#include <memory>
-#include <nlohmann/json.hpp>
-#include <string>
 
 export module deferred_renderer;
 
@@ -20,8 +20,8 @@ import material;
 export namespace ale {
 class DeferredRendererException final : public std::runtime_error {
 public:
-  explicit DeferredRendererException(const std::string &msg)
-      : runtime_error(msg) {}
+  explicit DeferredRendererException(const std::string &msg) :
+      runtime_error(msg) {}
 };
 
 class DeferredRenderer : public WindowEventListener {
@@ -44,26 +44,26 @@ private:
   FirstPassData first_pass_data;
 
 public:
-  DeferredRenderer(glm::ivec2 screen_size)
-      : first_pass(
-            afs::root(
-                "resources/shaders/renderer/deferred_renderer/first_pass.vs")
-                .c_str(),
-            afs::root(
-                "resources/shaders/renderer/deferred_renderer/first_pass.fs")
-                .c_str()),
-        second_pass(
-            afs::root(
-                "resources/shaders/renderer/deferred_renderer/second_pass.vs")
-                .c_str(),
-            afs::root(
-                "resources/shaders/renderer/deferred_renderer/second_pass.fs")
-                .c_str()),
-        single_black_pixel_texture(
-            afs::root("resources/textures/default/black1x1.png")),
-        deferred_framebuffer(Framebuffer::Meta{.width = screen_size.x,
-                                               .height = screen_size.y,
-                                               .depthbuffer_texture = true}) {
+  DeferredRenderer(glm::ivec2 screen_size) :
+      first_pass(
+          afs::root(
+              "resources/shaders/renderer/deferred_renderer/first_pass.vs")
+              .c_str(),
+          afs::root(
+              "resources/shaders/renderer/deferred_renderer/first_pass.fs")
+              .c_str()),
+      second_pass(
+          afs::root(
+              "resources/shaders/renderer/deferred_renderer/second_pass.vs")
+              .c_str(),
+          afs::root(
+              "resources/shaders/renderer/deferred_renderer/second_pass.fs")
+              .c_str()),
+      single_black_pixel_texture(
+          afs::root("resources/textures/default/black1x1.png")),
+      deferred_framebuffer(Framebuffer::Meta{.width = screen_size.x,
+                                             .height = screen_size.y,
+                                             .depthbuffer_texture = true}) {
 
     // position buffer
     deferred_framebuffer.create_extra_color_attachment(make_shared<Texture>(
@@ -144,7 +144,7 @@ public:
     first_pass.setMat4("projection", camera.get_projection_matrix());
     first_pass.setMat4("view", camera.get_view_matrix());
     const auto view = world.view<Transform, StaticMesh, BasicMaterial>();
-    for (auto [entity, transform, static_mesh, material] : view.each()) {
+    for (auto [entity, transform, static_mesh, material]: view.each()) {
       first_pass.setMat4("model", transform.get_model_matrix());
       first_pass.setInt("entityId", to_integral(entity));
 
@@ -178,14 +178,29 @@ public:
   }
 
   void render_second_pass(Camera &camera, entt::registry &world) {
-    glClearColor(135.0 / 255, 206.0 / 255, 235.0 / 255, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // clear color with ambient light
+    auto ambient_view = world.view<AmbientLight>();
+    auto ambient_color = glm::vec3(0.0f);
+    auto ambient_intensity = 0.0f;
+    auto background_color = glm::vec3(0.0f);
     second_pass.use();
+    for (const auto &[entity, ambient_light]: ambient_view.each()) {
+      ambient_color = ambient_light.color;
+      ambient_intensity = ambient_light.intensity;
+      background_color = ambient_light.background_color;
+      break;
+    }
+    glClearColor(background_color.r, background_color.g, background_color.b,
+                 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     second_pass.setVec3("viewPos", camera.Position);
+    second_pass.setVec3("ambientColor", ambient_color);
+    second_pass.setFloat("ambientIntensity", ambient_intensity);
 
     auto light_view = world.view<Transform, Light>();
     int light_index = 0;
-    for (const auto &[entity, transform, light] : light_view.each()) {
+    for (const auto &[entity, transform, light]: light_view.each()) {
       second_pass.setVec3(format("lights[{}].position", light_index),
                           transform.translation);
       second_pass.setVec3(format("lights[{}].color", light_index), light.color);

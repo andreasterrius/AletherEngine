@@ -65,11 +65,9 @@ int main() {
   editor_root_layout_ui.add_listener(&window);
 
   while (!window.get_should_close()) {
-    glClearColor(135.0 / 255, 206.0 / 255, 235.0 / 255, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // Input stuff
     camera.set_handle_input(editor_root_layout_ui.get_scene_has_focus());
+
     editor_root_layout_ui.set_tick_data(editor::EditorRoot::TickData{
         .camera = &camera,
         .world = &world,
@@ -91,9 +89,7 @@ int main() {
     // Render UI
     {
       window.start_ui_frame();
-      editor_root_layout_ui.start(window.get_position(), window.get_size());
       editor_root_layout_ui.draw_and_handle_cmds(window, sm_loader, world);
-      editor_root_layout_ui.end();
       window.end_ui_frame();
     }
 

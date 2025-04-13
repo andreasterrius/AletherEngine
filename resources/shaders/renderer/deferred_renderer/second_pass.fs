@@ -16,6 +16,9 @@ struct Light {
 uniform int numLights;
 uniform Light lights[20];
 
+uniform vec3 ambientColor;
+uniform float ambientIntensity;
+
 uniform vec3 viewPos;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
@@ -50,13 +53,9 @@ void main()
         discard;
     }
 
-    float shadowFinal = 0.0;
     for(int i = 0; i < numLights; ++i) {
         vec3 lightColor = lights[i].color;
         vec3 lightPos = lights[i].position;
-
-        // ambient
-        vec3 ambient = 0.3 * lightColor;
 
         // diffuse
         vec3 lightDir = normalize(lightPos - position);
@@ -76,15 +75,14 @@ void main()
         lights[i].attenuation.z * (distance * distance));
         float shadow = ShadowCalculation(position, lightPos, normal);
 
-        ambient *= attenuation;
         diffuse *= attenuation;
         specular *= attenuation;
 
-        lighting += (ambient + (shadow) * (diffuse + specular));
-        shadowFinal = shadow;
+        lighting += shadow * (diffuse + specular);
     }
-    lighting *= color;
-//    lighting = vec3(shadowFinal);
+
+    vec3 ambient = ambientIntensity * ambientColor;
+    lighting = ambient + (lighting * color);
 
     float dither = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
     lighting += (1.0 / 255.0) * dither - (0.5 / 255.0);;

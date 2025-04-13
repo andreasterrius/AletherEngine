@@ -20,6 +20,7 @@ module;
 #include "src/graphics/camera.h"
 #include "src/graphics/gizmo/gizmo.h"
 #include "src/graphics/light.h"
+#include "src/graphics/line_renderer.h"
 #include "src/graphics/static_mesh.h"
 #include "src/graphics/window.h"
 
@@ -196,6 +197,7 @@ public:
 
   vector<Cmd> draw_and_handle_cmds(Window &window, StaticMeshLoader &sm_loader,
                                    entt::registry &world) {
+    start(window.get_position(), window.get_size());
 
     vector<Cmd> cmds;
 
@@ -256,6 +258,7 @@ public:
 
     handle_editor_cmds(cmds, window, sm_loader, world);
 
+    end();
     return cmds;
   }
 
@@ -325,6 +328,12 @@ public:
     auto world = entt::registry{};
 
     // Lights
+    {
+      // Ambient Light
+      const auto entity = world.create();
+      world.emplace<SceneNode>(entity, SceneNode("ambient_light"));
+      world.emplace<AmbientLight>(entity, AmbientLight{0.2f, WHITE, BLUE_SKY});
+    }
     {
       const auto entity = world.create();
       world.emplace<SceneNode>(entity, SceneNode("light"));

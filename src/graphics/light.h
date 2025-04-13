@@ -7,6 +7,14 @@
 
 #include "src/data/serde/glm.h"
 
+struct AmbientLight {
+  float intensity;
+  glm::vec3 color;
+  glm::vec3 background_color;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AmbientLight, intensity, color,
+                                   background_color);
+
 struct Light {
   glm::vec3 color = glm::vec3(1.0f);
   float radius = 1.0f;
@@ -15,4 +23,4 @@ struct Light {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Light, color, radius, attenuation);
 
 
-#endif //LIGHT_H
+#endif // LIGHT_H

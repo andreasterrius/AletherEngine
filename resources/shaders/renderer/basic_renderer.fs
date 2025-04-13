@@ -72,7 +72,7 @@ void main()
         diffuse *= attenuation;
         specular *= attenuation;
 
-        lighting += (ambient + (1.0 - shadow) * (diffuse + specular));
+        lighting += (ambient + (shadow) * (diffuse + specular));
     }
     lighting *= color;
 
