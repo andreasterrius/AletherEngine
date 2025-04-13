@@ -1,12 +1,12 @@
 #ifndef HELLO_C_GIZMO_H
 #define HELLO_C_GIZMO_H
 
-#include "src/data/transform.h"
-#include "src/graphics/shader.h"
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
 #include <optional>
 #include <vector>
+#include "src/data/transform.h"
+#include "src/graphics/shader.h"
 
 namespace ale {
 
@@ -81,9 +81,9 @@ public:
   Gizmo_InitialClickInfo initial_click_info;
 
   // Remember the first and last transform
+  std::optional<entt::entity> last_moved_entity;
   Transform initial_transform;
   Transform last_transform;
-  bool just_released; // don't like this but ok for now I guess.
 
   Shader gizmo_shader;
 
@@ -109,14 +109,15 @@ public:
   // returns whether the press should be propagated or not
   bool handle_press(Ray &mouse_ray, Camera &camera, glm::vec2 mouse_pos,
                     entt::registry &world);
-  void handle_release();
+
+  std::optional<std::tuple<entt::entity, Transform, Transform>>
+  handle_release();
+
   void tick(const Ray &mouse_ray, Camera &camera, glm::vec2 mouse_pos,
             entt::registry &world);
   void render(Camera camera, glm::vec3 lightPos);
   void change_mode(Gizmo_Type gizmoType);
   void change_space(bool isLocalSpace);
-  std::optional<std::tuple<entt::entity, Transform, Transform>>
-  get_release_info();
 
 private:
   void scale_all();

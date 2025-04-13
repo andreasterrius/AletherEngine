@@ -19,7 +19,7 @@ struct NewWorldCmd {};
 struct NewObjectCmd {
   ContentBrowser::Entry new_object;
 };
-struct TransformChangeHistoryCmd {
+struct TransformChangeNotif {
   entt::entity entity;
   Transform before;
   Transform after;
@@ -30,6 +30,6 @@ struct SaveWorldCmd {};
 struct LoadWorldCmd {};
 
 using Cmd = std::variant<ExitCmd, NewWorldCmd, NewObjectCmd, ItemInspector::Cmd,
-                         TransformChangeHistoryCmd, UndoCmd, RedoCmd,
-                         SaveWorldCmd, LoadWorldCmd>;
+                         TransformChangeNotif, UndoCmd, RedoCmd, SaveWorldCmd,
+                         LoadWorldCmd>;
 } // namespace ale::editor

@@ -15,24 +15,29 @@ module;
 #include "scene_tree.h"
 #include "scene_viewport.h"
 #include "src/data/file_system.h"
+#include "src/data/scene_node.h"
+#include "src/data/serde/world.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/gizmo/gizmo.h"
 #include "src/graphics/light.h"
 #include "src/graphics/static_mesh.h"
 #include "src/graphics/window.h"
 
-export module editor_root_layout;
+export module editor_root;
 
 import item_inspector;
-import command_stack;
+import history;
+import history_stack;
 import command;
 import content_browser;
+import util;
+import logger;
 
 export namespace ale::editor {
 using namespace glm;
 using namespace std;
 
-class EditorRootLayout : public WindowEventListener {
+class EditorRoot : public WindowEventListener {
 public:
   // Data needed in a frame
   // All pointers are non owning
@@ -64,12 +69,13 @@ private:
   // non owning
   WindowEventProducer *event_producer = nullptr;
 
+  history::HistoryStack history_stack;
   vector<Cmd> callback_cmds;
 
 public:
   using afs = ale::FileSystem;
 
-  EditorRootLayout(StaticMeshLoader &sm_loader, ivec2 initial_window_size) :
+  EditorRoot(StaticMeshLoader &sm_loader, ivec2 initial_window_size) :
       gizmo_frame(Framebuffer::Meta{.width = initial_window_size.x,
                                     .height = initial_window_size.y,
                                     .color_space = Framebuffer::LINEAR}),
@@ -80,7 +86,7 @@ public:
       test_texture(afs::root("resources/textures/wood.png")),
       scene_has_focus(false) {}
 
-  ~EditorRootLayout() {
+  ~EditorRoot() {
     if (this->event_producer) {
       this->event_producer->remove_listener(this);
     }
@@ -130,7 +136,12 @@ public:
     }
   }
 
-  void handle_release() { gizmo.handle_release(); }
+  void handle_release() {
+    if (auto moved = gizmo.handle_release()) {
+      auto [ent, b, a] = *moved;
+      callback_cmds.emplace_back(TransformChangeNotif{ent, b, a});
+    }
+  }
 
   void tick() {
     auto &t = tick_data;
@@ -141,6 +152,7 @@ public:
 
     scene_has_focus = scene_viewport_ui.is_cursor_inside(t.cursor_pos_topleft);
   }
+
   void capture_scene(std::function<void()> exec, Camera &camera) {
     start_capture_scene(camera);
     exec();
@@ -182,15 +194,10 @@ public:
     window->add_listener(this);
   }
 
-  vector<Cmd> draw_and_handle_cmds(entt::registry &world) {
+  vector<Cmd> draw_and_handle_cmds(Window &window, StaticMeshLoader &sm_loader,
+                                   entt::registry &world) {
 
     vector<Cmd> cmds;
-
-    // if (auto release_info = gizmo.get_release_info()) {
-    //   auto [a, b, c] = release_info.value();
-    //   event.transform_change_cmd = TransformChangeCommand{a, b, c};
-    //   events.push_back(TransformChangeCmd{a, b, c});
-    // }
 
     if (show_menubar) {
       // Do a menu bar with an exit menu
@@ -247,7 +254,102 @@ public:
     cmds.insert(cmds.end(), callback_cmds.begin(), callback_cmds.end());
     callback_cmds.clear();
 
+    handle_editor_cmds(cmds, window, sm_loader, world);
+
     return cmds;
+  }
+
+  void handle_editor_cmds(vector<Cmd> &cmds, Window &window,
+                          StaticMeshLoader &sm_loader, entt::registry &world) {
+    while (!cmds.empty()) {
+      auto cmd = cmds.back();
+      cmds.pop_back();
+
+      match(
+          cmd, [&](ExitCmd &arg) { window.set_should_close(true); },
+          [&](NewWorldCmd &arg) {
+            world.clear<>();
+            world = new_world(sm_loader);
+          },
+          [&](NewObjectCmd &arg) {
+            const auto entity = world.create();
+            world.emplace<SceneNode>(entity,
+                                     arg.new_object.static_mesh.get_model()
+                                         ->path.filename()
+                                         .string());
+            world.emplace<Transform>(entity, Transform{});
+            world.emplace<StaticMesh>(entity, arg.new_object.static_mesh);
+            world.emplace<BasicMaterial>(entity, arg.new_object.basic_material);
+          },
+          [&](ItemInspector::Cmd &arg) {
+            match(arg, [&](ItemInspector::LoadTextureCmd &arg) {
+              auto texture = make_shared<Texture>(arg.path);
+              auto basic_material =
+                  world.try_get<BasicMaterial>(arg.entity_to_load);
+              if (DIFFUSE == arg.type) {
+                basic_material->add_diffuse(texture);
+              } else if (SPECULAR == arg.type) {
+                basic_material->add_specular(texture);
+              }
+            });
+          },
+          [&](TransformChangeNotif &arg) {
+            history_stack.add(make_unique<history::TransformHistory>(
+                arg.entity, arg.before, arg.after));
+          },
+          [&](UndoCmd &arg) {
+            std::cout << "Undo cmd called" << std::endl;
+            history_stack.undo(world);
+          },
+          [&](RedoCmd &arg) {
+            std::cout << "Redo cmd called" << std::endl;
+            history_stack.redo(world);
+          },
+          [&](SaveWorldCmd &arg) {
+            std::cout << "Save world called" << std::endl;
+            serde::save_world("temp/scenes/editor2.json", world);
+          },
+          [&](LoadWorldCmd &arg) {
+            std::cout << "Load world called" << std::endl;
+            try {
+              world = serde::load_world("temp/scenes/editor2.json", sm_loader);
+            } catch (const std::exception &e) {
+              // logger::get()->info("{}", e.what());
+            }
+          });
+    }
+  }
+
+  entt::registry new_world(StaticMeshLoader &sm_loader) {
+    // Create world
+    auto world = entt::registry{};
+
+    // Lights
+    {
+      const auto entity = world.create();
+      world.emplace<SceneNode>(entity, SceneNode("light"));
+      world.emplace<Transform>(
+          entity, Transform{.translation = vec3(10.0, 10.0, 10.0)});
+      world.emplace<Light>(entity, Light{});
+      world.emplace<BasicMaterial>(entity, BasicMaterial{});
+
+      auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
+      sphere.set_cast_shadow(false);
+      world.emplace<StaticMesh>(entity, sphere);
+    }
+    {
+      const auto entity = world.create();
+      world.emplace<SceneNode>(entity, SceneNode("light"));
+      world.emplace<Transform>(
+          entity, Transform{.translation = vec3(10.0, 10.0, -10.0)});
+      world.emplace<Light>(entity, Light{.color = vec3(3.0f, 3.0f, 3.0f)});
+      world.emplace<BasicMaterial>(entity, BasicMaterial{});
+
+      auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
+      sphere.set_cast_shadow(false);
+      world.emplace<StaticMesh>(entity, sphere);
+    }
+    return world;
   }
 
   void mouse_button_callback(int button, int action, int mods) {

@@ -2,26 +2,26 @@
 // Created by alether on 9/26/23.
 //
 #include "gizmo.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include "src/data/file_system.h"
 #include "src/data/transform.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/model.h"
 #include "src/graphics/ray.h"
 #include "src/graphics/static_mesh.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 using afs = ale::FileSystem;
 using namespace std;
 using namespace glm;
 
 namespace ale {
-ale::Gizmo::Gizmo()
-    : gizmo_shader(afs::root("resources/shaders/gizmo/gizmo.vs").c_str(),
-                   afs::root("resources/shaders/gizmo/gizmo.fs").c_str()),
-      isLocalSpace(false) {
+ale::Gizmo::Gizmo() :
+    gizmo_shader(afs::root("resources/shaders/gizmo/gizmo.vs").c_str(),
+                 afs::root("resources/shaders/gizmo/gizmo.fs").c_str()),
+    isLocalSpace(false) {
 
   // load a flat shader here ?
   // the default raylib shader is flat though
@@ -147,19 +147,19 @@ bool Gizmo::try_hold(Transform *transform, Camera &camera, vec2 mousePos,
   return true;
 }
 
-void Gizmo::handle_release() {
+std::optional<std::tuple<entt::entity, Transform, Transform>>
+Gizmo::handle_release() {
   this->initial_click_info = Gizmo_InitialClickInfo{0};
   this->is_dragging = false;
-  this->just_released = true;
-}
 
-std::optional<std::tuple<entt::entity, Transform, Transform>>
-Gizmo::get_release_info() {
-  if (just_released && this->selected_entity.has_value()) {
-    return make_tuple(*this->selected_entity, initial_transform,
-                      last_transform);
+  if (this->last_moved_entity.has_value()) {
+    auto moved =
+        make_tuple(*last_moved_entity, initial_transform, last_transform);
+    ;
+    last_moved_entity = nullopt;
+    return moved;
   }
-  return nullopt;
+  return std::nullopt;
 }
 
 optional<Gizmo_GrabAxis> Gizmo::grab_axis(Ray ray) {
@@ -405,8 +405,9 @@ void Gizmo::tick(const Ray &mouse_ray, Camera &camera, vec2 mouse_pos,
   if (selected_entity && is_dragging) {
     auto &transform = world.get<Transform>(*selected_entity);
     try_hold(&transform, camera, mouse_pos, mouse_ray);
+
+    last_moved_entity = selected_entity;
   }
-  this->just_released = false;
 }
 
 bool Gizmo::handle_press(Ray &mouse_ray, Camera &camera, vec2 mouse_pos,
@@ -427,9 +428,9 @@ bool Gizmo::handle_press(Ray &mouse_ray, Camera &camera, vec2 mouse_pos,
   selected_entity = nullopt;
   auto view = world.view<Transform, StaticMesh>();
   float dist = INFINITY;
-  for (auto [entity, obj_transform, static_mesh] : view.each()) {
+  for (auto [entity, obj_transform, static_mesh]: view.each()) {
     auto ray = mouse_ray.apply_transform_inversed(obj_transform);
-    for (auto &mesh : static_mesh.get_model()->meshes) {
+    for (auto &mesh: static_mesh.get_model()->meshes) {
       auto isect_t = ray.intersect(mesh.boundingBox);
       if (isect_t.has_value() && isect_t < dist) {
         selected_entity = entity;

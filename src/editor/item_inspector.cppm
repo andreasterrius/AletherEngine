@@ -47,7 +47,7 @@ public:
 public:
   std::string panel_name = "Item Inspector";
 
-  ItemInspector() {};
+  // ItemInspector() {};
 
   std::vector<Cmd> draw_and_handle(entt::registry &world,
                                    std::optional<entt::entity> entity) {
