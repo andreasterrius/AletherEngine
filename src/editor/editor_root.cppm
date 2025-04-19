@@ -11,6 +11,7 @@ module;
 #include <glm/glm.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <nfd.hpp>
 #include <spdlog/spdlog.h>
 #include "scene_tree.h"
 #include "scene_viewport.h"
@@ -33,6 +34,7 @@ import command;
 import content_browser;
 import util;
 import logger;
+import dialog;
 
 export namespace ale::editor {
 using namespace glm;
@@ -72,6 +74,45 @@ private:
 
   history::HistoryStack history_stack;
   vector<Cmd> callback_cmds;
+
+public:
+  entt::registry new_world(StaticMeshLoader &sm_loader) {
+    // Create world
+    auto world = entt::registry{};
+
+    // Lights
+    {
+      // Ambient Light
+      const auto entity = world.create();
+      world.emplace<SceneNode>(entity, SceneNode("ambient_light"));
+      world.emplace<AmbientLight>(entity, AmbientLight{0.2f, WHITE, BLUE_SKY});
+    }
+    {
+      const auto entity = world.create();
+      world.emplace<SceneNode>(entity, SceneNode("light"));
+      world.emplace<Transform>(
+          entity, Transform{.translation = vec3(10.0, 10.0, 10.0)});
+      world.emplace<Light>(entity, Light{});
+      world.emplace<BasicMaterial>(entity, BasicMaterial{});
+
+      auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
+      sphere.set_cast_shadow(false);
+      world.emplace<StaticMesh>(entity, sphere);
+    }
+    {
+      const auto entity = world.create();
+      world.emplace<SceneNode>(entity, SceneNode("light"));
+      world.emplace<Transform>(
+          entity, Transform{.translation = vec3(10.0, 10.0, -10.0)});
+      world.emplace<Light>(entity, Light{.color = vec3(3.0f, 3.0f, 3.0f)});
+      world.emplace<BasicMaterial>(entity, BasicMaterial{});
+
+      auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
+      sphere.set_cast_shadow(false);
+      world.emplace<StaticMesh>(entity, sphere);
+    }
+    return world;
+  }
 
 public:
   using afs = ale::FileSystem;
@@ -207,6 +248,12 @@ public:
         if (ImGui::BeginMenu("File")) {
           if (ImGui::MenuItem("New"))
             cmds.emplace_back(NewWorldCmd{});
+          if (ImGui::MenuItem("Save")) {
+            cmds.emplace_back(SaveWorldCmd{nullopt});
+          }
+          if (ImGui::MenuItem("Load")) {
+            cmds.emplace_back(LoadWorldCmd{nullopt});
+          }
           if (ImGui::MenuItem("Exit"))
             cmds.emplace_back(ExitCmd{});
           ImGui::EndMenu();
@@ -257,6 +304,8 @@ public:
     callback_cmds.clear();
 
     handle_editor_cmds(cmds, window, sm_loader, world, camera);
+
+    camera.set_handle_input(get_scene_has_focus());
 
     end();
     return cmds;
@@ -311,13 +360,43 @@ public:
           },
           [&](SaveWorldCmd &arg) {
             std::cout << "Save world called" << std::endl;
-            serde::save_world("temp/scenes/editor2.json", world);
+            string path;
+            if (arg.path != nullopt) {
+              path = *arg.path;
+            } else {
+              // open file picker
+              if (auto p = save_file_picker(); p.has_value()) {
+                path = *p;
+              } else {
+                return;
+              }
+            }
+
+            try {
+              serde::save_world(path, world);
+            } catch (const std::exception &e) {
+              std::cout << "Save world error, " << e.what();
+              // logger::get()->info("{}", e.what());
+            }
           },
           [&](LoadWorldCmd &arg) {
             std::cout << "Load world called" << std::endl;
+            string path;
+            if (arg.path != nullopt) {
+              path = *arg.path;
+            } else {
+              // open file picker
+              if (auto p = open_file_picker(); p.has_value()) {
+                path = *p;
+              } else {
+                return;
+              }
+            }
+
             try {
-              world = serde::load_world("temp/scenes/editor2.json", sm_loader);
+              world = serde::load_world(path, sm_loader);
             } catch (const std::exception &e) {
+              std::cout << "Load world error, " << e.what();
               // logger::get()->info("{}", e.what());
             }
           },
@@ -328,44 +407,6 @@ public:
             }
           });
     }
-  }
-
-  entt::registry new_world(StaticMeshLoader &sm_loader) {
-    // Create world
-    auto world = entt::registry{};
-
-    // Lights
-    {
-      // Ambient Light
-      const auto entity = world.create();
-      world.emplace<SceneNode>(entity, SceneNode("ambient_light"));
-      world.emplace<AmbientLight>(entity, AmbientLight{0.2f, WHITE, BLUE_SKY});
-    }
-    {
-      const auto entity = world.create();
-      world.emplace<SceneNode>(entity, SceneNode("light"));
-      world.emplace<Transform>(
-          entity, Transform{.translation = vec3(10.0, 10.0, 10.0)});
-      world.emplace<Light>(entity, Light{});
-      world.emplace<BasicMaterial>(entity, BasicMaterial{});
-
-      auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
-      sphere.set_cast_shadow(false);
-      world.emplace<StaticMesh>(entity, sphere);
-    }
-    {
-      const auto entity = world.create();
-      world.emplace<SceneNode>(entity, SceneNode("light"));
-      world.emplace<Transform>(
-          entity, Transform{.translation = vec3(10.0, 10.0, -10.0)});
-      world.emplace<Light>(entity, Light{.color = vec3(3.0f, 3.0f, 3.0f)});
-      world.emplace<BasicMaterial>(entity, BasicMaterial{});
-
-      auto sphere = *sm_loader.get_static_mesh(SM_UNIT_SPHERE);
-      sphere.set_cast_shadow(false);
-      world.emplace<StaticMesh>(entity, sphere);
-    }
-    return world;
   }
 
   void mouse_button_callback(int button, int action, int mods) {

@@ -65,9 +65,6 @@ int main() {
   editor_root.add_listener(&window);
 
   while (!window.get_should_close()) {
-    // Input stuff
-    camera.set_handle_input(editor_root.get_scene_has_focus());
-
     editor_root.set_tick_data(editor::EditorRoot::TickData{
         .camera = &camera,
         .world = &world,

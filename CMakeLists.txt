@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.30.0)
 project(AletherEngine)
 
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 configure_file(config.in ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
 

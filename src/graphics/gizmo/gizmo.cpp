@@ -71,7 +71,6 @@ bool Gizmo::try_hold(Transform *transform, Camera &camera, vec2 mousePos,
   this->transform.translation = transform->translation;
 
   // TODO: This should not be here, this should be in tick(), but
-  this->transform.scale = vec3(1.0f);
 
   // Try to check which arrow we're hitting
   //	Ray ray = GetMouseRay(mousePos, camera);
@@ -402,11 +401,20 @@ void Gizmo::hide() { this->is_hidden = true; }
 
 void Gizmo::tick(const Ray &mouse_ray, Camera &camera, vec2 mouse_pos,
                  entt::registry &world) {
-  if (selected_entity && is_dragging) {
-    auto &transform = world.get<Transform>(*selected_entity);
-    try_hold(&transform, camera, mouse_pos, mouse_ray);
 
-    last_moved_entity = selected_entity;
+  if (selected_entity) {
+    auto transform = world.try_get<Transform>(*selected_entity);
+    if (transform != nullptr) {
+      if (is_dragging) {
+        try_hold(transform, camera, mouse_pos, mouse_ray);
+        last_moved_entity = selected_entity;
+      }
+
+      auto scale = glm::clamp(
+          glm::distance(camera.Position, this->transform.translation) / 30.0f,
+          0.1f, 3.0f);
+      this->transform.scale = glm::vec3(scale);
+    }
   }
 }
 

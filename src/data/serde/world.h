@@ -5,12 +5,12 @@
 #ifndef WORLD_H
 #define WORLD_H
 
+#include <entt/entt.hpp>
+#include <nlohmann/json.hpp>
 #include "src/data/scene_node.h"
 #include "src/data/serde/std.h"
 #include "src/graphics/light.h"
 #include "src/graphics/static_mesh.h"
-#include <entt/entt.hpp>
-#include <nlohmann/json.hpp>
 
 namespace ale::serde {
 
@@ -46,12 +46,20 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Scene, entities);
 // };
 // } // namespace nlohmann
 
-template <typename T> optional<T> get(T *ptr) {
+template<typename T>
+optional<T> get(T *ptr) {
   if (ptr == nullptr)
     return nullopt;
   else
     return *ptr;
 }
+
+template<typename T, typename K>
+K to_serde(T &&item) {
+  return item.to_serde();
+}
+
+
 void save_world(string file_path, entt::registry &registry);
 entt::registry load_world(string file_path, StaticMeshLoader &sm_loader);
 

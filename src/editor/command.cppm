@@ -26,8 +26,14 @@ struct TransformChangeNotif {
 };
 struct UndoCmd {};
 struct RedoCmd {};
-struct SaveWorldCmd {};
-struct LoadWorldCmd {};
+struct SaveWorldCmd {
+  // if not provided, a dialog box will be shown
+  std::optional<std::string> path;
+};
+struct LoadWorldCmd {
+  // if not provided, a dialog box will be shown
+  std::optional<std::string> path;
+};
 struct CameraLookAtEntityCmd {
   entt::entity entity;
 };
