@@ -1,11 +1,11 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "src/input_handling/window_event.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include "src/input_handling/window_event.h"
 
 namespace ale {
 
@@ -79,6 +79,8 @@ public:
   // returns the view matrix calculated using Euler Angles and the LookAt Matrix
   glm::mat4 get_view_matrix() const;
 
+  void set_look_at(glm::vec3 point);
+
   glm::mat4 get_projection_matrix(float screenWidth, float screenHeight) const;
 
   glm::mat4 get_projection_matrix() const;
@@ -131,9 +133,9 @@ public:
 
       glm::vec3 pivotToPosition =
           this->Position - this->arcballInput.ArcballTarget;
-      this->Position = combined * pivotToPosition;
-      // std::cout << Position.x << " " << Position.y << " " << Position.z
-      //           << std::endl;
+      pivotToPosition = combined * pivotToPosition;
+
+      this->Position = this->arcballInput.ArcballTarget + pivotToPosition;
     }
 
     // update Front, Right and Up Vectors using the updated Euler angles
@@ -172,11 +174,7 @@ private:
     } else if (this->inputType == ARCBALL) {
       this->Front =
           glm::normalize(this->arcballInput.ArcballTarget - this->Position);
-      this->Right = glm::normalize(
-          glm::cross(Front,
-                     WorldUp)); // normalize the vectors, because their length
-                                // gets closer to 0 the more you look up or
-                                // down which results in slower movement.
+      this->Right = glm::normalize(glm::cross(Front, WorldUp));
       this->Up = glm::normalize(glm::cross(Right, Front));
     }
   }

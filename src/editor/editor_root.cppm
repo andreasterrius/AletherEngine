@@ -196,7 +196,7 @@ public:
   }
 
   vector<Cmd> draw_and_handle_cmds(Window &window, StaticMeshLoader &sm_loader,
-                                   entt::registry &world) {
+                                   entt::registry &world, Camera &camera) {
     start(window.get_position(), window.get_size());
 
     vector<Cmd> cmds;
@@ -256,14 +256,15 @@ public:
     cmds.insert(cmds.end(), callback_cmds.begin(), callback_cmds.end());
     callback_cmds.clear();
 
-    handle_editor_cmds(cmds, window, sm_loader, world);
+    handle_editor_cmds(cmds, window, sm_loader, world, camera);
 
     end();
     return cmds;
   }
 
   void handle_editor_cmds(vector<Cmd> &cmds, Window &window,
-                          StaticMeshLoader &sm_loader, entt::registry &world) {
+                          StaticMeshLoader &sm_loader, entt::registry &world,
+                          Camera &camera) {
     while (!cmds.empty()) {
       auto cmd = cmds.back();
       cmds.pop_back();
@@ -318,6 +319,12 @@ public:
               world = serde::load_world("temp/scenes/editor2.json", sm_loader);
             } catch (const std::exception &e) {
               // logger::get()->info("{}", e.what());
+            }
+          },
+          [&](CameraLookAtEntityCmd &arg) {
+            auto transform = world.try_get<Transform>(arg.entity);
+            if (transform != nullptr) {
+              camera.set_look_at(transform->translation);
             }
           });
     }
@@ -405,6 +412,12 @@ public:
       } else if (key == GLFW_KEY_Z && action == GLFW_PRESS &&
                  (mods & GLFW_MOD_CONTROL) && (mods & GLFW_MOD_SHIFT)) {
         callback_cmds.emplace_back(RedoCmd{});
+      }
+
+      if (key == GLFW_KEY_F && action == GLFW_PRESS &&
+          gizmo.selected_entity != nullopt) {
+        callback_cmds.emplace_back(
+            CameraLookAtEntityCmd{*gizmo.selected_entity});
       }
     }
   }

@@ -8,10 +8,14 @@
 
 namespace ale {
 Camera::Camera(Camera_InputType inputType, int width, int height,
-               glm::vec3 position, glm::vec3 up, float yaw, float pitch)
-    : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED),
-      MouseSensitivity(SENSITIVITY), Zoom(ZOOM), inputType(inputType),
-      Width(width), Height(height) {
+               glm::vec3 position, glm::vec3 up, float yaw, float pitch) :
+    Front(glm::vec3(0.0f, 0.0f, -1.0f)),
+    MovementSpeed(SPEED),
+    MouseSensitivity(SENSITIVITY),
+    Zoom(ZOOM),
+    inputType(inputType),
+    Width(width),
+    Height(height) {
   Position = position;
   WorldUp = up;
   Yaw = yaw;
@@ -20,9 +24,12 @@ Camera::Camera(Camera_InputType inputType, int width, int height,
 }
 
 Camera::Camera(float posX, float posY, float posZ, float upX, float upY,
-               float upZ, float yaw, float pitch)
-    : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED),
-      MouseSensitivity(SENSITIVITY), Zoom(ZOOM), inputType(FPS) {
+               float upZ, float yaw, float pitch) :
+    Front(glm::vec3(0.0f, 0.0f, -1.0f)),
+    MovementSpeed(SPEED),
+    MouseSensitivity(SENSITIVITY),
+    Zoom(ZOOM),
+    inputType(FPS) {
   Position = glm::vec3(posX, posY, posZ);
   WorldUp = glm::vec3(upX, upY, upZ);
   Yaw = yaw;
@@ -46,6 +53,10 @@ void Camera::set_handle_input(bool handle_input) {
 
 glm::mat4 Camera::get_view_matrix() const {
   return glm::lookAt(Position, Position + Front, Up);
+}
+void Camera::set_look_at(glm::vec3 point) {
+  this->arcballInput.ArcballTarget = point;
+  updateCameraVectors();
 }
 
 glm::mat4 Camera::get_projection_matrix(float screenWidth,

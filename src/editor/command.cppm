@@ -28,8 +28,11 @@ struct UndoCmd {};
 struct RedoCmd {};
 struct SaveWorldCmd {};
 struct LoadWorldCmd {};
+struct CameraLookAtEntityCmd {
+  entt::entity entity;
+};
 
 using Cmd = std::variant<ExitCmd, NewWorldCmd, NewObjectCmd, ItemInspector::Cmd,
                          TransformChangeNotif, UndoCmd, RedoCmd, SaveWorldCmd,
-                         LoadWorldCmd>;
+                         LoadWorldCmd, CameraLookAtEntityCmd>;
 } // namespace ale::editor

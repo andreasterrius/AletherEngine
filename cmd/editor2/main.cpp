@@ -58,26 +58,26 @@ int main() {
   auto sm_loader = StaticMeshLoader(texture_stash);
 
   // Declare UI related
-  auto editor_root_layout_ui = editor::EditorRoot(sm_loader, window.get_size());
-  auto world = editor_root_layout_ui.new_world(sm_loader);
+  auto editor_root = editor::EditorRoot(sm_loader, window.get_size());
+  auto world = editor_root.new_world(sm_loader);
 
   camera.add_listener(&window);
-  editor_root_layout_ui.add_listener(&window);
+  editor_root.add_listener(&window);
 
   while (!window.get_should_close()) {
     // Input stuff
-    camera.set_handle_input(editor_root_layout_ui.get_scene_has_focus());
+    camera.set_handle_input(editor_root.get_scene_has_focus());
 
-    editor_root_layout_ui.set_tick_data(editor::EditorRoot::TickData{
+    editor_root.set_tick_data(editor::EditorRoot::TickData{
         .camera = &camera,
         .world = &world,
         .cursor_pos_topleft = window.get_cursor_pos_from_top_left()});
-    editor_root_layout_ui.tick();
+    editor_root.tick();
 
     // Render Scene
     deferred_renderer.render_first_pass(camera, world);
 
-    editor_root_layout_ui.capture_scene(
+    editor_root.capture_scene(
         [&]() {
           deferred_renderer.render_second_pass(camera, world);
 
@@ -89,7 +89,7 @@ int main() {
     // Render UI
     {
       window.start_ui_frame();
-      editor_root_layout_ui.draw_and_handle_cmds(window, sm_loader, world);
+      editor_root.draw_and_handle_cmds(window, sm_loader, world, camera);
       window.end_ui_frame();
     }
 
