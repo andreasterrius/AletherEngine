@@ -4,12 +4,13 @@
 
 #include "line_renderer.h"
 
+#include <glad/glad.h>
 #include "model.h"
 #include "src/data/boundingbox.h"
-#include "src/data/file_system.h"
 #include "src/data/transform.h"
 #include "src/graphics/ray.h"
-#include <glad/glad.h>
+
+import file_system;
 
 #define LINE_BUFFER_SIZE 300000
 #define BOX_BUFFER_SIZE 90000
@@ -19,13 +20,12 @@ using namespace glm;
 using namespace std;
 using afs = ale::FileSystem;
 
-LineRenderer::LineRenderer()
-    : lineShader(
-          Shader(afs::root("resources/shaders/renderer/lines.vs").c_str(),
-                 afs::root("resources/shaders/renderer/lines.fs").c_str())),
-      boxShader(
-          Shader(afs::root("resources/shaders/renderer/box.vs").c_str(),
-                 afs::root("resources/shaders/renderer/box.fs").c_str())) {
+LineRenderer::LineRenderer() :
+    lineShader(
+        Shader(afs::root("resources/shaders/renderer/lines.vs").c_str(),
+               afs::root("resources/shaders/renderer/lines.fs").c_str())),
+    boxShader(Shader(afs::root("resources/shaders/renderer/box.vs").c_str(),
+                     afs::root("resources/shaders/renderer/box.fs").c_str())) {
   glGenVertexArrays(1, &linesVAO);
   glGenBuffers(1, &linesVBO);
   // fill buffer
@@ -36,10 +36,11 @@ LineRenderer::LineRenderer()
   //  link vertex attributes
   glBindVertexArray(linesVAO);
   glEnableVertexAttribArray(0); // position
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                        (void *) 0);
   glEnableVertexAttribArray(1); // color
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
-                        (void *)(3 * sizeof(float)));
+                        (void *) (3 * sizeof(float)));
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
@@ -58,31 +59,31 @@ LineRenderer::LineRenderer()
   // set the vertex attribute pointers
   // vertex Positions
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) 0);
   // vertex normals
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        (void *)offsetof(Vertex, normal));
+                        (void *) offsetof(Vertex, normal));
   // vertex texture coords
   glEnableVertexAttribArray(2);
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        (void *)offsetof(Vertex, tex_coords));
+                        (void *) offsetof(Vertex, tex_coords));
   // vertex tangent
   glEnableVertexAttribArray(3);
   glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        (void *)offsetof(Vertex, tangent));
+                        (void *) offsetof(Vertex, tangent));
   // vertex bitangent
   glEnableVertexAttribArray(4);
   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        (void *)offsetof(Vertex, bitangent));
+                        (void *) offsetof(Vertex, bitangent));
   // bone ids
   glEnableVertexAttribArray(5);
   glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex),
-                         (void *)offsetof(Vertex, m_BoneIDs));
+                         (void *) offsetof(Vertex, m_BoneIDs));
   // weights
   glEnableVertexAttribArray(6);
   glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        (void *)offsetof(Vertex, m_Weights));
+                        (void *) offsetof(Vertex, m_Weights));
 
   // instancing
   glGenBuffers(1, &boxInstanceVBO);
@@ -92,15 +93,15 @@ LineRenderer::LineRenderer()
 
   glEnableVertexAttribArray(7);
   glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3) * 3,
-                        (void *)0);
+                        (void *) 0);
 
   glEnableVertexAttribArray(8);
   glVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3) * 3,
-                        (void *)sizeof(glm::vec3));
+                        (void *) sizeof(glm::vec3));
 
   glEnableVertexAttribArray(9);
   glVertexAttribPointer(9, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3) * 3,
-                        (void *)(2 * sizeof(vec3)));
+                        (void *) (2 * sizeof(vec3)));
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glVertexAttribDivisor(7, 1);
@@ -125,7 +126,7 @@ void LineRenderer::render(mat4 projection, mat4 view) {
     this->lineShader.setMat4("view", view);
     this->lineShader.setMat4("projection", projection);
     for (int i = 0; i < this->lineData.size(); i += LINE_BUFFER_SIZE) {
-      int size = std::min(LINE_BUFFER_SIZE, (int)this->lineData.size() - i);
+      int size = std::min(LINE_BUFFER_SIZE, (int) this->lineData.size() - i);
       glBufferSubData(GL_ARRAY_BUFFER, 0, size * sizeof(Data),
                       &this->lineData[i]);
 
@@ -144,7 +145,7 @@ void LineRenderer::render(mat4 projection, mat4 view) {
     this->boxShader.setMat4("projection", projection);
     glBindBuffer(GL_ARRAY_BUFFER, boxInstanceVBO);
     for (int i = 0; i < this->boxData.size(); i += BOX_BUFFER_SIZE) {
-      int size = std::min(BOX_BUFFER_SIZE, (int)this->boxData.size() - i);
+      int size = std::min(BOX_BUFFER_SIZE, (int) this->boxData.size() - i);
       ;
 
       glBufferSubData(GL_ARRAY_BUFFER, 0, size * sizeof(vec3),

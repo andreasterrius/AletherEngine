@@ -4,7 +4,6 @@ module;
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <string>
-#include "src/data/file_system.h"
 #include "src/data/serde/glm.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/framebuffer.h"
@@ -16,6 +15,7 @@ module;
 export module deferred_renderer;
 
 import material;
+import file_system;
 
 export namespace ale {
 class DeferredRendererException final : public std::runtime_error {
@@ -145,33 +145,14 @@ public:
     first_pass.setMat4("view", camera.get_view_matrix());
     const auto view = world.view<Transform, StaticMesh, BasicMaterial>();
     for (auto [entity, transform, static_mesh, material]: view.each()) {
-      first_pass.setMat4("model", transform.get_model_matrix());
-      first_pass.setInt("entityId", to_integral(entity));
+      pass_basic_material(first_pass, entity, material);
+      pass_shadow(first_pass, static_mesh);
+    }
 
-      first_pass.setVec3("diffuseColor", material.diffuse_color);
-      first_pass.setTexture2D("diffuseTexture", 0,
-                              material.diffuse_texture == nullptr
-                                  ? single_black_pixel_texture.id
-                                  : material.diffuse_texture->id);
-      first_pass.setFloat("specularColor", material.specular_color);
-      first_pass.setTexture2D("specularTexture", 1,
-                              material.specular_texture == nullptr
-                                  ? single_black_pixel_texture.id
-                                  : material.specular_texture->id);
-
-      static_mesh.get_model()->draw(first_pass);
-
-      auto [packed, packed_index] = static_mesh.get_model_shadow();
-      if (static_mesh.get_cast_shadow() && packed != nullptr) {
-        if (first_pass_data.sdf_model_packed != nullptr &&
-            first_pass_data.sdf_model_packed.get() != packed.get()) {
-          throw DeferredRendererException(
-              "multiple different sdf model packed on "
-              "deferred renderer not supported");
-        }
-        first_pass_data.sdf_model_packed = packed;
-        first_pass_data.entries.emplace_back(transform, packed_index);
-      }
+    const auto pbrs = world.view<Transform, StaticMesh, PBRMaterial>();
+    for (auto [entity, transform, static_mesh, material]: pbrs.each()) {
+      pass_pbr_material(first_pass, entity, material);
+      pass_shadow(first_pass, static_mesh);
     }
 
     deferred_framebuffer.end_capture();
@@ -230,6 +211,58 @@ public:
     texture_renderer.render_quad(second_pass);
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
+  }
+
+private:
+  void pass_basic_material(Shader &first_pass, entt::entity &entity,
+                           BasicMaterial &material) {
+    first_pass.setMat4("model", transform.get_model_matrix());
+    first_pass.setInt("entityId", to_integral(entity));
+
+    pass_vec3("diffuse", material.diffuse_color, material.diffuse_texture);
+    pass_float("specular", material.specular_color, material.specular_texture);
+
+    // first_pass.setVec3("diffuseColor", material.diffuse_color);
+    // first_pass.setTexture2D("diffuseTexture", 0,
+    //                         material.diffuse_texture == nullptr
+    //                             ? single_black_pixel_texture.id
+    //                             : material.diffuse_texture->id);
+    // first_pass.setFloat("specularColor", material.specular_color);
+    // first_pass.setTexture2D("specularTexture", 1,
+    //                         material.specular_texture == nullptr
+    //                             ? single_black_pixel_texture.id
+    //                             : material.specular_texture->id);
+  }
+
+  void pass_pbr_material(Shader &first_pass, entt::entity &entity,
+                         PBRMaterial &material) {}
+
+  void pass_shadow(Shader &first_pass, StaticMesh &static_mesh) {
+    static_mesh.get_model()->draw(first_pass);
+    auto [packed, packed_index] = static_mesh.get_model_shadow();
+    if (static_mesh.get_cast_shadow() && packed != nullptr) {
+      if (first_pass_data.sdf_model_packed != nullptr &&
+          first_pass_data.sdf_model_packed.get() != packed.get()) {
+        throw DeferredRendererException(
+            "multiple different sdf model packed on "
+            "deferred renderer not supported");
+      }
+      first_pass_data.sdf_model_packed = packed;
+      first_pass_data.entries.emplace_back(transform, packed_index);
+    }
+  }
+
+  void pass_float(string name, float color, shared_ptr<Texture> texture) {
+    first_pass.setFloat(name + "Color", color);
+    first_pass.setTexture2D(name + "Texture", 1,
+                            texture == nullptr ? single_black_pixel_texture.id
+                                               : texture->id);
+  }
+  void pass_vec3(string name, glm::vec3 color, shared_ptr<Texture> texture) {
+    first_pass.setVec3(name + "Color", color);
+    first_pass.setTexture2D(name + "Texture", 1,
+                            texture == nullptr ? single_black_pixel_texture.id
+                                               : texture->id);
   }
 
 public:

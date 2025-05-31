@@ -1,23 +1,23 @@
 #include "basic_renderer.h"
 
-import material;
-
-#include "src/data/file_system.h"
+#include <format>
 #include "src/graphics/light.h"
 #include "src/graphics/static_mesh.h"
-#include <format>
+
+import material;
+import file_system;
 
 namespace ale {
 
 using namespace glm;
 using afs = ale::FileSystem;
 
-BasicRenderer::BasicRenderer()
-    : color_shader(
-          afs::root("resources/shaders/renderer/basic_renderer.vs").c_str(),
-          afs::root("resources/shaders/renderer/basic_renderer.fs").c_str()),
-      single_black_pixel_texture(
-          afs::root("resources/textures/default/black1x1.png")) {}
+BasicRenderer::BasicRenderer() :
+    color_shader(
+        afs::root("resources/shaders/renderer/basic_renderer.vs").c_str(),
+        afs::root("resources/shaders/renderer/basic_renderer.fs").c_str()),
+    single_black_pixel_texture(
+        afs::root("resources/textures/default/black1x1.png")) {}
 
 void BasicRenderer::render(Camera &camera, entt::registry &world) {
   glClearColor(135.0 / 255, 206.0 / 255, 235.0 / 255, 1.0f);
@@ -30,7 +30,7 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
 
   auto light_view = world.view<Transform, Light>();
   int light_index = 0;
-  for (const auto &[entity, transform, light] : light_view.each()) {
+  for (const auto &[entity, transform, light]: light_view.each()) {
     color_shader.setVec3(format("lights[{}].position", light_index),
                          transform.translation);
     color_shader.setVec3(format("lights[{}].color", light_index), light.color);
@@ -46,7 +46,7 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
   auto sdf_model_packed = std::shared_ptr<SdfModelPacked>(nullptr);
   auto entries = vector<pair<Transform, vector<unsigned int>>>();
   auto shadow_view = world.view<Transform, StaticMesh>();
-  for (auto [entity, transform, static_mesh] : shadow_view.each()) {
+  for (auto [entity, transform, static_mesh]: shadow_view.each()) {
     auto [packed, packed_index] = static_mesh.get_model_shadow();
     if (static_mesh.get_cast_shadow() && packed != nullptr) {
       if (sdf_model_packed != nullptr &&
@@ -65,7 +65,7 @@ void BasicRenderer::render(Camera &camera, entt::registry &world) {
 
   // Render static mesh
   const auto view = world.view<Transform, StaticMesh, BasicMaterial>();
-  for (auto [entity, transform, static_mesh, material] : view.each()) {
+  for (auto [entity, transform, static_mesh, material]: view.each()) {
     color_shader.setMat4("model", transform.get_model_matrix());
 
     color_shader.setVec4("diffuseColor", vec4(1.0, 1.0, 1.0, 0.0));

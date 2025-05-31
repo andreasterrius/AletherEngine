@@ -7,9 +7,10 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
-#include "src/data/file_system.h"
 #include "src/data/scene_node.h"
 #include "src/graphics/renderer/basic_renderer.h"
+
+import file_system;
 
 using afs = ale::FileSystem;
 

@@ -1,9 +1,10 @@
 #include "shader.h"
 
-#include "src/data/file_system.h"
 #include <fstream>
 #include <regex>
 #include <sstream>
+
+import file_system;
 
 using afs = ale::FileSystem;
 
@@ -168,7 +169,7 @@ std::string Shader::remove_include_lines(const std::string &input,
   for (; it != end; ++it) {
     std::smatch match = *it;
     std::string line_content = match[1]; // Line text (without newline)
-    std::string line_ending = match[2];  // Newline character(s)
+    std::string line_ending = match[2]; // Newline character(s)
 
     if (std::regex_match(line_content, include_re)) {
       if (replace_with_spaces) {

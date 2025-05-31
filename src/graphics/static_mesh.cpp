@@ -1,10 +1,11 @@
 #include "static_mesh.h"
 
-#include "src/data/file_system.h"
 #include <filesystem>
 #include <fstream>
 #include <spdlog/spdlog.h>
 #include <utility>
+
+import file_system;
 
 namespace fs = std::filesystem;
 using afs = ale::FileSystem;
@@ -12,9 +13,10 @@ using afs = ale::FileSystem;
 namespace ale {
 StaticMesh::StaticMesh(shared_ptr<Model> model,
                        shared_ptr<SdfModelPacked> sdf_model_packed,
-                       vector<unsigned int> sdf_model_packed_index)
-    : model(std::move(model)), sdf_model_packed(std::move(sdf_model_packed)),
-      sdf_model_packed_index(std::move(sdf_model_packed_index)) {}
+                       vector<unsigned int> sdf_model_packed_index) :
+    model(std::move(model)),
+    sdf_model_packed(std::move(sdf_model_packed)),
+    sdf_model_packed_index(std::move(sdf_model_packed_index)) {}
 
 void StaticMesh::set_cast_shadow(bool cast_shadow) {
   this->meta.cast_shadow = cast_shadow;
@@ -39,9 +41,9 @@ StaticMesh::Serde StaticMesh::to_serde() {
 }
 
 StaticMeshLoader::StaticMeshLoader(
-    const shared_ptr<Stash<Texture>> &texture_stash)
-    : packed(make_shared<SdfModelPacked>(vector<SdfModel *>(), false)),
-      texture_stash(texture_stash) {
+    const shared_ptr<Stash<Texture>> &texture_stash) :
+    packed(make_shared<SdfModelPacked>(vector<SdfModel *>(), false)),
+    texture_stash(texture_stash) {
   this->load_static_mesh(afs::root("resources/models/default/unit_cube.obj"),
                          {SM_UNIT_CUBE});
   this->load_static_mesh(afs::root("resources/models/default/unit_sphere.obj"),
@@ -100,7 +102,7 @@ StaticMesh StaticMeshLoader::load_static_mesh(string path,
       StaticMesh{make_shared<Model>(std::move(model)), packed, indices};
   this->static_meshes.emplace(id, static_mesh);
 
-  for (auto &name : alternate_names) {
+  for (auto &name: alternate_names) {
     this->alternate_names[name] = id;
   }
 
@@ -112,7 +114,7 @@ StaticMeshLoader::load_static_mesh_with_basic_material(string path) {
   auto basic_material = BasicMaterial{};
 
   // let's load the basic material if we can here
-  for (auto &mesh : static_mesh.get_model()->meshes) {
+  for (auto &mesh: static_mesh.get_model()->meshes) {
     if (auto diffuse = mesh.textures.diffuse) {
       auto diffuse_texture = texture_stash->get_or(
           *diffuse, [&](std::string &path) { return Texture(path); });

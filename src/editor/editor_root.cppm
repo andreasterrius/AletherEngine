@@ -15,7 +15,6 @@ module;
 #include <spdlog/spdlog.h>
 #include "scene_tree.h"
 #include "scene_viewport.h"
-#include "src/data/file_system.h"
 #include "src/data/scene_node.h"
 #include "src/data/serde/world.h"
 #include "src/graphics/camera.h"
@@ -35,6 +34,7 @@ import content_browser;
 import util;
 import logger;
 import dialog;
+import file_system;
 
 export namespace ale::editor {
 using namespace glm;
@@ -117,11 +117,13 @@ public:
 public:
   using afs = ale::FileSystem;
 
-  EditorRoot(StaticMeshLoader &sm_loader, ivec2 initial_window_size) :
+  EditorRoot(StaticMeshLoader &sm_loader,
+             shared_ptr<Stash<Texture>> texture_stash,
+             ivec2 initial_window_size) :
       gizmo_frame(Framebuffer::Meta{.width = initial_window_size.x,
                                     .height = initial_window_size.y,
                                     .color_space = Framebuffer::LINEAR}),
-      content_browser_ui(sm_loader,
+      content_browser_ui(sm_loader, texture_stash,
                          afs::root("resources/models/content_browser")),
       scene_viewport_ui(initial_window_size),
       gizmo_light(make_pair(vec3(5.0f), Light{})),
@@ -262,7 +264,7 @@ public:
       }
     }
 
-    if (auto entry = content_browser_ui.draw_and_handle_clicks()) {
+    if (auto entry = content_browser_ui.draw_and_handle_clicks(sm_loader)) {
       cmds.emplace_back(NewObjectCmd{*entry});
     }
 
@@ -300,6 +302,23 @@ public:
     // Finalize the layout
     ImGui::DockBuilderFinish(dockspace_id);
 
+    if (ImGui::BeginPopupModal("Quit Confirmation", NULL,
+                               ImGuiWindowFlags_AlwaysAutoResize)) {
+      ImGui::Text("Are you sure you want to quit?");
+      ImGui::Separator();
+
+      if (ImGui::Button("Yes", ImVec2(120, 0))) {
+        window.set_should_close(true);
+      }
+
+      ImGui::SetItemDefaultFocus();
+      ImGui::SameLine();
+      if (ImGui::Button("No", ImVec2(120, 0))) {
+        ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
+    }
+
     cmds.insert(cmds.end(), callback_cmds.begin(), callback_cmds.end());
     callback_cmds.clear();
 
@@ -319,20 +338,26 @@ public:
       cmds.pop_back();
 
       match(
-          cmd, [&](ExitCmd &arg) { window.set_should_close(true); },
+          cmd, [&](ExitCmd &arg) { ImGui::OpenPopup("Quit Confirmation"); },
           [&](NewWorldCmd &arg) {
             world.clear<>();
             world = new_world(sm_loader);
           },
           [&](NewObjectCmd &arg) {
-            const auto entity = world.create();
-            world.emplace<SceneNode>(entity,
-                                     arg.new_object.static_mesh.get_model()
-                                         ->path.filename()
-                                         .string());
-            world.emplace<Transform>(entity, Transform{});
-            world.emplace<StaticMesh>(entity, arg.new_object.static_mesh);
-            world.emplace<BasicMaterial>(entity, arg.new_object.basic_material);
+            if (arg.new_object.static_mesh_with_material != nullopt) {
+
+              const auto entity = world.create();
+              world.emplace<SceneNode>(
+                  entity,
+                  arg.new_object.static_mesh_with_material->first.get_model()
+                      ->path.filename()
+                      .string());
+              world.emplace<Transform>(entity, Transform{});
+              world.emplace<StaticMesh>(
+                  entity, arg.new_object.static_mesh_with_material->first);
+              world.emplace<BasicMaterial>(
+                  entity, arg.new_object.static_mesh_with_material->second);
+            }
           },
           [&](ItemInspector::Cmd &arg) {
             match(arg, [&](ItemInspector::LoadTextureCmd &arg) {

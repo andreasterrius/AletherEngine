@@ -27,4 +27,23 @@ public:
     this->specular_color = 0.0f;
   }
 };
+
+struct PBRMaterial {
+public:
+  glm::vec3 albedo = glm::vec3(1.0f);
+  std::shared_ptr<Texture> albedo_texture = nullptr;
+
+  glm::vec3 normal = glm::vec3(0.0f);
+  std::shared_ptr<Texture> normal_texture = nullptr;
+
+  float metallic = 0.0f;
+  std::shared_ptr<Texture> metallic_texture = nullptr;
+
+  float roughness = 0.0f;
+  std::shared_ptr<Texture> roughness_texture = nullptr;
+
+  float ao = 0.0f;
+  std::shared_ptr<Texture> ao_texture = nullptr;
+};
+
 }; // namespace ale

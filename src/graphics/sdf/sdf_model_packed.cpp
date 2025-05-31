@@ -1,6 +1,6 @@
 #include "src/graphics/sdf/sdf_model_packed.h"
 
-#include "src/data/file_system.h"
+import file_system;
 
 using afs = ale::FileSystem;
 using namespace glm;
@@ -13,7 +13,7 @@ ale::SdfModelPacked::pack_sdf_models(vector<SdfModel *> sdf_models) {
   auto packed_count = 0; // how many texture is packed inside an atlas
   auto entries = vector<unsigned int>{};
 
-  for (auto &it : sdf_models) {
+  for (auto &it: sdf_models) {
     auto sdf_data = it->texture3D->retrieve_data_from_gpu();
     Texture3D::Meta meta = it->texture3D->meta;
 
@@ -39,7 +39,7 @@ ale::SdfModelPacked::pack_sdf_models(vector<SdfModel *> sdf_models) {
         .size = size,
         .inner_bb = it->bb,
         .outer_bb = it->outerBB,
-        .atlas_index = (int)texture_atlas.size(),
+        .atlas_index = (int) texture_atlas.size(),
         .atlas_count = packed_count,
     });
     packed_count += 1;
@@ -81,14 +81,15 @@ ale::SdfModelPacked::pack_sdf_models(vector<SdfModel *> sdf_models) {
 }
 
 ale::SdfModelPacked::SdfModelPacked(vector<SdfModel *> sdf_models,
-                                    bool debug_mode)
-    : debug_mode(debug_mode) {
+                                    bool debug_mode) :
+    debug_mode(debug_mode) {
   pack_sdf_models(sdf_models);
 }
 
-ale::SdfModelPacked::SdfModelPacked(SdfModelPacked &&other)
-    : texture_atlas(std::move(other.texture_atlas)),
-      offsets(std::move(other.offsets)), debug_mode(other.debug_mode) {}
+ale::SdfModelPacked::SdfModelPacked(SdfModelPacked &&other) :
+    texture_atlas(std::move(other.texture_atlas)),
+    offsets(std::move(other.offsets)),
+    debug_mode(other.debug_mode) {}
 
 ale::SdfModelPacked &ale::SdfModelPacked::operator=(SdfModelPacked &&other) {
   if (this != &other) {
@@ -108,8 +109,8 @@ void ale::SdfModelPacked::bind_to_shader(
   auto details = vector<GPUObject>();
   // TODO: no need to do this every frame, only when a change occur
   // TODO: shader supports 1 MESH = 1 SDF, not 1 MODEL = 1 SDF
-  for (auto [transform, shadow_indices] : entries) {
-    for (auto shadow_index : shadow_indices) {
+  for (auto [transform, shadow_indices]: entries) {
+    for (auto shadow_index: shadow_indices) {
       auto &p = offsets[shadow_index];
       mat4 model = transform.get_model_matrix();
       details.push_back(GPUObject{

@@ -5,16 +5,16 @@
 #include "sdf_generator_gpu_v2.h"
 
 #include "sdf_generator_gpu_v2_shared.h"
-#include "src/data/file_system.h"
+
+import file_system;
 
 using afs = ale::FileSystem;
 using namespace std;
 using namespace glm;
 
 namespace ale {
-SdfGeneratorGPUV2::SdfGeneratorGPUV2()
-    : sdfgen_v2(
-          afs::root("resources/shaders/sdf/sdf_generator_gpu_v2.cs")) {}
+SdfGeneratorGPUV2::SdfGeneratorGPUV2() :
+    sdfgen_v2(afs::root("resources/shaders/sdf/sdf_generator_gpu_v2.cs")) {}
 
 vector<Texture3D> SdfGeneratorGPUV2::generate_cpu(Model &M, int resolution) {
   return {};
@@ -23,7 +23,7 @@ vector<Texture3D> SdfGeneratorGPUV2::generate_cpu(Model &M, int resolution) {
 vector<Texture3D> SdfGeneratorGPUV2::generate_gpu(Model &m, int resolution) {
 
   auto sdfs = vector<Texture3D>();
-  for (auto &mesh : m.meshes) {
+  for (auto &mesh: m.meshes) {
     sdfs.emplace_back(std::move(generate_gpu(mesh, resolution)));
   }
   return sdfs;

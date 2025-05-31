@@ -8,17 +8,15 @@ import history_stack;
 import content_browser;
 import editor_root;
 import item_inspector;
+import file_system;
+import default_resources;
 
 // clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
-#include "src/data/file_system.h"
 #include "src/data/scene_node.h"
 #include "src/data/serde/world.h"
 #include "src/graphics/camera.h"
@@ -58,7 +56,8 @@ int main() {
   auto sm_loader = StaticMeshLoader(texture_stash);
 
   // Declare UI related
-  auto editor_root = editor::EditorRoot(sm_loader, window.get_size());
+  auto editor_root =
+      editor::EditorRoot(sm_loader, texture_stash, window.get_size());
   auto world = editor_root.new_world(sm_loader);
 
   camera.add_listener(&window);

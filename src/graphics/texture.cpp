@@ -4,28 +4,29 @@
 
 #include "texture.h"
 
-#include "src/data/file_system.h"
 #include <fstream>
 #include <glad/glad.h>
 #include <stb_image.h>
+
+import file_system;
 
 using afs = ale::FileSystem;
 using namespace std;
 using namespace glm;
 
-TextureRenderer::TextureRenderer()
-    : shader(afs::root("resources/shaders/renderer/texture2d.vs").c_str(),
-             afs::root("resources/shaders/renderer/texture2d.fs").c_str()) {
+TextureRenderer::TextureRenderer() :
+    shader(afs::root("resources/shaders/renderer/texture2d.vs").c_str(),
+           afs::root("resources/shaders/renderer/texture2d.fs").c_str()) {
   float vertices[] = {
       // Positions       // Texture Coords
       -1.0f, 1.0f,  0.0f, 0.0f, 1.0f, // Top-left
       -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // Bottom-left
       1.0f,  -1.0f, 0.0f, 1.0f, 0.0f, // Bottom-right
-      1.0f,  1.0f,  0.0f, 1.0f, 1.0f  // Top-right
+      1.0f,  1.0f,  0.0f, 1.0f, 1.0f // Top-right
   };
   unsigned int indices[] = {
       0, 1, 2, // First triangle
-      2, 3, 0  // Second triangle
+      2, 3, 0 // Second triangle
   };
 
   glGenVertexArrays(1, &vao);
@@ -62,9 +63,11 @@ TextureRenderer::~TextureRenderer() {
   glDeleteBuffers(1, &ebo);
 }
 
-TextureRenderer::TextureRenderer(TextureRenderer &&other) noexcept
-    : vao(other.vao), vbo(other.vbo), ebo(other.ebo),
-      shader(std::move(other.shader)) {
+TextureRenderer::TextureRenderer(TextureRenderer &&other) noexcept :
+    vao(other.vao),
+    vbo(other.vbo),
+    ebo(other.ebo),
+    shader(std::move(other.shader)) {
   other.vao = 0;
   other.vbo = 0;
   other.ebo = 0;
@@ -141,8 +144,8 @@ Texture::Texture(string path) {
   stbi_image_free(data);
 }
 
-Texture::Texture(Meta meta, vector<float> &pixels)
-    : Texture(meta, pixels.empty() ? nullptr : pixels.data()) {}
+Texture::Texture(Meta meta, vector<float> &pixels) :
+    Texture(meta, pixels.empty() ? nullptr : pixels.data()) {}
 
 Texture::Texture(Meta meta, void *data) : meta(meta) {
   glGenTextures(1, &this->id);
@@ -163,7 +166,7 @@ Texture::~Texture() { glDeleteTextures(1, &this->id); }
 void Texture::replace_data(vector<vector<vec4>> &color_data) {
   // Flatten the 2D vector to a 1D array
   std::vector<glm::vec4> flattenedData;
-  for (const auto &row : color_data) {
+  for (const auto &row: color_data) {
     flattenedData.insert(flattenedData.end(), row.begin(), row.end());
   }
 
@@ -189,18 +192,18 @@ vector<float> Texture::retrieve_data_from_gpu() {
   unsigned long long element_size = this->meta.width * this->meta.height;
 
   switch (this->meta.input_format) {
-  case GL_RGBA:
-    element_size *= 4;
-    break;
-  case GL_RGB:
-    element_size *= 3;
-    break;
-  case GL_RG:
-    element_size *= 2;
-    break;
-  case GL_RED:
-    element_size *= 1;
-    break;
+    case GL_RGBA:
+      element_size *= 4;
+      break;
+    case GL_RGB:
+      element_size *= 3;
+      break;
+    case GL_RG:
+      element_size *= 2;
+      break;
+    case GL_RED:
+      element_size *= 1;
+      break;
   }
   vector<float> data(element_size);
 
@@ -236,8 +239,9 @@ void Texture::dump_data_to_file(string path) {
   out_file.close();
 }
 
-Texture::Texture(Texture &&other) noexcept
-    : meta(std::move(other.meta)), id(other.id) {
+Texture::Texture(Texture &&other) noexcept :
+    meta(std::move(other.meta)),
+    id(other.id) {
   other.id = 0;
 }
 
@@ -256,18 +260,18 @@ vector<float> Texture3D::retrieve_data_from_gpu() {
       this->meta.width * this->meta.height * this->meta.depth;
 
   switch (this->meta.input_format) {
-  case GL_RGBA:
-    element_size *= 4;
-    break;
-  case GL_RGB:
-    element_size *= 3;
-    break;
-  case GL_RG:
-    element_size *= 2;
-    break;
-  case GL_RED:
-    element_size *= 1;
-    break;
+    case GL_RGBA:
+      element_size *= 4;
+      break;
+    case GL_RGB:
+      element_size *= 3;
+      break;
+    case GL_RG:
+      element_size *= 2;
+      break;
+    case GL_RED:
+      element_size *= 1;
+      break;
   }
   vector<float> data(element_size);
 
@@ -342,8 +346,9 @@ Texture3D Texture3D::load(string name) {
   return std::move(Texture3D(meta, pixels));
 }
 
-Texture3D::Texture3D(Texture3D &&other) noexcept
-    : meta(other.meta), id(other.id) {
+Texture3D::Texture3D(Texture3D &&other) noexcept :
+    meta(other.meta),
+    id(other.id) {
   other.id = 0;
 }
 

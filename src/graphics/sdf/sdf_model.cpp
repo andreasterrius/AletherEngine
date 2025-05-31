@@ -4,24 +4,27 @@
 
 #include "src/graphics/sdf/sdf_model.h"
 
+#include <fstream>
+#include <functional>
+#include <iostream>
 #include "src/data/boundingbox.h"
-#include "src/data/file_system.h"
 #include "src/data/transform.h"
 #include "src/data/util.h"
 #include "src/graphics/model.h"
 #include "src/graphics/shader.h"
 #include "src/graphics/texture.h"
-#include <fstream>
-#include <functional>
-#include <iostream>
+
+import file_system;
 
 using namespace ale;
 using namespace glm;
 using namespace std;
 using afs = ale::FileSystem;
 
-SdfModel::SdfModel(Mesh &mesh, int cubeCount)
-    : cubeCount(cubeCount), outerBB(mesh.boundingBox), bb(mesh.boundingBox) {
+SdfModel::SdfModel(Mesh &mesh, int cubeCount) :
+    cubeCount(cubeCount),
+    outerBB(mesh.boundingBox),
+    bb(mesh.boundingBox) {
   // explode the bounding box a little bit
   Transform scaleBB{
       .scale = vec3(1.1, 1.1, 1.1),
@@ -47,7 +50,7 @@ SdfModel::SdfModel(Mesh &mesh, int cubeCount)
                                      tIsect)) {
         vec3 isect = bb.center + vec3(0.0, 1.0, 0.0) * tIsect;
         bool ok = true;
-        for (auto ii : isectPoint) {
+        for (auto ii: isectPoint) {
           if (distance(isect, ii) < 0.001) {
             ok = false;
             break;
@@ -92,9 +95,11 @@ SdfModel::SdfModel(Mesh &mesh, int cubeCount)
                               distances1D);
 }
 
-ale::SdfModel::SdfModel(Mesh &mesh, Texture3D texture3D, int cubeCount)
-    : texture3D(std::move(texture3D)), cubeCount(cubeCount),
-      outerBB(mesh.boundingBox), bb(mesh.boundingBox) {
+ale::SdfModel::SdfModel(Mesh &mesh, Texture3D texture3D, int cubeCount) :
+    texture3D(std::move(texture3D)),
+    cubeCount(cubeCount),
+    outerBB(mesh.boundingBox),
+    bb(mesh.boundingBox) {
   Transform scaleBB{
       .scale = vec3(1.1, 1.1, 1.1),
   }; // make it a bit bigger

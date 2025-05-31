@@ -4,24 +4,24 @@
 
 #include "sdf_generator_gpu.h"
 
-#include "src/data/file_system.h"
+#include <fstream>
 #include "src/graphics/mesh.h"
 #include "src/graphics/sdf/sdf_model.h"
-#include <fstream>
+
+import file_system;
 
 using afs = ale::FileSystem;
 using namespace glm;
 using namespace std;
 
 namespace ale {
-ale::SdfGeneratorGPU::SdfGeneratorGPU()
-    : compute_shader(
-          afs::root("resources/shaders/sdf/sdf_generator_gpu.cs")) {
+ale::SdfGeneratorGPU::SdfGeneratorGPU() :
+    compute_shader(afs::root("resources/shaders/sdf/sdf_generator_gpu.cs")) {
   // test
 }
 
 SdfGeneratorGPU::~SdfGeneratorGPU() {
-  for (auto &[k, v] : this->sdf_infos) {
+  for (auto &[k, v]: this->sdf_infos) {
     glDeleteBuffers(1, &v.index_ssbo);
     glDeleteBuffers(1, &v.vertex_ssbo);
     glDeleteBuffers(1, &v.bb_ubo);
@@ -112,7 +112,7 @@ void SdfGeneratorGPU::add_mesh(string name, Mesh &mesh, int width, int height,
 }
 
 void SdfGeneratorGPU::generate_all() {
-  for (auto &[k, v] : this->sdf_infos) {
+  for (auto &[k, v]: this->sdf_infos) {
     if (!v.has_generated) {
       // base:0 IS bound inside the compute_shader
       glBindImageTexture(1, this->debug_result.at(k).id, 0, GL_FALSE, 0,

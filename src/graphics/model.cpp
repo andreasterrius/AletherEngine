@@ -5,8 +5,9 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-#include <stb_image.h>
 #include <vector>
+
+#include "glm/gtc/type_ptr.hpp"
 
 namespace ale {
 
@@ -64,6 +65,10 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
   vector<unsigned int> indices;
   vector<PendingTexturePath> textures;
 
+  // unordered_map<string, int> bone_mapping;
+  // vector<glm::mat4> bone_offset_matrices;
+  // int bone_counter = 0;
+
   // walk through each of the mesh's vertices
   for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
     Vertex vertex;
@@ -115,6 +120,36 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     for (unsigned int j = 0; j < face.mNumIndices; j++)
       indices.push_back(face.mIndices[j]);
   }
+
+  // // bones + weights
+  // for (unsigned int i = 0; i < mesh->mNumBones; i++) {
+  //   aiBone *bone = mesh->mBones[i];
+  //   string bone_name = bone->mName.data;
+  //
+  //   int bone_index = 0;
+  //   if (bone_mapping.find(bone_name) == bone_mapping.end()) {
+  //     bone_index = bone_counter++;
+  //     bone_mapping[bone_name] = bone_index;
+  //     bone_offset_matrices.push_back(
+  //         glm::transpose(glm::make_mat4(&bone->mOffsetMatrix.a1)));
+  //   } else {
+  //     bone_index = bone_mapping[bone_name];
+  //   }
+  //
+  //   for (unsigned int j = 0; j < bone->mNumWeights; j++) {
+  //     unsigned int vertex_id = bone->mWeights[j].mVertexId;
+  //     float weight = bone->mWeights[j].mWeight;
+  //
+  //     for (int k = 0; k < 4; ++k) {
+  //       if (vertices[vertex_id].m_Weights[k] == 0.0f) {
+  //         vertices[vertex_id].m_BoneIDs[k] = bone_index;
+  //         vertices[vertex_id].m_Weights[k] = weight;
+  //         break;
+  //       }
+  //     }
+  //   }
+  // }
+
   // process materials
   aiMaterial *mat = scene->mMaterials[mesh->mMaterialIndex];
 

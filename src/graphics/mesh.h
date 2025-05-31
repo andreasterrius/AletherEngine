@@ -1,12 +1,12 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "shader.h"
-#include "src/data/boundingbox.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
+#include "shader.h"
+#include "src/data/boundingbox.h"
 
 #define MAX_BONE_INFLUENCE 4
 
@@ -19,9 +19,9 @@ struct Vertex {
   alignas(16) glm::vec3 bitangent;
 
   // bone indexes which will influence this vertex
-  alignas(16) int m_BoneIDs[MAX_BONE_INFLUENCE];
+  alignas(16) int m_BoneIDs[MAX_BONE_INFLUENCE] = {0};
   // weights from each bone
-  alignas(16) float m_Weights[MAX_BONE_INFLUENCE];
+  alignas(16) float m_Weights[MAX_BONE_INFLUENCE] = {0};
 };
 
 struct PendingTexturePath {
@@ -40,8 +40,8 @@ public:
 
   // constructor
   Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices,
-       PendingTexturePath pending_texture_path, BoundingBox boundingBox)
-      : boundingBox(boundingBox) {
+       PendingTexturePath pending_texture_path, BoundingBox boundingBox) :
+      boundingBox(boundingBox) {
     this->vertices = vertices;
     this->indices = indices;
     this->textures = pending_texture_path;
@@ -98,31 +98,31 @@ private:
     // set the vertex attribute pointers
     // vertex Positions
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) 0);
     // vertex normals
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, normal));
+                          (void *) offsetof(Vertex, normal));
     // vertex texture coords
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, tex_coords));
+                          (void *) offsetof(Vertex, tex_coords));
     // vertex tangent
     glEnableVertexAttribArray(3);
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, tangent));
+                          (void *) offsetof(Vertex, tangent));
     // vertex bitangent
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, bitangent));
+                          (void *) offsetof(Vertex, bitangent));
     // bone ids
     glEnableVertexAttribArray(5);
     glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex),
-                           (void *)offsetof(Vertex, m_BoneIDs));
+                           (void *) offsetof(Vertex, m_BoneIDs));
     // weights
     glEnableVertexAttribArray(6);
     glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, m_Weights));
+                          (void *) offsetof(Vertex, m_Weights));
 
     //        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // THIS IS NOT ALLOWED,
     //        THIS WILL UNBOUND EBO FROM VAO;
