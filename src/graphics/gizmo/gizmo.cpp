@@ -2,10 +2,6 @@
 // Created by alether on 9/26/23.
 //
 #include "gizmo.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
 #include "src/graphics/camera.h"
 #include "src/graphics/model.h"
 #include "src/graphics/static_mesh.h"
@@ -17,6 +13,8 @@ import transform;
 using afs = ale::FileSystem;
 using namespace std;
 using namespace glm;
+using namespace ale::data;
+using namespace ale::graphics;
 
 namespace ale {
 ale::Gizmo::Gizmo() :

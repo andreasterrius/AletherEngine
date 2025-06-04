@@ -42,8 +42,8 @@ public:
   bool is_cursor_inside(glm::ivec2 world_pos);
 
   // only create ray if the mouse cursor is inside the viewport
-  Ray create_mouse_ray(glm::ivec2 global_pos, glm::mat4 proj_mat,
-                       glm::mat4 view_mat);
+  ale::graphics::Ray create_mouse_ray(glm::ivec2 global_pos, glm::mat4 proj_mat,
+                                      glm::mat4 view_mat);
 
   ImGuiID get_panel_id();
 };

@@ -9,8 +9,10 @@ module;
 export module command;
 
 import content_browser;
-import item_inspector;
 import transform;
+import item_inspector;
+
+using namespace ale::data;
 
 export namespace ale::editor {
 

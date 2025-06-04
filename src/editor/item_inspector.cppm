@@ -3,9 +3,6 @@
 //
 module;
 
-#include "src/data/scene_node.cppm"
-#include "src/graphics/texture.h"
-
 #include <entt/entity/registry.hpp>
 #include <glm/glm.hpp>
 #include <imgui.h>
@@ -13,11 +10,15 @@ module;
 #include <optional>
 #include <string>
 #include <variant>
+#include "src/graphics/texture.h"
 
 export module item_inspector;
 
 import material;
 import transform;
+import scene_node;
+
+using namespace ale::data;
 
 int inspect_text_string_resize(ImGuiInputTextCallbackData *data) {
   if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {
@@ -32,6 +33,7 @@ export namespace ale::editor {
 
 const std::string DIFFUSE = "Diffuse";
 const std::string SPECULAR = "Specular";
+
 
 class ItemInspector {
 

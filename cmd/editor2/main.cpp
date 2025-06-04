@@ -10,6 +10,7 @@ import editor_root;
 import item_inspector;
 import file_system;
 import default_resources;
+import scene_node;
 
 // clang-format off
 #include <glad/glad.h>
@@ -17,7 +18,6 @@ import default_resources;
 // clang-format on
 
 #include "spdlog/spdlog.h"
-#include "src/data/scene_node.cppm"
 #include "src/data/serde/world.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/gizmo/gizmo.h"

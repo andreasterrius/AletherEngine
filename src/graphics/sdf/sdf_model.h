@@ -18,6 +18,7 @@ import bounding_box;
 import ray;
 
 using namespace ale::data;
+using namespace ale::graphics;
 
 namespace ale {
 

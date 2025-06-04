@@ -12,13 +12,11 @@
 
 import color;
 import ray;
+import transform;
 
 using namespace ale::graphics;
 
 namespace ale {
-
-class Transform;
-class BoundingBox;
 
 class LineRenderer {
 private:

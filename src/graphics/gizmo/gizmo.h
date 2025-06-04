@@ -3,11 +3,15 @@
 
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <optional>
 #include <vector>
 #include "src/graphics/shader.h"
 
 import transform;
+import ray;
 
 using namespace ale::data;
 
@@ -15,7 +19,6 @@ namespace ale {
 
 class Model;
 class Camera;
-class Ray;
 
 typedef enum Gizmo_ModelType {
   ArrowX,
@@ -102,7 +105,7 @@ private:
   /// caller) This function is paired with release() Return bool if it's holding
   /// something
   bool try_hold(Transform *transform, Camera &camera, glm::vec2 mousePos,
-                Ray mouseRay);
+                graphics::Ray mouseRay);
 
   void show(Transform transform);
 
@@ -110,13 +113,13 @@ private:
 
 public:
   // returns whether the press should be propagated or not
-  bool handle_press(Ray &mouse_ray, Camera &camera, glm::vec2 mouse_pos,
-                    entt::registry &world);
+  bool handle_press(graphics::Ray &mouse_ray, Camera &camera,
+                    glm::vec2 mouse_pos, entt::registry &world);
 
   std::optional<std::tuple<entt::entity, Transform, Transform>>
   handle_release();
 
-  void tick(const Ray &mouse_ray, Camera &camera, glm::vec2 mouse_pos,
+  void tick(const graphics::Ray &mouse_ray, Camera &camera, glm::vec2 mouse_pos,
             entt::registry &world);
   void render(Camera camera, glm::vec3 lightPos);
   void change_mode(Gizmo_Type gizmoType);
@@ -125,11 +128,11 @@ public:
 private:
   void scale_all();
 
-  std::optional<Gizmo_GrabAxis> grab_axis(Ray ray);
+  std::optional<Gizmo_GrabAxis> grab_axis(graphics::Ray ray);
 
   /// This returns the hit point position of ONLY the activeAxis (all else will
   /// be 0)
-  std::optional<glm::vec3> ray_plane_intersection(Ray ray,
+  std::optional<glm::vec3> ray_plane_intersection(graphics::Ray ray,
                                                   Gizmo_ActiveAxis activeAxis,
                                                   glm::vec3 planeCoord,
                                                   Camera &camera);

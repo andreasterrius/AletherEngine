@@ -9,9 +9,9 @@ namespace ale::editor {
 using namespace glm;
 using namespace std;
 
-SceneViewport::SceneViewport(ivec2 initial_screen_size)
-    : framebuffer(Framebuffer::Meta{
-          initial_screen_size.x, initial_screen_size.y, Framebuffer::LINEAR}) {}
+SceneViewport::SceneViewport(ivec2 initial_screen_size) :
+    framebuffer(Framebuffer::Meta{initial_screen_size.x, initial_screen_size.y,
+                                  Framebuffer::LINEAR}) {}
 
 void SceneViewport::start_capture() { framebuffer.start_capture(); }
 
@@ -24,7 +24,7 @@ void SceneViewport::draw() {
   ImGui::Begin(panel_name.c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
 
   ImVec2 window_size = ImGui::GetContentRegionAvail();
-  ImGui::Image((GLuint)framebuffer.get_color_attachment0()->id, window_size,
+  ImGui::Image((GLuint) framebuffer.get_color_attachment0()->id, window_size,
                ImVec2(0, 1), ImVec2(1, 0));
 
   ImVec2 pos_min = ImGui::GetItemRectMin();
@@ -83,8 +83,8 @@ bool SceneViewport::is_cursor_inside(ivec2 world_pos) {
   return true;
 }
 
-Ray SceneViewport::create_mouse_ray(ivec2 global_pos, mat4 proj_mat,
-                                    mat4 view_mat) {
+graphics::Ray SceneViewport::create_mouse_ray(ivec2 global_pos, mat4 proj_mat,
+                                              mat4 view_mat) {
   vec2 logical_pos = convert_to_logical_pos(global_pos);
   vec4 rayStartNdc =
       vec4((logical_pos.x * 2) - 1, (logical_pos.y * 2) - 1, -1.0f, 1.0f);
@@ -102,9 +102,9 @@ Ray SceneViewport::create_mouse_ray(ivec2 global_pos, mat4 proj_mat,
   rayStartWorld /= rayStartWorld.w;
   rayEndWorld /= rayEndWorld.w;
 
-  Ray r(rayStartWorld, normalize(rayEndWorld - rayStartWorld));
+  graphics::Ray r(rayStartWorld, normalize(rayEndWorld - rayStartWorld));
 
   return r;
 }
 
-} // namespace ale::ui
+} // namespace ale::editor

@@ -77,6 +77,7 @@ function(create_exe name folder_name)
             ${IMGUI_SOURCE}
             ${IMGUI_HEADER}
     )
+#    message(STATUS "Module sources: ${ENGINE_CPP_MODULES}")
     target_sources(${name}
             PRIVATE
             FILE_SET CXX_MODULES TYPE CXX_MODULES FILES ${ENGINE_CPP_MODULES}

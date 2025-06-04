@@ -2,12 +2,13 @@
 #ifndef ALETHERENGINE_STATIC_MESH_H
 #define ALETHERENGINE_STATIC_MESH_H
 
+#include <memory>
+#include "nlohmann/json.hpp"
 #include "src/graphics/model.h"
 #include "src/graphics/sdf/sdf_generator_gpu.h"
 #include "src/graphics/sdf/sdf_generator_gpu_v2.h"
 #include "src/graphics/sdf/sdf_model.h"
 #include "src/graphics/sdf/sdf_model_packed.h"
-#include <memory>
 
 import material;
 import stash;
