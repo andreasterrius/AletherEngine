@@ -6,11 +6,11 @@
 
 #include <glad/glad.h>
 #include "model.h"
-#include "src/data/boundingbox.h"
-#include "src/data/transform.h"
-#include "src/graphics/ray.h"
 
 import file_system;
+import bounding_box;
+import transform;
+import ray;
 
 #define LINE_BUFFER_SIZE 300000
 #define BOX_BUFFER_SIZE 90000

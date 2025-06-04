@@ -1,9 +1,12 @@
 module;
 
 #include <entt/entt.hpp>
-#include "src/data/transform.h"
 
 export module history;
+
+import transform;
+
+using namespace ale::data;
 
 export namespace ale::editor::history {
 class History {

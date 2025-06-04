@@ -5,9 +5,10 @@
 #ifndef SCENE_VIEWPORT_H
 #define SCENE_VIEWPORT_H
 
-#include "src/graphics/framebuffer.h"
-#include "src/graphics/ray.h"
 #include <imgui.h>
+#include "src/graphics/framebuffer.h"
+
+import ray;
 
 namespace ale::editor {
 class SceneViewport {
@@ -46,6 +47,6 @@ public:
 
   ImGuiID get_panel_id();
 };
-} // namespace ale::ui
+} // namespace ale::editor
 
 #endif // SCENE_VIEWPORT_H

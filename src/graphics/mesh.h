@@ -6,11 +6,14 @@
 #include <string>
 #include <vector>
 #include "shader.h"
-#include "src/data/boundingbox.h"
+
+import bounding_box;
 
 #define MAX_BONE_INFLUENCE 4
 
 namespace ale {
+using namespace data;
+
 struct Vertex {
   alignas(16) glm::vec3 position;
   alignas(16) glm::vec3 normal;

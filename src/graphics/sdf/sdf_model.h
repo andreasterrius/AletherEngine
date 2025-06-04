@@ -5,16 +5,19 @@
 #ifndef ALETHERENGINE_SDF_MODEL_H
 #define ALETHERENGINE_SDF_MODEL_H
 
-#include "src/data/boundingbox.h"
-#include "src/graphics/mesh.h"
-#include "src/graphics/ray.h"
-#include "src/graphics/shader.h"
-#include "src/graphics/texture.h"
 #include <functional>
 #include <glm/glm.hpp>
 #include <optional>
 #include <utility>
 #include <vector>
+#include "src/graphics/mesh.h"
+#include "src/graphics/shader.h"
+#include "src/graphics/texture.h"
+
+import bounding_box;
+import ray;
+
+using namespace ale::data;
 
 namespace ale {
 
@@ -43,7 +46,7 @@ public:
       isectPoints; // debugs
 
   BoundingBox outerBB; // bb for sdf
-  BoundingBox bb;      // mesh bb
+  BoundingBox bb; // mesh bb
 
   // Will generate SDF on CPU
   SdfModel(Mesh &mesh, int cubeCount = 16);

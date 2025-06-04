@@ -5,12 +5,12 @@ module;
 
 #include <entt/entt.hpp>
 #include <variant>
-#include "src/data/transform.h"
 
 export module command;
 
 import content_browser;
 import item_inspector;
+import transform;
 
 export namespace ale::editor {
 

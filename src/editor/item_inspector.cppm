@@ -3,8 +3,7 @@
 //
 module;
 
-#include "src/data/scene_node.h"
-#include "src/data/transform.h"
+#include "src/data/scene_node.cppm"
 #include "src/graphics/texture.h"
 
 #include <entt/entity/registry.hpp>
@@ -18,12 +17,13 @@ module;
 export module item_inspector;
 
 import material;
+import transform;
 
 int inspect_text_string_resize(ImGuiInputTextCallbackData *data) {
   if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {
-    std::string *str = (std::string *)data->UserData;
+    std::string *str = (std::string *) data->UserData;
     str->resize(data->BufTextLen); // Resize to match new text length
-    data->Buf = str->data();       // Update buffer pointer
+    data->Buf = str->data(); // Update buffer pointer
   }
   return 0;
 }

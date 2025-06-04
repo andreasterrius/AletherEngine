@@ -5,8 +5,11 @@
 #include <glm/glm.hpp>
 #include <optional>
 #include <vector>
-#include "src/data/transform.h"
 #include "src/graphics/shader.h"
+
+import transform;
+
+using namespace ale::data;
 
 namespace ale {
 

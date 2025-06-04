@@ -11,10 +11,12 @@
 #include "shader.h"
 
 import color;
+import ray;
+
+using namespace ale::graphics;
 
 namespace ale {
 
-class Ray;
 class Transform;
 class BoundingBox;
 

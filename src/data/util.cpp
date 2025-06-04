@@ -7,7 +7,6 @@
 #include <glad/glad.h>
 #include <glm/gtc/epsilon.hpp>
 #include <stb_image.h>
-#include <vector>
 
 using namespace glm;
 

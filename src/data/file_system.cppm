@@ -7,9 +7,9 @@ module;
 
 export module file_system;
 
+using namespace std;
 
 export namespace ale {
-using namespace std;
 namespace fs = std::filesystem;
 struct FileMeta {
   std::string full_path;

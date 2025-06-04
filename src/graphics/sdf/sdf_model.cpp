@@ -7,14 +7,14 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
-#include "src/data/boundingbox.h"
-#include "src/data/transform.h"
 #include "src/data/util.h"
 #include "src/graphics/model.h"
 #include "src/graphics/shader.h"
 #include "src/graphics/texture.h"
 
 import file_system;
+import transform;
+import bounding_box;
 
 using namespace ale;
 using namespace glm;

@@ -17,7 +17,7 @@ import default_resources;
 // clang-format on
 
 #include "spdlog/spdlog.h"
-#include "src/data/scene_node.h"
+#include "src/data/scene_node.cppm"
 #include "src/data/serde/world.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/gizmo/gizmo.h"

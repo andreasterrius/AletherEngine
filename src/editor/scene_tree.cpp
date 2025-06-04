@@ -4,8 +4,8 @@
 
 #include "scene_tree.h"
 
-#include "src/data/scene_node.h"
 #include <imgui.h>
+#include "src/data/scene_node.cppm"
 
 std::optional<SceneTree::Entry>
 SceneTree::draw_and_handle_clicks(entt::registry &world,
@@ -15,7 +15,7 @@ SceneTree::draw_and_handle_clicks(entt::registry &world,
   auto view = world.view<ale::SceneNode>();
 
   auto entries = std::vector<Entry>();
-  for (auto [entity, scene_node] : view.each()) {
+  for (auto [entity, scene_node]: view.each()) {
     auto name = scene_node.name;
     auto id = to_integral(entity);
     auto currently_selected =
@@ -24,7 +24,7 @@ SceneTree::draw_and_handle_clicks(entt::registry &world,
   }
 
   std::optional<Entry> clicked = std::nullopt;
-  for (auto &entry : entries) {
+  for (auto &entry: entries) {
     // Combine the ID and the name for a unique and meaningful label
     std::string label = entry.name + "##sn-" + std::to_string(entry.id);
 

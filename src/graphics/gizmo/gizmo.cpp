@@ -6,13 +6,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
-#include "src/data/transform.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/model.h"
-#include "src/graphics/ray.h"
 #include "src/graphics/static_mesh.h"
 
 import file_system;
+import ray;
+import transform;
 
 using afs = ale::FileSystem;
 using namespace std;

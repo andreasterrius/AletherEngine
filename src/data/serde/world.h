@@ -7,7 +7,7 @@
 
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>
-#include "src/data/scene_node.h"
+#include "src/data/scene_node.cppm"
 #include "src/data/serde/std.h"
 #include "src/graphics/light.h"
 #include "src/graphics/static_mesh.h"

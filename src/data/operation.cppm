@@ -1,9 +1,11 @@
 module;
-#include "transform.h"
 
 export module operation;
 
-export namespace ale::operation {
+import transform;
+
+export namespace ale::data {
+
 class Operation { // interface that has undo and redo
 public:
   virtual ~Operation() = default;
@@ -23,4 +25,4 @@ public:
   void redo() override {};
 };
 
-} // namespace ale::operation
+} // namespace ale::data
