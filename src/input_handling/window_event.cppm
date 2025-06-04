@@ -1,13 +1,14 @@
 //
 // Created by Alether on 2/20/2025.
 //
+module;
 
-#ifndef WINDOW_EVENT_LISTENER_H
-#define WINDOW_EVENT_LISTENER_H
-
+#include <utility>
 #include <set>
 
-namespace ale {
+export module window_event;
+
+export namespace ale::input_handling {
 
 class WindowEventListener {
 public:
@@ -27,10 +28,14 @@ protected:
   std::set<WindowEventListener *> listeners;
 
 public:
-  void add_listener(WindowEventListener *listener);
-  void remove_listener(WindowEventListener *listener);
-  std::set<WindowEventListener *> &get_listeners();
+  void add_listener(WindowEventListener *listener) {
+    this->listeners.insert(listener);
+  }
+  void remove_listener(WindowEventListener *listener) {
+    this->listeners.erase(listener);
+  }
+  std::set<WindowEventListener *> &get_listeners() {
+    return this->listeners;
+  }
 };
 }; // namespace ale
-
-#endif // WINDOW_EVENT_LISTENER_H

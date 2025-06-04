@@ -9,13 +9,14 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
-#include "src/editor/imgui_integration.h"
-#include "src/input_handling/window_event.h"
 #include <functional>
 #include <glm/glm.hpp>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include "src/editor/imgui_integration.h"
+
+import window_event;
 
 class GLFWwindow;
 
@@ -53,7 +54,7 @@ struct Data {
   std::function<void(int, int, int, int)> key_callback = nullptr;
 };
 
-class Window : public WindowEventProducer {
+class Window : public input_handling::WindowEventProducer {
   GLFWwindow *raw_window = nullptr;
   std::unique_ptr<ImguiIntegration> imgui;
   static bool first_window_init;

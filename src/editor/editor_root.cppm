@@ -39,6 +39,7 @@ import file_system;
 export namespace ale::editor {
 using namespace glm;
 using namespace std;
+using namespace input_handling;
 
 class EditorRoot : public WindowEventListener {
 public:

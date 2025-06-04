@@ -5,7 +5,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include "src/input_handling/window_event.h"
+
+import window_event;
 
 namespace ale {
 
@@ -34,7 +35,7 @@ const float ZOOM = 45.0f;
 
 // An abstract camera class that processes input and calculates the
 // corresponding Euler Angles, Vectors and Matrices for use in OpenGL
-class Camera : public WindowEventListener {
+class Camera : public input_handling::WindowEventListener {
 public:
   // camera Attributes
   glm::vec3 Position;
@@ -58,7 +59,7 @@ public:
   bool handle_input = true;
 
   // non owning
-  WindowEventProducer *event_producer = nullptr;
+  input_handling::WindowEventProducer *event_producer = nullptr;
 
   // constructor with vectors
   Camera(Camera_InputType inputType, int width, int height,
@@ -72,7 +73,7 @@ public:
 
   ~Camera() override;
 
-  void add_listener(WindowEventProducer *event_producer);
+  void add_listener(input_handling::WindowEventProducer *event_producer);
 
   void set_handle_input(bool handle_input);
 

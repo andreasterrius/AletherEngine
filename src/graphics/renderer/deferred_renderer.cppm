@@ -18,6 +18,8 @@ import material;
 import file_system;
 
 export namespace ale {
+using namespace input_handling;
+
 class DeferredRendererException final : public std::runtime_error {
 public:
   explicit DeferredRendererException(const std::string &msg) :
@@ -145,14 +147,15 @@ public:
     first_pass.setMat4("view", camera.get_view_matrix());
     const auto view = world.view<Transform, StaticMesh, BasicMaterial>();
     for (auto [entity, transform, static_mesh, material]: view.each()) {
-      pass_basic_material(first_pass, entity, material);
-      pass_shadow(first_pass, static_mesh);
+
+      pass_basic_material(first_pass, entity, transform, material);
+      pass_shadow(first_pass, transform, static_mesh);
     }
 
     const auto pbrs = world.view<Transform, StaticMesh, PBRMaterial>();
     for (auto [entity, transform, static_mesh, material]: pbrs.each()) {
       pass_pbr_material(first_pass, entity, material);
-      pass_shadow(first_pass, static_mesh);
+      pass_shadow(first_pass, transform, static_mesh);
     }
 
     deferred_framebuffer.end_capture();
@@ -215,7 +218,7 @@ public:
 
 private:
   void pass_basic_material(Shader &first_pass, entt::entity &entity,
-                           BasicMaterial &material) {
+                           Transform &transform, BasicMaterial &material) {
     first_pass.setMat4("model", transform.get_model_matrix());
     first_pass.setInt("entityId", to_integral(entity));
 
@@ -237,7 +240,8 @@ private:
   void pass_pbr_material(Shader &first_pass, entt::entity &entity,
                          PBRMaterial &material) {}
 
-  void pass_shadow(Shader &first_pass, StaticMesh &static_mesh) {
+  void pass_shadow(Shader &first_pass, Transform &transform,
+                   StaticMesh &static_mesh) {
     static_mesh.get_model()->draw(first_pass);
     auto [packed, packed_index] = static_mesh.get_model_shadow();
     if (static_mesh.get_cast_shadow() && packed != nullptr) {

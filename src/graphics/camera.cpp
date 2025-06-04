@@ -42,7 +42,7 @@ Camera::~Camera() {
     event_producer->remove_listener(this);
 }
 
-void Camera::add_listener(WindowEventProducer *event_producer) {
+void Camera::add_listener(input_handling::WindowEventProducer *event_producer) {
   this->event_producer = event_producer;
   this->event_producer->add_listener(this);
 }

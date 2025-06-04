@@ -1,20 +1,21 @@
 #ifndef BASIC_RENDERER_H
 #define BASIC_RENDERER_H
 
+#include <entt/entt.hpp>
+#include <nlohmann/json.hpp>
+#include <string>
 #include "src/data/serde/glm.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/sdf/sdf_model_packed.h"
 #include "src/graphics/shader.h"
-#include <entt/entt.hpp>
-#include <nlohmann/json.hpp>
-#include <string>
 
 namespace ale {
+using namespace input_handling;
 
 class BasicRendererException final : public std::runtime_error {
 public:
-  explicit BasicRendererException(const std::string &msg)
-      : runtime_error(msg) {}
+  explicit BasicRendererException(const std::string &msg) :
+      runtime_error(msg) {}
 };
 
 class BasicRenderer {
