@@ -8,9 +8,11 @@
 #include "camera.h"
 #include "line_renderer.h"
 #include "sdf/sdf_model.h"
-#include "window.h"
 
-namespace ale {
+import window;
+
+namespace ale::graphics {
+
 // Class to debug raymarch attempts for SDF.
 // I think a better way is to combine it with the shader later.
 class RaymarcherCpu {
@@ -28,6 +30,6 @@ public:
 
   void render(Camera &camera);
 };
-} // namespace ale
+} // namespace ale::graphics
 
 #endif // RAYMARCHER_CPU_H

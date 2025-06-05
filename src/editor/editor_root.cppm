@@ -20,10 +20,10 @@ module;
 #include "src/graphics/light.h"
 #include "src/graphics/line_renderer.h"
 #include "src/graphics/static_mesh.h"
-#include "src/graphics/window.h"
 
 export module editor_root;
 
+import window;
 import item_inspector;
 import history;
 import history_stack;

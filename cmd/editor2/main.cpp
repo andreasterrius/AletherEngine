@@ -25,12 +25,13 @@ import scene_node;
 #include "src/graphics/line_renderer.h"
 #include "src/graphics/static_mesh.h"
 #include "src/graphics/thumbnail_generator.h"
-#include "src/graphics/window.h"
 
 // clang-format off
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 // clang-format on
+
+import window;
 
 using namespace std;
 using namespace ale;
