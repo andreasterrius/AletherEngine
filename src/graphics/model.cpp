@@ -5,9 +5,8 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include <glm/glm.hpp>
 #include <vector>
-
-#include "glm/gtc/type_ptr.hpp"
 
 namespace ale {
 

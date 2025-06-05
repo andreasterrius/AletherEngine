@@ -2,20 +2,21 @@
 // Created by Alether on 1/8/2025.
 //
 #include "thumbnail_generator.h"
+#include "camera.h"
 
 import material;
-#include "camera.h"
-#include "light.h"
+import light;
+import transform;
 
 namespace ale {
 using namespace std;
 using namespace glm;
 
 ThumbnailGenerator::ThumbnailGenerator(int thumbnail_width,
-                                       int thumbnail_height)
-    : framebuffer(Framebuffer::Meta{.width = thumbnail_width,
-                                    .height = thumbnail_height,
-                                    .color_space = Framebuffer::SRGB}) {}
+                                       int thumbnail_height) :
+    framebuffer(Framebuffer::Meta{.width = thumbnail_width,
+                                  .height = thumbnail_height,
+                                  .color_space = Framebuffer::SRGB}) {}
 
 shared_ptr<Texture> ThumbnailGenerator::generate(StaticMesh static_mesh) {
   {

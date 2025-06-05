@@ -5,9 +5,13 @@
 #ifndef THUMBNAIL_GENERATOR_H
 #define THUMBNAIL_GENERATOR_H
 
+#include <entt/entt.hpp>
 #include "framebuffer.h"
-#include "src/graphics/renderer/basic_renderer.h"
 #include "static_mesh.h"
+
+import basic_renderer;
+
+using namespace ale::graphics::renderer;
 
 constexpr int DEFAULT_THUMBNAIL_WIDTH = 400;
 constexpr int DEFAULT_THUMBNAIL_HEIGHT = 400;

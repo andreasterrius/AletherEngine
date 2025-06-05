@@ -16,7 +16,6 @@ module;
 #include "src/data/serde/world.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/gizmo/gizmo.h"
-#include "src/graphics/light.h"
 #include "src/graphics/line_renderer.h"
 #include "src/graphics/static_mesh.h"
 
@@ -35,6 +34,7 @@ import file_system;
 import scene_node;
 import scene_tree;
 import scene_viewport;
+import light;
 
 export namespace ale::editor {
 using namespace glm;

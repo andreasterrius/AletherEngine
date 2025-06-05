@@ -5,12 +5,12 @@
 module;
 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <nlohmann/json.hpp>
 #include "src/data/serde/glm.h"
 
 export module transform;
+
 using namespace glm;
 
 export namespace ale::data {

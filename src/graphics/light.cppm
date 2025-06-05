@@ -2,10 +2,13 @@
 // Created by Alether on 3/2/2025.
 //
 
-#ifndef LIGHT_H
-#define LIGHT_H
+module;
 
 #include "src/data/serde/glm.h"
+
+export module light;
+
+export namespace ale::graphics {
 
 struct AmbientLight {
   float intensity;
@@ -22,5 +25,4 @@ struct Light {
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Light, color, radius, attenuation);
 
-
-#endif // LIGHT_H
+} // namespace ale::graphics

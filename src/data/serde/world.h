@@ -8,13 +8,14 @@
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>
 #include "src/data/serde/std.h"
-#include "src/graphics/light.h"
 #include "src/graphics/static_mesh.h"
 
 import scene_node;
 import transform;
+import light;
 
 using namespace ale::data;
+using namespace ale::graphics;
 
 namespace ale::serde {
 

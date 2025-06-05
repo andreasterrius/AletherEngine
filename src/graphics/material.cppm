@@ -1,4 +1,5 @@
 module;
+
 #include <glm/glm.hpp>
 #include <memory>
 #include <src/graphics/texture.h>
