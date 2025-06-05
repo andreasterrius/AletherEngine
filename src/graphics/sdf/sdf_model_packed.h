@@ -5,8 +5,10 @@
 #include <vector>
 
 #include "src/graphics/sdf/sdf_model.h"
-#include "src/graphics/shader.h"
-#include "src/graphics/texture.h"
+
+import texture;
+import transform;
+import shader;
 
 namespace ale {
 

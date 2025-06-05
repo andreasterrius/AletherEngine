@@ -8,11 +8,11 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include "model.h"
-#include "shader.h"
 
 import color;
 import ray;
 import transform;
+import shader;
 
 using namespace ale::graphics;
 

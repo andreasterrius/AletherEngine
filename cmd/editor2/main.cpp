@@ -19,8 +19,6 @@ import scene_node;
 
 #include "spdlog/spdlog.h"
 #include "src/data/serde/world.h"
-#include "src/graphics/camera.h"
-#include "src/graphics/gizmo/gizmo.h"
 #include "src/graphics/line_renderer.h"
 #include "src/graphics/static_mesh.h"
 #include "src/graphics/thumbnail_generator.h"
@@ -32,6 +30,8 @@ import scene_node;
 
 import window;
 import light;
+import camera;
+import gizmo;
 
 using namespace std;
 using namespace ale;

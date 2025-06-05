@@ -5,17 +5,18 @@ module;
 #include <nlohmann/json.hpp>
 #include <string>
 #include "src/data/serde/glm.h"
-#include "src/graphics/camera.h"
-#include "src/graphics/framebuffer.h"
 #include "src/graphics/sdf/sdf_model_packed.h"
-#include "src/graphics/shader.h"
 #include "src/graphics/static_mesh.h"
 
 export module deferred_renderer;
-
+import camera;
 import material;
 import file_system;
 import light;
+import window_event;
+import framebuffer;
+import transform;
+import shader;
 
 export namespace ale::graphics::renderer {
 using namespace input_handling;

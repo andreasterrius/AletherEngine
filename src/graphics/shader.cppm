@@ -1,34 +1,94 @@
 
-#ifndef SHADER_H
-#define SHADER_H
+module;
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
+#include "shader_common.h"
 
+export module shader;
+import file_system;
+
+using afs = ale::FileSystem;
+
+export namespace ale::graphics {
 class Shader {
 public:
-  struct IncludeDirective {
-    std::string filename;
-    std::vector<int> bindings;
-  };
-
   unsigned int ID{};
 
   // constructor generates the shader on the fly
   // ------------------------------------------------------------------------
   Shader(const char *vertexPath, const char *fragmentPath,
-         const char *geometryPath = nullptr);
+         const char *geometryPath = nullptr) {
+    // 1. retrieve the vertex/fragment source code from filePath
+    std::string vertexCode =
+        load_file_with_include(IncludeDirective{vertexPath});
+    std::string fragmentCode =
+        load_file_with_include(IncludeDirective{fragmentPath});
+    const char *vShaderCode = vertexCode.c_str();
+    const char *fShaderCode = fragmentCode.c_str();
+
+    // std::cout << "Vertex Code: \n" << vertexCode << std::endl;
+    // std::cout << "Fragment Code: \n" << fragmentCode << std::endl;
+
+    // 2. compile shaders
+    unsigned int vertex = 0, fragment = 0;
+    // vertex shader
+    vertex = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex, 1, &vShaderCode, nullptr);
+    glCompileShader(vertex);
+    checkCompileErrors(vertex, "VERTEX", vertexPath);
+    // fragment Shader
+    fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment, 1, &fShaderCode, nullptr);
+    glCompileShader(fragment);
+    checkCompileErrors(fragment, "FRAGMENT", fragmentPath);
+    // if geometry shader is given, compile geometry shader
+    unsigned int geometry = 0;
+    if (geometryPath != nullptr) {
+      std::string geometryCode =
+          load_file_with_include(IncludeDirective{geometryPath});
+      const char *gShaderCode = geometryCode.c_str();
+      geometry = glCreateShader(GL_GEOMETRY_SHADER);
+      glShaderSource(geometry, 1, &gShaderCode, nullptr);
+      glCompileShader(geometry);
+      checkCompileErrors(geometry, "GEOMETRY", geometryPath);
+    }
+    // shader Program
+    ID = glCreateProgram();
+    glAttachShader(ID, vertex);
+    glAttachShader(ID, fragment);
+    if (geometryPath != nullptr)
+      glAttachShader(ID, geometry);
+    glLinkProgram(ID);
+    checkCompileErrors(ID, "PROGRAM", "");
+    // delete the shaders as they're linked into our program now and no longer
+    // necessary
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
+    if (geometryPath != nullptr)
+      glDeleteShader(geometry);
+  }
 
   Shader(Shader &other) = delete;
   Shader &operator=(Shader &other) = delete;
 
-  Shader(Shader &&other) noexcept;
-  Shader &operator=(Shader &&other) noexcept;
+  Shader(Shader &&other) noexcept {
+    if (this == &other)
+      return;
+    std::swap(this->ID, other.ID);
+  }
+  Shader &operator=(Shader &&other) noexcept {
+    if (this == &other)
+      return *this;
+    std::swap(this->ID, other.ID);
+    return *this;
+  }
 
-  ~Shader();
+  ~Shader() { glDeleteProgram(ID); }
 
   // activate the shader
   // ------------------------------------------------------------------------
@@ -36,7 +96,7 @@ public:
   // utility uniform functions
   // ------------------------------------------------------------------------
   void setBool(const std::string &name, bool value) const {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
+    glUniform1i(glGetUniformLocation(ID, name.c_str()), (int) value);
   }
   // ------------------------------------------------------------------------
   void setInt(const std::string &name, int value) const {
@@ -119,11 +179,5 @@ private:
       }
     }
   }
-
-public:
-  static std::string load_file_with_include(IncludeDirective include_directive);
-
-  static std::string remove_include_lines(const std::string &input,
-                                          bool replace_with_spaces = true);
 };
-#endif
+} // namespace ale::graphics

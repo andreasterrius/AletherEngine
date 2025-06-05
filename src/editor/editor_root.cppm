@@ -11,17 +11,17 @@ module;
 #include <glm/glm.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <iostream>
 #include <nfd.hpp>
 #include <spdlog/spdlog.h>
 #include "src/data/serde/world.h"
-#include "src/graphics/camera.h"
-#include "src/graphics/gizmo/gizmo.h"
 #include "src/graphics/line_renderer.h"
 #include "src/graphics/static_mesh.h"
 
 export module editor_root;
-
+import camera;
 import window;
+import window_event;
 import item_inspector;
 import history;
 import history_stack;
@@ -35,11 +35,13 @@ import scene_node;
 import scene_tree;
 import scene_viewport;
 import light;
+import gizmo;
 
 export namespace ale::editor {
 using namespace glm;
 using namespace std;
 using namespace input_handling;
+using namespace graphics;
 
 class EditorRoot : public WindowEventListener {
 public:
@@ -399,7 +401,7 @@ public:
             }
 
             try {
-              serde::save_world(path, world);
+              // serde::save_world(path, world);
             } catch (const std::exception &e) {
               std::cout << "Save world error, " << e.what();
               // logger::get()->info("{}", e.what());
@@ -420,7 +422,7 @@ public:
             }
 
             try {
-              world = serde::load_world(path, sm_loader);
+              // world = serde::load_world(path, sm_loader);
             } catch (const std::exception &e) {
               std::cout << "Load world error, " << e.what();
               // logger::get()->info("{}", e.what());

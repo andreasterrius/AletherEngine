@@ -6,6 +6,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <glm/glm.hpp>
+#include <iostream>
 #include <vector>
 
 namespace ale {

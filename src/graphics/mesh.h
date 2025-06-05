@@ -6,11 +6,13 @@
 #include <optional>
 #include <string>
 #include <vector>
-#include "shader.h"
 
 import bounding_box;
+import shader;
 
 #define MAX_BONE_INFLUENCE 4
+
+using namespace ale::graphics;
 
 namespace ale {
 using namespace data;

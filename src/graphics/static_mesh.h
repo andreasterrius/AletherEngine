@@ -5,13 +5,15 @@
 #include <memory>
 #include "nlohmann/json.hpp"
 #include "src/graphics/model.h"
-#include "src/graphics/sdf/sdf_generator_gpu.h"
-#include "src/graphics/sdf/sdf_generator_gpu_v2.h"
 #include "src/graphics/sdf/sdf_model.h"
 #include "src/graphics/sdf/sdf_model_packed.h"
 
 import material;
 import stash;
+import sdf_generator_gpu;
+import sdf_generator_gpu_v2;
+
+using namespace ale::graphics::sdf;
 
 namespace ale {
 

@@ -11,11 +11,11 @@
 #include <utility>
 #include <vector>
 #include "src/graphics/mesh.h"
-#include "src/graphics/shader.h"
-#include "src/graphics/texture.h"
 
 import bounding_box;
 import ray;
+import texture;
+import shader;
 
 using namespace ale::data;
 using namespace ale::graphics;

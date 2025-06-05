@@ -4,14 +4,18 @@
 
 module;
 
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <imgui.h>
-#include "src/graphics/framebuffer.h"
+#include <string>
 
 export module scene_viewport;
 import ray;
+import framebuffer;
 
 using namespace glm;
+using namespace ale::graphics;
+using namespace std;
 
 export namespace ale::editor {
 class SceneViewport {

@@ -3,22 +3,25 @@
 //
 module;
 
-#include <glm/glm.hpp>
 #include <entt/entity/registry.hpp>
+#include <format>
+#include <glm/glm.hpp>
 #include <imgui.h>
+#include <iostream>
 #include <nfd.hpp>
 #include <optional>
 #include <string>
 #include <variant>
-#include "src/graphics/texture.h"
 
 export module item_inspector;
 
 import material;
 import transform;
 import scene_node;
+import texture;
 
 using namespace ale::data;
+using namespace ale::graphics;
 
 int inspect_text_string_resize(ImGuiInputTextCallbackData *data) {
   if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {

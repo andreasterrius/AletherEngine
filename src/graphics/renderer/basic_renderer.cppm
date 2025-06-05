@@ -5,15 +5,16 @@ module;
 #include <glm/glm.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
-#include "src/graphics/camera.h"
 #include "src/graphics/sdf/sdf_model_packed.h"
-#include "src/graphics/shader.h"
 #include "src/graphics/static_mesh.h"
 
 export module basic_renderer;
 import transform;
 import file_system;
 import light;
+import camera;
+import window_event;
+import shader;
 
 using afs = ale::FileSystem;
 using namespace std;

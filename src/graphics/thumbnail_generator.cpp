@@ -2,11 +2,11 @@
 // Created by Alether on 1/8/2025.
 //
 #include "thumbnail_generator.h"
-#include "camera.h"
 
 import material;
 import light;
 import transform;
+import camera;
 
 namespace ale {
 using namespace std;

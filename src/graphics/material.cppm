@@ -2,11 +2,11 @@ module;
 
 #include <glm/glm.hpp>
 #include <memory>
-#include <src/graphics/texture.h>
 
 export module material;
+import texture;
 
-export namespace ale {
+export namespace ale::graphics {
 struct BasicMaterial {
 public:
   glm::vec3 diffuse_color = glm::vec3(1.0f);
@@ -47,4 +47,4 @@ public:
   std::shared_ptr<Texture> ao_texture = nullptr;
 };
 
-}; // namespace ale
+}; // namespace ale::graphics

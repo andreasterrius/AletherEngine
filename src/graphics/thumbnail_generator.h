@@ -6,10 +6,10 @@
 #define THUMBNAIL_GENERATOR_H
 
 #include <entt/entt.hpp>
-#include "framebuffer.h"
 #include "static_mesh.h"
 
 import basic_renderer;
+import framebuffer;
 
 using namespace ale::graphics::renderer;
 
