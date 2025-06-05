@@ -13,7 +13,6 @@ module;
 #include <imgui_internal.h>
 #include <nfd.hpp>
 #include <spdlog/spdlog.h>
-#include "scene_viewport.h"
 #include "src/data/serde/world.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/gizmo/gizmo.h"
@@ -35,6 +34,7 @@ import dialog;
 import file_system;
 import scene_node;
 import scene_tree;
+import scene_viewport;
 
 export namespace ale::editor {
 using namespace glm;
