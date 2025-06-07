@@ -21,7 +21,6 @@ import scene_node;
 #include "src/data/serde/world.h"
 #include "src/graphics/line_renderer.h"
 #include "src/graphics/static_mesh.h"
-#include "src/graphics/thumbnail_generator.h"
 
 // clang-format off
 #define STB_IMAGE_IMPLEMENTATION
@@ -32,9 +31,12 @@ import window;
 import light;
 import camera;
 import gizmo;
+import thumbnail_generator;
+import deferred_renderer;
 
 using namespace std;
 using namespace ale;
+using namespace ale::graphics::renderer;
 using namespace glm;
 using afs = ale::FileSystem;
 

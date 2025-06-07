@@ -8,11 +8,12 @@ module;
 #include <GLFW/glfw3.h>
 // clang-format on
 
-#include <glm/glm.hpp>
+#include <entt/entt.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <iostream>
 #include <nfd.hpp>
+#include <optional>
 #include <spdlog/spdlog.h>
 #include "src/data/serde/world.h"
 #include "src/graphics/line_renderer.h"
@@ -26,6 +27,7 @@ import item_inspector;
 import history;
 import history_stack;
 import command;
+import framebuffer;
 import content_browser;
 import util;
 import logger;

@@ -3,18 +3,19 @@
 //
 module;
 
+#include <entt/entt.hpp>
 #include <imgui.h>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <unordered_map>
 #include "src/graphics/static_mesh.h"
-#include "src/graphics/thumbnail_generator.h"
 
 export module content_browser;
 import texture;
 import material;
 import file_system;
 import default_resources;
+import thumbnail_generator;
 
 export namespace ale::editor {
 class ContentBrowser {
