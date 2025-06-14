@@ -9,6 +9,7 @@ module;
 // clang-format on
 
 #include <entt/entt.hpp>
+#include <glm/glm.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <iostream>
@@ -16,7 +17,6 @@ module;
 #include <optional>
 #include <spdlog/spdlog.h>
 #include "src/data/serde/world.h"
-#include "src/graphics/line_renderer.h"
 
 export module editor_root;
 import camera;
@@ -41,6 +41,9 @@ import static_mesh;
 import texture;
 import material;
 import stash;
+import line_renderer;
+import color;
+import ray;
 
 export namespace ale::editor {
 using namespace glm;

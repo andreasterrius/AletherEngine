@@ -7,7 +7,6 @@ module;
 #include <nlohmann/json.hpp>
 #include <string>
 #include "src/data/serde/glm.h"
-#include "src/graphics/sdf/sdf_model_packed.h"
 
 export module deferred_renderer;
 import camera;
@@ -19,6 +18,12 @@ import framebuffer;
 import transform;
 import shader;
 import static_mesh;
+import sdf_model_packed;
+import texture;
+
+using namespace ale::graphics::sdf;
+using namespace std;
+using namespace ale::data;
 
 export namespace ale::graphics::renderer {
 using namespace input_handling;

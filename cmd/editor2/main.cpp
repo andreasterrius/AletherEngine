@@ -17,9 +17,9 @@ import scene_node;
 #include <GLFW/glfw3.h>
 // clang-format on
 
+#include <glm/glm.hpp>
 #include "spdlog/spdlog.h"
 #include "src/data/serde/world.h"
-#include "src/graphics/line_renderer.h"
 
 // clang-format off
 #define STB_IMAGE_IMPLEMENTATION
@@ -34,6 +34,7 @@ import thumbnail_generator;
 import deferred_renderer;
 import static_mesh;
 import texture;
+import line_renderer;
 
 using namespace std;
 using namespace ale;

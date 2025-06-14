@@ -5,8 +5,6 @@ module;
 #include <memory>
 #include <spdlog/spdlog.h>
 #include "nlohmann/json.hpp"
-#include "src/graphics/sdf/sdf_model.h"
-#include "src/graphics/sdf/sdf_model_packed.h"
 
 export module static_mesh;
 import material;
@@ -15,6 +13,8 @@ import sdf_generator_gpu;
 import sdf_generator_gpu_v2;
 import model;
 import file_system;
+import sdf_model;
+import sdf_model_packed;
 
 namespace fs = std::filesystem;
 using afs = ale::FileSystem;

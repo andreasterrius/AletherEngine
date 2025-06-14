@@ -6,7 +6,6 @@ module;
 #include <glm/glm.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
-#include "src/graphics/sdf/sdf_model_packed.h"
 
 export module basic_renderer;
 import transform;
@@ -17,10 +16,14 @@ import window_event;
 import static_mesh;
 import shader;
 import material;
+import sdf_model_packed;
+import texture;
 
 using afs = ale::FileSystem;
 using namespace std;
 using namespace glm;
+using namespace ale::data;
+using namespace ale::graphics::sdf;
 
 export namespace ale::graphics::renderer {
 using namespace input_handling;
