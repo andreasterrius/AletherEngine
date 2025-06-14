@@ -2,11 +2,11 @@ module;
 
 #include <entt/entt.hpp>
 #include <format>
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
 #include "src/graphics/sdf/sdf_model_packed.h"
-#include "src/graphics/static_mesh.h"
 
 export module basic_renderer;
 import transform;
@@ -14,7 +14,9 @@ import file_system;
 import light;
 import camera;
 import window_event;
+import static_mesh;
 import shader;
+import material;
 
 using afs = ale::FileSystem;
 using namespace std;

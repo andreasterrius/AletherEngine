@@ -4,9 +4,10 @@
 
 #define GLSL 0
 
-#include "glm/glm.hpp"
-#include "src/graphics/model.h"
 #include <vector>
+#include "glm/glm.hpp"
+
+import mesh;
 
 float dot2(glm::vec3 v);
 
@@ -21,7 +22,8 @@ glm::vec3 closest_point_on_triangle(glm::vec3 A, glm::vec3 v0, glm::vec3 v1,
 
 void generate_sdf(glm::ivec3 texel_coord, int vertices_size, int indices_size,
                   glm::vec3 outer_bb_min, glm::vec3 outer_bb_max,
-                  glm::ivec3 image_size, std::vector<ale::Vertex> &vertices,
+                  glm::ivec3 image_size,
+                  std::vector<ale::graphics::Vertex> &vertices,
                   std::vector<unsigned int> &indices,
                   std::vector<std::vector<std::vector<glm::vec4>>> &imgOutput,
                   glm::vec3 &closest_normal);

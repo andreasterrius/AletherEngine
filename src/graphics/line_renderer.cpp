@@ -5,8 +5,8 @@
 #include "line_renderer.h"
 
 #include <glad/glad.h>
-#include "model.h"
 
+import model;
 import file_system;
 import bounding_box;
 import transform;

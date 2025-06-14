@@ -8,21 +8,22 @@
 #include <functional>
 #include <glm/glm.hpp>
 #include <optional>
+#include <string>
 #include <utility>
 #include <vector>
-#include "src/graphics/mesh.h"
 
 import bounding_box;
 import ray;
 import texture;
 import shader;
+import mesh;
+import model;
 
 using namespace ale::data;
 using namespace ale::graphics;
 
 namespace ale {
 
-class Model;
 class LineRenderer;
 
 // This is a 3d array representative given a mesh

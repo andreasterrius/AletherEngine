@@ -3,9 +3,13 @@
 //
 module;
 
-#include "src/graphics/model.h"
+#include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <vector>
 
 export module sdf_generator_gpu_v2;
+import model;
+import mesh;
 import compute_shader;
 import texture;
 import file_system;

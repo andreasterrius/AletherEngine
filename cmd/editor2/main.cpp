@@ -20,7 +20,6 @@ import scene_node;
 #include "spdlog/spdlog.h"
 #include "src/data/serde/world.h"
 #include "src/graphics/line_renderer.h"
-#include "src/graphics/static_mesh.h"
 
 // clang-format off
 #define STB_IMAGE_IMPLEMENTATION
@@ -33,6 +32,8 @@ import camera;
 import gizmo;
 import thumbnail_generator;
 import deferred_renderer;
+import static_mesh;
+import texture;
 
 using namespace std;
 using namespace ale;

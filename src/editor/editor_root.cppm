@@ -17,7 +17,6 @@ module;
 #include <spdlog/spdlog.h>
 #include "src/data/serde/world.h"
 #include "src/graphics/line_renderer.h"
-#include "src/graphics/static_mesh.h"
 
 export module editor_root;
 import camera;
@@ -38,6 +37,10 @@ import scene_tree;
 import scene_viewport;
 import light;
 import gizmo;
+import static_mesh;
+import texture;
+import material;
+import stash;
 
 export namespace ale::editor {
 using namespace glm;

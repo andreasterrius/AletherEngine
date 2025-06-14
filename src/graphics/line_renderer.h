@@ -7,14 +7,17 @@
 
 #include <glm/glm.hpp>
 #include <vector>
-#include "model.h"
 
+
+import model;
 import color;
 import ray;
 import transform;
 import shader;
+import bounding_box;
 
 using namespace ale::graphics;
+using namespace ale::data;
 
 namespace ale {
 

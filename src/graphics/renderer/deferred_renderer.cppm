@@ -1,12 +1,13 @@
 module;
+
 #include <entt/entt.hpp>
 #include <format>
+#include <glad/glad.h>
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <string>
 #include "src/data/serde/glm.h"
 #include "src/graphics/sdf/sdf_model_packed.h"
-#include "src/graphics/static_mesh.h"
 
 export module deferred_renderer;
 import camera;
@@ -17,6 +18,7 @@ import window_event;
 import framebuffer;
 import transform;
 import shader;
+import static_mesh;
 
 export namespace ale::graphics::renderer {
 using namespace input_handling;

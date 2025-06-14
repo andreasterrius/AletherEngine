@@ -1,5 +1,4 @@
-#ifndef MESH_H
-#define MESH_H
+module;
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -7,14 +6,14 @@
 #include <string>
 #include <vector>
 
+export module mesh;
+
 import bounding_box;
 import shader;
 
 #define MAX_BONE_INFLUENCE 4
 
-using namespace ale::graphics;
-
-namespace ale {
+export namespace ale::graphics {
 using namespace data;
 
 struct Vertex {
@@ -136,6 +135,4 @@ private:
     glBindVertexArray(0);
   }
 };
-} // namespace ale
-
-#endif
+} // namespace ale::graphics

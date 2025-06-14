@@ -1,14 +1,13 @@
-//
-// Created by Alether on 4/12/2025.
-//
 module;
 
 #include <entt/entt.hpp>
+#include <filesystem>
 #include <imgui.h>
+#include <memory>
+#include <optional>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <unordered_map>
-#include "src/graphics/static_mesh.h"
 
 export module content_browser;
 import texture;
@@ -16,6 +15,11 @@ import material;
 import file_system;
 import default_resources;
 import thumbnail_generator;
+import static_mesh;
+import stash;
+
+using namespace ale::graphics;
+using namespace std;
 
 export namespace ale::editor {
 class ContentBrowser {

@@ -7,8 +7,6 @@ module;
 #include <glm/gtx/quaternion.hpp>
 #include <optional>
 #include <vector>
-#include "src/graphics/model.h"
-#include "src/graphics/static_mesh.h"
 
 export module gizmo;
 import transform;
@@ -16,6 +14,8 @@ import ray;
 import camera;
 import file_system;
 import shader;
+import model;
+import static_mesh;
 
 using namespace ale::data;
 using namespace ale::graphics;

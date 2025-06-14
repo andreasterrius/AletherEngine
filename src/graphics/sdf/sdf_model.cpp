@@ -6,10 +6,11 @@
 
 #include <fstream>
 #include <functional>
+#include <glad/glad.h>
 #include <iostream>
 #include "src/data/util.h"
-#include "src/graphics/model.h"
 
+import model;
 import file_system;
 import transform;
 import bounding_box;

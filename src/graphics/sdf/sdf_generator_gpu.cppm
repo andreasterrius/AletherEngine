@@ -4,16 +4,19 @@
 module;
 
 #include <fstream>
+#include <glad/glad.h>
+#include <glm/glm.hpp>
 #include <iostream>
 #include <string>
 #include <unordered_map>
-#include "src/graphics/mesh.h"
 
 export module sdf_generator_gpu;
 import compute_shader;
 import texture;
 import file_system;
 import transform;
+import mesh;
+import bounding_box;
 
 using afs = ale::FileSystem;
 using namespace glm;

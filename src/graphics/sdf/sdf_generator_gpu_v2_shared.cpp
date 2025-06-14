@@ -4,6 +4,7 @@
 using namespace glm;
 using namespace std;
 using namespace ale;
+using namespace ale::graphics;
 #endif
 
 float dot2(vec3 v) { return dot(v, v); }

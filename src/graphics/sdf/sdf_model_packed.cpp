@@ -1,4 +1,6 @@
 #include "src/graphics/sdf/sdf_model_packed.h"
+#include <glad/glad.h>
+#include <string>
 
 import file_system;
 

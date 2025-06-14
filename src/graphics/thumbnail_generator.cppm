@@ -4,17 +4,24 @@
 module;
 
 #include <entt/entt.hpp>
+#include <glad/glad.h>
 #include <glm/glm.hpp>
-#include "static_mesh.h"
+#include <memory>
 
 export module thumbnail_generator;
 import basic_renderer;
 import framebuffer;
 import light;
 import camera;
+import static_mesh;
+import texture;
+import transform;
+import material;
 
 using namespace ale::graphics::renderer;
+using namespace ale::data;
 using namespace glm;
+using namespace std;
 
 constexpr int DEFAULT_THUMBNAIL_WIDTH = 400;
 constexpr int DEFAULT_THUMBNAIL_HEIGHT = 400;
