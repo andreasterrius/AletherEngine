@@ -5,18 +5,33 @@ import deferred_renderer;
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
+#include <glm/glm.hpp>
 
-#include "src/data/file_system.h"
-#include "src/graphics/camera.h"
-#include "src/graphics/model.h"
-#include "src/graphics/sdf/sdf_generator_gpu.h"
-#include "src/graphics/sdf/sdf_model_packed.h"
-#include "src/graphics/static_mesh.h"
-#include "src/graphics/window.h"
 #include <entt/entt.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
+import camera;
+import compute_shader;
+import model;
+import mesh;
+import static_mesh;
+import transform;
+import shader;
+import file_system;
+import window;
+import deferred_renderer;
+import stash;
+import texture;
+import light;
+
+using namespace std;
+using namespace glm;
+using namespace ale;
+using namespace ale::graphics;
+using namespace ale::graphics::renderer;
+using namespace ale::data;
 
 using namespace std;
 using namespace ale;
@@ -32,8 +47,9 @@ int main() {
                        glm::vec3(3.0f, 5.0f, -7.0f));
   camera.add_listener(&window);
 
+  auto texture_stash = make_shared<Stash<Texture>>();
   auto deferred_renderer = DeferredRenderer(window.get_size());
-  auto sm_loader = StaticMeshLoader();
+  auto sm_loader = StaticMeshLoader(texture_stash);
   auto sm_monkey =
       sm_loader.load_static_mesh(afs::root("resources/models/monkey.obj"));
   auto sm_floor =

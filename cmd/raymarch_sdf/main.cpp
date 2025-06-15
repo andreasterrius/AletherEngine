@@ -1,27 +1,39 @@
-#include <src/data/boundingbox.h>
-#include <src/data/file_system.h>
-#include <src/data/transform.h>
-#include <src/graphics/camera.h>
-#include <src/graphics/gizmo/gizmo.h>
-#include <src/graphics/line_renderer.h>
-#include <src/graphics/model.h>
-#include <src/graphics/sdf/sdf_model.h>
-#include <src/graphics/sdf/sdf_model_packed.h>
-#include <src/graphics/shader.h>
-#include <src/graphics/window.h>
+
+// clang-format off
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+// clang-format on
 
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
-
 #include <stb_image.h>
 
-using namespace std;
-using namespace glm;
-using namespace ale;
+import transform;
+import sdf_model;
+import sdf_model_packed;
+import window;
+import light;
+import camera;
+import gizmo;
+import thumbnail_generator;
+import deferred_renderer;
+import static_mesh;
+import texture;
+import line_renderer;
+import shader;
+import file_system;
+import model;
 
+using namespace std;
+using namespace ale;
+using namespace ale::graphics::renderer;
+using namespace ale::graphics;
+using namespace ale::graphics::sdf;
+using namespace ale::data;
+using namespace glm;
 using afs = ale::FileSystem;
 
 class Raymarcher {
@@ -34,9 +46,10 @@ public:
   int screenHeight;
 
   Raymarcher(int screenWidth, int screenHeight, string vertexPath,
-             string fragmentPath)
-      : screenWidth(screenWidth), screenHeight(screenHeight),
-        shader(vertexPath.c_str(), fragmentPath.c_str()) {
+             string fragmentPath) :
+      screenWidth(screenWidth),
+      screenHeight(screenHeight),
+      shader(vertexPath.c_str(), fragmentPath.c_str()) {
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
 
@@ -46,14 +59,14 @@ public:
                                        1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f};
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float),
-                          (void *)0);
+                          (void *) 0);
     glEnableVertexAttribArray(0);
   }
 
-  Raymarcher(int screenWidth, int screenHeight)
-      : Raymarcher(screenWidth, screenHeight,
-                   afs::root("cmd/raymarch_sdf/raymarch.vert"),
-                   afs::root("cmd/raymarch_sdf/raymarch.frag")) {
+  Raymarcher(int screenWidth, int screenHeight) :
+      Raymarcher(screenWidth, screenHeight,
+                 afs::root("cmd/raymarch_sdf/raymarch.vert"),
+                 afs::root("cmd/raymarch_sdf/raymarch.frag")) {
     // empty
   }
 
@@ -147,7 +160,7 @@ public:
     // binds texture2D atlas[16];
     // binds int atlasSize;
     vector<pair<Transform, vector<unsigned int>>> entries = {};
-    sdfModelPacked.bind_to_shader(shader, entries);
+    sdfModelPacked.bind_to_shader(shader, entries, 0);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -235,7 +248,7 @@ int main() {
   while (!window.get_should_close()) {
     // per-frame time logic
     // --------------------
-    float currentFrame = (float)(glfwGetTime());
+    float currentFrame = (float) (glfwGetTime());
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 

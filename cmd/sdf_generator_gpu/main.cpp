@@ -2,18 +2,22 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
-#include "src/graphics/camera.h"
-#include "src/graphics/model.h"
-#include "src/graphics/sdf/sdf_generator_gpu.h"
-#include "src/graphics/sdf/sdf_model.h"
-#include <src/graphics/window.h>
+#include <glm/glm.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include "src/data/file_system.h"
+import camera;
+import model;
+import sdf_generator_gpu;
+import sdf_model;
+import window;
+import file_system;
+import texture;
 
 using namespace ale;
+using namespace ale::graphics;
+using namespace ale::graphics::sdf;
 using afs = ale::FileSystem;
 
 int main() {
@@ -40,7 +44,8 @@ int main() {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    texture_renderer.render(sdfgen.debug_result.at("monkey16"));
+    texture_renderer.render(sdfgen.debug_result.at("monkey16"),
+                            TextureRenderer::RenderMeta{});
     window.swap_buffer_and_poll_inputs();
   }
 

@@ -29,7 +29,7 @@ private:
   vector<glm::vec3> ray_hit_pos;
 
 public:
-  RaymarcherCpu();
+  RaymarcherCpu() {};
 
   Ray get_mouse_ray(float mouseX, float mouseY, float screenWidth,
                     float screenHeight, glm::mat4 projMat, glm::mat4 viewMat) {

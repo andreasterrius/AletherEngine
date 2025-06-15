@@ -2,27 +2,39 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
-#include <src/graphics/window.h>
-#include "src/data/file_system.h"
-#include "src/graphics/camera.h"
-#include "src/graphics/line_renderer.h"
-#include "src/graphics/model.h"
-#include "src/graphics/renderer/basic_renderer.h"
-#include "src/graphics/sdf/sdf_generator_gpu_v2.h"
+#include <entt/entt.hpp>
 #include "src/graphics/sdf/sdf_generator_gpu_v2_shared.h"
-#include "src/graphics/sdf/sdf_model.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "src/graphics/raymarcher_cpu.h"
-#include "src/graphics/sdf/sdf_generator_gpu_v2.h"
-#include "src/graphics/static_mesh.h"
-
-#include <corecrt_io.h>
 #include <stb_image.h>
 
-#include "src/graphics/light.h"
+import color;
+import raymarcher_cpu;
+import material;
+import texture;
+import stash;
+import line_renderer;
+import file_system;
+import window;
+import camera;
+import model;
+import mesh;
+import sdf_generator_gpu;
+import sdf_generator_gpu_v2;
+import sdf_model;
+import basic_renderer;
+import line_renderer;
+import light;
+import static_mesh;
+import transform;
+import basic_renderer;
+import bounding_box;
 
 using namespace ale;
+using namespace ale::data;
+using namespace ale::graphics;
+using namespace ale::graphics::renderer;
+using namespace ale::graphics::sdf;
 using namespace std;
 using namespace glm;
 using afs = ale::FileSystem;
@@ -51,7 +63,8 @@ int main() {
   auto window = Window(1024, 768, "SDF Generator V2");
   auto camera = Camera(ARCBALL, 1024, 768, glm::vec3(3.0f, 5.0f, -7.0f));
   auto basic_renderer = BasicRenderer();
-  auto sm_loader = StaticMeshLoader();
+  auto texture_stash = make_shared<Stash<Texture>>();
+  auto sm_loader = StaticMeshLoader(texture_stash);
   auto static_mesh = sm_loader.load_static_mesh(
       afs::root("resources/models/content_browser/tree.obj"));
   auto model = static_mesh.get_model();

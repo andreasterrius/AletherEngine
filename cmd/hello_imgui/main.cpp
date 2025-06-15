@@ -4,16 +4,9 @@
 // clang-format on
 
 #include <entt/entt.hpp>
+#include <glm/glm.hpp>
+#include <iostream>
 #include <nfd.hpp>
-
-#include "src/data/file_system.h"
-#include "src/graphics/camera.h"
-#include "src/graphics/model.h"
-#include "src/graphics/renderer/basic_renderer.h"
-#include "src/graphics/sdf/sdf_generator_gpu.h"
-#include "src/graphics/sdf/sdf_model_packed.h"
-#include "src/graphics/static_mesh.h"
-#include "src/graphics/window.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -24,8 +17,20 @@
 #include <imgui_impl_opengl3.h>
 //clang-format on
 
+import window;
+import static_mesh;
+import sdf_model_packed;
+import sdf_generator_gpu;
+import basic_renderer;
+import model;
+import camera;
+import shader;
+import file_system;
+
 using namespace std;
 using namespace ale;
+using namespace ale::graphics;
+using namespace ale::graphics::renderer;
 using afs = ale::FileSystem;
 
 int main() {
@@ -39,11 +44,11 @@ int main() {
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
   io.ConfigFlags |=
-          ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+      ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
   io.ConfigFlags |=
-          ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+      ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
   io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // Enable Docking
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
 
   bool show_demo_window = true;
   bool show_another_window = false;
@@ -57,32 +62,31 @@ int main() {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
+    if (show_demo_window)
+      ImGui::ShowDemoWindow(&show_demo_window);
 
     {
       static float f = 0.0f;
       static int counter = 0;
 
-      ImGui::Begin("Hello, world!");  // Create a window called "Hello, world!"
+      ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!"
       // and append into it.
 
-      ImGui::Text("This is some useful text.");  // Display some text (you can
+      ImGui::Text("This is some useful text."); // Display some text (you can
       // use a format strings too)
       ImGui::Checkbox("Demo Window",
-                      &show_demo_window);  // Edit bools storing our window
-                                           // open/close state
+                      &show_demo_window); // Edit bools storing our window
+                                          // open/close state
       ImGui::Checkbox("Another Window", &show_another_window);
 
-      ImGui::SliderFloat(
-              "float", &f, 0.0f,
-              1.0f);  // Edit 1 float using a slider from 0.0f to 1.0f
+      ImGui::SliderFloat("float", &f, 0.0f,
+                         1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
       ImGui::ColorEdit3(
-              "clear color",
-              (float *) &clear_color);  // Edit 3 floats representing a color
+          "clear color",
+          (float *) &clear_color); // Edit 3 floats representing a color
 
-      if (ImGui::Button(
-                  "Button"))  // Buttons return true when clicked (most
-                              // widgets return true when edited/activated)
+      if (ImGui::Button("Button")) // Buttons return true when clicked (most
+                                   // widgets return true when edited/activated)
         counter++;
       ImGui::SameLine();
       ImGui::Text("counter = %d", counter);
@@ -107,12 +111,13 @@ int main() {
     // 3. Show another simple window.
     if (show_another_window) {
       ImGui::Begin("Another Window",
-                   &show_another_window);  // Pass a pointer to our bool
-                                           // variable (the
+                   &show_another_window); // Pass a pointer to our bool
+                                          // variable (the
       // window will have a closing button that will
       // clear the bool when clicked)
       ImGui::Text("Hello from another window!");
-      if (ImGui::Button("Close Me")) show_another_window = false;
+      if (ImGui::Button("Close Me"))
+        show_another_window = false;
       ImGui::End();
     }
 

@@ -1,31 +1,48 @@
-#include "src/data/boundingbox.h"
-#include "src/data/file_system.h"
-#include "src/data/transform.h"
-#include "src/data/util.h"
-#include "src/graphics/camera.h"
-#include "src/graphics/gizmo/gizmo.h"
-#include "src/graphics/line_renderer.h"
-#include "src/graphics/model.h"
-#include "src/graphics/ray.h"
-#include "src/graphics/sdf/sdf_generator_gpu_v2.h"
-#include "src/graphics/sdf/sdf_model.h"
-#include "src/graphics/shader.h"
-#include "src/graphics/texture.h"
-#include "src/graphics/window.h"
+
+// clang-format off
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+// clang-format on
+
 #include <fstream>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-#include <memory>
+#include <string>
 #include <vector>
+#include "src/data/util.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-using namespace std;
-using namespace glm;
-using namespace ale;
 
+import transform;
+import sdf_model;
+import sdf_model_packed;
+import window;
+import light;
+import camera;
+import gizmo;
+import thumbnail_generator;
+import deferred_renderer;
+import static_mesh;
+import texture;
+import line_renderer;
+import shader;
+import file_system;
+import model;
+import bounding_box;
+import ray;
+import sdf_generator_gpu_v2;
+import sdf_generator_gpu;
+import color;
+
+using namespace std;
+using namespace ale;
+using namespace ale::graphics::renderer;
+using namespace ale::graphics;
+using namespace ale::graphics::sdf;
+using namespace ale::data;
+using namespace glm;
 using afs = ale::FileSystem;
 
 // should hold non owning datas
@@ -268,7 +285,7 @@ int main() {
   while (!glfwWindowShouldClose(window.get())) {
     // per-frame time logic
     // --------------------
-    float currentFrame = (float)(glfwGetTime());
+    float currentFrame = (float) (glfwGetTime());
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
@@ -314,7 +331,7 @@ int main() {
     float near_plane = 1.0f;
     float far_plane = 25.0f;
     glm::mat4 shadowProj = glm::perspective(
-        glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT,
+        glm::radians(90.0f), (float) SHADOW_WIDTH / (float) SHADOW_HEIGHT,
         near_plane, far_plane);
     std::vector<glm::mat4> shadowTransforms;
     shadowTransforms.push_back(
@@ -391,7 +408,7 @@ int main() {
     //   } else {
     //   }
     // });
-    for (auto &r : rays) {
+    for (auto &r: rays) {
       lineRenderer.queue_line(r, WHITE);
     }
     lineRenderer.queue_line(raymarchDebugRay, WHITE);
@@ -408,7 +425,7 @@ int main() {
     //     3] ); i++;
     // }
 
-    for (auto &hitPos : raymarchDebugHitPos) {
+    for (auto &hitPos: raymarchDebugHitPos) {
       lineRenderer.queue_unit_cube(Transform{
           .translation = hitPos,
           // .scale = vec3(0.3f)
@@ -418,7 +435,7 @@ int main() {
     lineRenderer.render(projection, view);
 
     if (showRaymarchResult) {
-      textureRenderer.render(raymarchResult);
+      textureRenderer.render(raymarchResult, TextureRenderer::RenderMeta{});
     }
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
@@ -444,7 +461,7 @@ vector<vec4> raymarch(vector<Ray> &rays, SdfModel &sdf) {
 void renderScene(Shader &shader, vector<Object> &objects) {
   glEnable(GL_CULL_FACE);
 
-  for (auto &object : objects) {
+  for (auto &object: objects) {
     if (object.shouldRender) {
       shader.setMat4("model", object.transform.get_model_matrix());
       shader.setVec4("diffuseColor", object.color);

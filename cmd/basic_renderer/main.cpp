@@ -4,22 +4,32 @@
 // clang-format on
 
 #include <entt/entt.hpp>
-
-#include "src/data/file_system.h"
-#include "src/graphics/camera.h"
-#include "src/graphics/model.h"
-#include "src/graphics/renderer/basic_renderer.h"
-#include "src/graphics/sdf/sdf_generator_gpu.h"
-#include "src/graphics/sdf/sdf_model_packed.h"
-#include "src/graphics/static_mesh.h"
-#include "src/graphics/window.h"
+#include <glm/glm.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+import camera;
+import compute_shader;
+import model;
+import mesh;
+import static_mesh;
+import transform;
+import shader;
+import file_system;
+import window;
+import basic_renderer;
+import stash;
+import texture;
+import light;
+import material;
+
 using namespace std;
-using namespace ale;
 using namespace glm;
+using namespace ale;
+using namespace ale::graphics;
+using namespace ale::graphics::renderer;
+using namespace ale::data;
 using afs = ale::FileSystem;
 
 int main() {
@@ -31,8 +41,9 @@ int main() {
                        glm::vec3(3.0f, 5.0f, -7.0f));
   camera.add_listener(&window);
 
+  auto texture_stash = make_shared<Stash<Texture>>();
   auto basic_renderer = BasicRenderer();
-  auto sm_loader = StaticMeshLoader();
+  auto sm_loader = StaticMeshLoader(texture_stash);
   auto sm_monkey =
       sm_loader.load_static_mesh(afs::root("resources/models/monkey.obj"));
   auto sm_floor =

@@ -4,20 +4,26 @@
 #include <GLFW/glfw3.h>
 // clang-format on
 
-#include "src/config.h"
-#include "src/graphics/compute_shader.h"
-#include "src/graphics/model.h"
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <stdexcept>
+#include "src/config.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "src/graphics/camera.h"
-
 #include <stb_image.h>
+
+import camera;
+import compute_shader;
+import model;
+import mesh;
+import transform;
+import shader;
 
 using namespace std;
 using namespace glm;
 using namespace ale;
+using namespace ale::graphics;
+using namespace ale::data;
 
 struct GpuData {
   ivec4 size; // [0] = vertices.size, [1] = indices.size
@@ -45,7 +51,7 @@ GLFWwindow *create_window(glm::ivec2 screen_size) {
                                  "Mesh Distance Field", NULL, NULL);
   glfwMakeContextCurrent(window);
 
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+  if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
     throw std::runtime_error("loading gl functions failed");
   }
 
@@ -204,7 +210,7 @@ int main() {
     auto curr_time = glfwGetTime();
 
     auto rotate = glm::identity<glm::quat>();
-    rotate = glm::rotate(rotate, (float)sin(curr_time), vec3(0.0, 1.0, 0.0));
+    rotate = glm::rotate(rotate, (float) sin(curr_time), vec3(0.0, 1.0, 0.0));
     monkey_transform.rotation = rotate;
 
     monkey_transform.translation = vec3(sin(curr_time), 0.0, cos(curr_time));

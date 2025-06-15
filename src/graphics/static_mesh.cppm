@@ -15,6 +15,7 @@ import model;
 import file_system;
 import sdf_model;
 import sdf_model_packed;
+import texture;
 
 namespace fs = std::filesystem;
 using afs = ale::FileSystem;
