@@ -22,6 +22,7 @@ add_subdirectory(external/assimp)
 add_subdirectory(external/glfw)
 add_subdirectory(external/json)
 add_subdirectory(external/nativefiledialog-extended)
+add_subdirectory(external/rapidjson)
 set(ZSTD_BUILD_SHARED ON)
 add_subdirectory(external/zstd/build/cmake)
 
@@ -95,6 +96,7 @@ function(create_exe name folder_name)
             external/zstd/lib
             external/json/include
             external/nativefiledialog-extended/src/include
+            external/rapidjson/include
     )
     target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT spdlog::spdlog nlohmann_json::nlohmann_json nfd)
     target_compile_definitions(${name} PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE GLM_ENABLE_EXPERIMENTAL)

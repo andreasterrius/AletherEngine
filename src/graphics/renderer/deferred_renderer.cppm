@@ -3,10 +3,10 @@ module;
 #include <entt/entt.hpp>
 #include <format>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <string>
-#include "src/data/serde/glm.h"
 
 export module deferred_renderer;
 import camera;

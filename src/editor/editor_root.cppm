@@ -44,7 +44,7 @@ import stash;
 import line_renderer;
 import color;
 import ray;
-import world_serde;
+import serde;
 import transform;
 
 export namespace ale::editor {
@@ -412,7 +412,7 @@ public:
             }
 
             try {
-              serde::save_world(path, world);
+              serde::save_world(world, path);
             } catch (const std::exception &e) {
               std::cout << "Save world error, " << e.what();
               // logger::get()->info("{}", e.what());
@@ -433,7 +433,7 @@ public:
             }
 
             try {
-              // world = serde::load_world(path, sm_loader);
+              world = serde::load_world(path);
             } catch (const std::exception &e) {
               std::cout << "Load world error, " << e.what();
               // logger::get()->info("{}", e.what());

@@ -7,7 +7,6 @@ module;
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <nlohmann/json.hpp>
-#include "src/data/serde/glm.h"
 
 export module transform;
 
@@ -29,5 +28,4 @@ public:
     return translation * rotation * scale;
   }
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Transform, translation, scale, rotation);
 } // namespace ale::data

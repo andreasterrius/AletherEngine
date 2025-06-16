@@ -36,7 +36,7 @@ import deferred_renderer;
 import static_mesh;
 import texture;
 import line_renderer;
-import world_serde;
+import serde;
 
 using namespace std;
 using namespace ale;
