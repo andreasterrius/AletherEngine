@@ -9,6 +9,7 @@ module;
 // clang-format on
 
 #include <entt/entt.hpp>
+#include <filesystem>
 #include <glm/glm.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -16,7 +17,6 @@ module;
 #include <nfd.hpp>
 #include <optional>
 #include <spdlog/spdlog.h>
-#include "src/data/serde/world.h"
 
 export module editor_root;
 import camera;
@@ -44,12 +44,15 @@ import stash;
 import line_renderer;
 import color;
 import ray;
+import world_serde;
+import transform;
 
 export namespace ale::editor {
 using namespace glm;
 using namespace std;
 using namespace input_handling;
 using namespace graphics;
+using namespace ale::data;
 
 class EditorRoot : public WindowEventListener {
 public:
@@ -409,7 +412,7 @@ public:
             }
 
             try {
-              // serde::save_world(path, world);
+              serde::save_world(path, world);
             } catch (const std::exception &e) {
               std::cout << "Save world error, " << e.what();
               // logger::get()->info("{}", e.what());

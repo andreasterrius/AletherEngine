@@ -4,6 +4,7 @@
 
 module;
 
+#include "nlohmann/json.hpp"
 #include "src/data/serde/glm.h"
 
 export module light;

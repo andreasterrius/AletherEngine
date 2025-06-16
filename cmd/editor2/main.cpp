@@ -17,9 +17,10 @@ import scene_node;
 #include <GLFW/glfw3.h>
 // clang-format on
 
+#include <entt/entt.hpp>
+#include <filesystem>
 #include <glm/glm.hpp>
 #include "spdlog/spdlog.h"
-#include "src/data/serde/world.h"
 
 // clang-format off
 #define STB_IMAGE_IMPLEMENTATION
@@ -35,9 +36,12 @@ import deferred_renderer;
 import static_mesh;
 import texture;
 import line_renderer;
+import world_serde;
 
 using namespace std;
 using namespace ale;
+using namespace ale::data;
+using namespace ale::graphics;
 using namespace ale::graphics::renderer;
 using namespace glm;
 using afs = ale::FileSystem;
