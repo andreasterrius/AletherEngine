@@ -63,8 +63,25 @@ void save_world(entt::registry &world, string file_path) {
   auto &allocator = doc.GetAllocator();
 
   // 2. Fill in json document
-  write_vec<vec3>(doc, "test_vec3", vec3(1.0f, 2.0f, 3.0f), allocator);
-  write_vec<vec4>(doc, "test_vec4", vec4(1.0f, 2.0f, 3.0f, 4.0f), allocator);
+  rapidjson::Value entity_array(rapidjson::kArrayType);
+  for (auto &entity: world.view<entt::entity>()) {
+    rapidjson::Value val;
+    val.SetObject();
+    if (auto transform = world.try_get<Transform>(entity)) {
+      write_transform(val, "transform", *transform, allocator);
+    }
+    if (auto light = world.try_get<Light>(entity)) {
+      write_light(val, "light", *light, allocator);
+    }
+    if (auto ambient_light = world.try_get<AmbientLight>(entity)) {
+      write_ambient_light(val, "ambient_light", *ambient_light, allocator);
+    }
+    if (auto scene_node = world.try_get<SceneNode>(entity)) {
+      write_scene_node(val, "scene_node", *scene_node, allocator);
+    }
+    entity_array.PushBack(val, allocator);
+  }
+  doc.AddMember("entities", entity_array, allocator);
 
   // 3. Create the string
   rapidjson::StringBuffer buffer;
