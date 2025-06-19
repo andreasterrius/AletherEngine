@@ -16,15 +16,11 @@ module;
 #include <vector>
 #include "src/data/util.h"
 
-export module sdf_model;
-import bounding_box;
-import ray;
-import texture;
-import shader;
-import mesh;
-import model;
-import transform;
-import file_system;
+export module graphics:sdf.sdf_model;
+import data;
+import :texture;
+import :mesh;
+import :ray;
 
 using namespace std;
 using namespace ale::data;

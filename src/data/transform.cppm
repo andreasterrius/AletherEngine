@@ -7,8 +7,9 @@ module;
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <nlohmann/json.hpp>
+#include <rfl.hpp>
 
-export module transform;
+export module data:transform;
 
 using namespace glm;
 

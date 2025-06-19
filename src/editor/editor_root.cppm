@@ -7,7 +7,6 @@ module;
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
-
 #include <entt/entt.hpp>
 #include <filesystem>
 #include <glm/glm.hpp>
@@ -17,42 +16,30 @@ module;
 #include <nfd.hpp>
 #include <optional>
 #include <spdlog/spdlog.h>
+#include <vector>
 
-export module editor_root;
-import camera;
-import window;
-import window_event;
-import item_inspector;
-import history;
-import history_stack;
-import command;
-import framebuffer;
-import content_browser;
-import util;
-import logger;
-import dialog;
-import file_system;
-import scene_node;
-import scene_tree;
-import scene_viewport;
-import light;
-import gizmo;
-import static_mesh;
-import texture;
-import material;
-import stash;
-import line_renderer;
-import color;
-import ray;
+export module editor:editor_root;
+import graphics;
 import serde;
-import transform;
+import data;
+import input;
+import :item_inspector;
+import :content_browser;
+import :scene_viewport;
+import :scene_tree;
+import :history.history;
+import :history.history_stack;
+import :command;
+import :dialog;
+import util;
 
-export namespace ale::editor {
 using namespace glm;
 using namespace std;
-using namespace input_handling;
-using namespace graphics;
+using namespace ale::input;
+using namespace ale::graphics;
 using namespace ale::data;
+
+export namespace ale::editor {
 
 class EditorRoot : public WindowEventListener {
 public:

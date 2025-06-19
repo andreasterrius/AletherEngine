@@ -4,14 +4,15 @@
 
 module;
 
+#include <entt/entt.hpp>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <imgui.h>
 #include <string>
 
-export module scene_viewport;
-import ray;
-import framebuffer;
+export module editor:scene_viewport;
+import data;
+import graphics;
 
 using namespace glm;
 using namespace ale::graphics;

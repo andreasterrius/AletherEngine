@@ -6,9 +6,9 @@ module;
 #include <string>
 #include "shader_common.h"
 
-export module compute_shader;
-import texture;
-import shader;
+export module graphics:compute_shader;
+import :texture;
+import :shader;
 
 using namespace std;
 

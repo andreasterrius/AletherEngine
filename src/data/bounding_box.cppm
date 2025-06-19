@@ -3,10 +3,10 @@
 //
 module;
 
-#include<glm/glm.hpp>
+#include <glm/glm.hpp>
 
-export module bounding_box;
-import transform;
+export module data:bounding_box;
+import :transform;
 
 using namespace glm;
 

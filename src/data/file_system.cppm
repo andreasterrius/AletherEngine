@@ -5,7 +5,7 @@ module;
 #include <vector>
 #include "src/config.h"
 
-export module file_system;
+export module data:file_system;
 
 using namespace std;
 

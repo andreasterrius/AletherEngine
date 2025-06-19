@@ -5,7 +5,8 @@
 module;
 
 #include <glm/glm.hpp>
-export module light;
+
+export module graphics:light;
 
 export namespace ale::graphics {
 

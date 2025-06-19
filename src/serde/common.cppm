@@ -7,17 +7,55 @@ module;
 #include <glm/gtc/type_ptr.hpp>
 #include <optional>
 #include <rapidjson/document.h>
+#include <rfl.hpp>
 #include <string>
+#include <vector>
 
-export module common;
-import transform;
-import light;
-import scene_node;
+export module serde:common;
+import data;
+import graphics;
 
 using namespace std;
 using namespace glm;
 using namespace ale::data;
 using namespace ale::graphics;
+
+
+namespace rfl {
+template<>
+struct Reflector<vec3> {
+  using ReflType = std::vector<float>;
+
+  static vec3 to(const ReflType &str) noexcept {
+    return vec3(str.at(0), str.at(1), str.at(2));
+  }
+
+  static ReflType from(const vec3 &v) { return vector{v[0], v[1], v[2]}; }
+};
+
+template<>
+struct Reflector<vec4> {
+  using ReflType = std::vector<float>;
+
+  static vec4 to(const ReflType &str) noexcept {
+    return vec4(str.at(0), str.at(1), str.at(2), str.at(3));
+  }
+
+  static ReflType from(const vec4 &v) { return vector{v[0], v[1], v[2], v[3]}; }
+};
+
+template<>
+struct Reflector<quat> {
+  using ReflType = std::vector<float>;
+
+  static quat to(const ReflType &str) noexcept {
+    return quat(str.at(0), str.at(1), str.at(2), str.at(3));
+  }
+
+  static ReflType from(const quat &v) { return vector{v[0], v[1], v[2], v[3]}; }
+};
+
+} // namespace rfl
 
 export namespace ale::serde {
 
@@ -26,7 +64,7 @@ void write_string(rapidjson::Value &parent_json, const std::string &key,
                   const string &val,
                   rapidjson::Document::AllocatorType &allocator) {
   rapidjson::Value val_json;
-  val_json.SetString(val.c_str(), val.len(), allocator);
+  val_json.SetString(val.c_str(), val.size(), allocator);
   parent_json.AddMember(rapidjson::Value(key.c_str(), allocator), val_json,
                         allocator);
 }

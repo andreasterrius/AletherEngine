@@ -3,11 +3,10 @@
 //
 
 
+#include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 
-#include "assimp/Importer.hpp"
-
-export module skeletal_mesh;
+export module graphics:skeletal_mesh;
 
 export namespace ale::graphics {
 

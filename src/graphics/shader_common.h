@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-import file_system;
+import data;
 using afs = ale::FileSystem;
 
 struct IncludeDirective {

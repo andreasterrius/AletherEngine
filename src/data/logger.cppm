@@ -3,11 +3,11 @@
 //
 module;
 
+#include <memory>
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
-#include <memory>
 
-export module logger;
+export module data:logger;
 
 const std::string CONSOLE_LOG_NAME = "console_log";
 

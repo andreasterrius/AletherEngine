@@ -8,15 +8,15 @@ module;
 #include <glm/glm.hpp>
 #include <memory>
 
-export module thumbnail_generator;
-import basic_renderer;
-import framebuffer;
-import light;
-import camera;
-import static_mesh;
-import texture;
-import transform;
-import material;
+export module graphics:thumbnail_generator;
+import data;
+import :renderer.basic_renderer;
+import :framebuffer;
+import :light;
+import :camera;
+import :static_mesh;
+import :texture;
+import :material;
 
 using namespace ale::graphics::renderer;
 using namespace ale::data;

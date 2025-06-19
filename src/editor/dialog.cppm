@@ -1,11 +1,12 @@
 //
 // Created by Alether on 4/19/2025.
 //
+#include <entt/entt.hpp>
 #include <nfd.hpp>
 #include <optional>
 #include <string>
 
-export module dialog;
+export module editor:dialog;
 
 export namespace ale::editor {
 

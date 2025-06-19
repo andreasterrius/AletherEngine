@@ -8,25 +8,25 @@ module;
 #include <nlohmann/json.hpp>
 #include <string>
 
-export module deferred_renderer;
-import camera;
-import material;
-import file_system;
-import light;
-import window_event;
-import framebuffer;
-import transform;
-import shader;
-import static_mesh;
-import sdf_model_packed;
-import texture;
+export module graphics:renderer.deferred_renderer;
+import data;
+import input;
+import :camera;
+import :shader;
+import :texture;
+import :light;
+import :static_mesh;
+import :framebuffer;
+import :sdf.sdf_generator_gpu_v2;
+import :sdf.sdf_model;
+import :sdf.sdf_model_packed;
 
 using namespace ale::graphics::sdf;
 using namespace std;
 using namespace ale::data;
+using namespace ale::input;
 
 export namespace ale::graphics::renderer {
-using namespace input_handling;
 
 class DeferredRendererException final : public std::runtime_error {
 public:

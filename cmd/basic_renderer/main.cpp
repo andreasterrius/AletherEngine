@@ -19,7 +19,7 @@ import shader;
 import file_system;
 import window;
 import basic_renderer;
-import stash;
+import data:stash;
 import texture;
 import light;
 import material;

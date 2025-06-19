@@ -7,7 +7,7 @@
 #include <vector>
 #include "glm/glm.hpp"
 
-import mesh;
+import graphics;
 
 float dot2(glm::vec3 v);
 

@@ -6,11 +6,10 @@ module;
 #include <entt/entt.hpp>
 #include <variant>
 
-export module command;
-
-import content_browser;
-import transform;
-import item_inspector;
+export module editor:command;
+import :content_browser;
+import :item_inspector;
+import data;
 
 using namespace ale::data;
 

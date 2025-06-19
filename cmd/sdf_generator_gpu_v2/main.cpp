@@ -12,7 +12,7 @@ import color;
 import raymarcher_cpu;
 import material;
 import texture;
-import stash;
+import data:stash;
 import line_renderer;
 import file_system;
 import window;

@@ -3,6 +3,7 @@
 //
 module;
 
+#include <entt/entt.hpp>
 #include <entt/entity/registry.hpp>
 #include <format>
 #include <glm/glm.hpp>
@@ -13,12 +14,9 @@ module;
 #include <string>
 #include <variant>
 
-export module item_inspector;
-
-import material;
-import transform;
-import scene_node;
-import texture;
+export module editor:item_inspector;
+import graphics;
+import data;
 
 using namespace ale::data;
 using namespace ale::graphics;

@@ -5,9 +5,9 @@ module;
 #include <string>
 #include <unordered_map>
 
-export module stash;
+export module data:stash;
 
-export namespace ale {
+export namespace ale::data {
 
 template<typename T>
 class Stash {
@@ -47,4 +47,4 @@ public:
     return data[name];
   }
 };
-} // namespace ale
+} // namespace ale::data

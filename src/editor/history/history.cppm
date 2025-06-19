@@ -2,9 +2,8 @@ module;
 
 #include <entt/entt.hpp>
 
-export module history;
-
-import transform;
+export module editor:history.history;
+import data;
 
 using namespace ale::data;
 

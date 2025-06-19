@@ -12,8 +12,8 @@ module;
 #include <variant>
 #include <vector>
 
-export module framebuffer;
-import texture;
+export module graphics:framebuffer;
+import :texture;
 
 using namespace std;
 using namespace glm;

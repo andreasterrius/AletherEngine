@@ -3,8 +3,8 @@ module;
 #include <glm/glm.hpp>
 #include <memory>
 
-export module material;
-import texture;
+export module graphics:material;
+import :texture;
 
 export namespace ale::graphics {
 struct BasicMaterial {

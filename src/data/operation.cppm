@@ -1,8 +1,7 @@
 module;
 
-export module operation;
-
-import transform;
+export module data:operation;
+import :transform;
 
 export namespace ale::data {
 

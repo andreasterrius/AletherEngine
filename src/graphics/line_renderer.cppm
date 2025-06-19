@@ -7,15 +7,12 @@ module;
 #include <glm/glm.hpp>
 #include <vector>
 
-export module line_renderer;
-import model;
-import color;
-import ray;
-import transform;
-import shader;
-import bounding_box;
-import mesh;
-import file_system;
+export module graphics:line_renderer;
+import data;
+import :model;
+import :shader;
+import :mesh;
+import :ray;
 
 #define LINE_BUFFER_SIZE 300000
 #define BOX_BUFFER_SIZE 90000

@@ -7,26 +7,26 @@ module;
 #include <nlohmann/json.hpp>
 #include <string>
 
-export module basic_renderer;
-import transform;
-import file_system;
-import light;
-import camera;
-import window_event;
-import static_mesh;
-import shader;
-import material;
-import sdf_model_packed;
-import texture;
+export module graphics:renderer.basic_renderer;
+import data;
+import :camera;
+import :shader;
+import :texture;
+import :light;
+import :static_mesh;
+import :sdf.sdf_generator_gpu_v2;
+import :sdf.sdf_model;
+import :sdf.sdf_model_packed;
+import input;
 
 using afs = ale::FileSystem;
 using namespace std;
 using namespace glm;
 using namespace ale::data;
 using namespace ale::graphics::sdf;
+using namespace ale::input;
 
 export namespace ale::graphics::renderer {
-using namespace input_handling;
 
 class BasicRendererException final : public std::runtime_error {
 public:

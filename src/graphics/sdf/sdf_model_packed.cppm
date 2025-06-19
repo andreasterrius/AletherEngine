@@ -6,13 +6,10 @@ module;
 #include <string>
 #include <vector>
 
-export module sdf_model_packed;
-import texture;
-import transform;
-import shader;
-import file_system;
-import sdf_model;
-import bounding_box;
+export module graphics:sdf.sdf_model_packed;
+import data;
+import :texture;
+import :sdf.sdf_model;
 
 using afs = ale::FileSystem;
 using namespace ale::data;

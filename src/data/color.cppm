@@ -5,7 +5,7 @@ module;
 
 #include <glm/glm.hpp>
 
-export module color;
+export module data:color;
 
 export namespace ale {
 constexpr glm::vec3 WHITE = glm::vec3(1.0, 1.0, 1.0);

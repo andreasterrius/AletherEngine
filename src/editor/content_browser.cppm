@@ -9,14 +9,10 @@ module;
 #include <string>
 #include <unordered_map>
 
-export module content_browser;
-import texture;
-import material;
-import file_system;
-import default_resources;
-import thumbnail_generator;
-import static_mesh;
-import stash;
+export module editor:content_browser;
+import :default_resources;
+import data;
+import graphics;
 
 using namespace ale::graphics;
 using namespace std;

@@ -1,25 +1,11 @@
-import material;
-import deferred_renderer;
-import util;
-import logger;
-import stash;
-import command;
-import history_stack;
-import content_browser;
-import editor_root;
-import item_inspector;
-import file_system;
-import default_resources;
-import scene_node;
-
 // clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
-
 #include <entt/entt.hpp>
 #include <filesystem>
 #include <glm/glm.hpp>
+#include <optional>
 #include "spdlog/spdlog.h"
 
 // clang-format off
@@ -27,20 +13,15 @@ import scene_node;
 #include <stb_image.h>
 // clang-format on
 
-import window;
-import light;
-import camera;
-import gizmo;
-import thumbnail_generator;
-import deferred_renderer;
-import static_mesh;
-import texture;
-import line_renderer;
+import data;
+import graphics;
+import editor;
 import serde;
 
 using namespace std;
 using namespace ale;
 using namespace ale::data;
+using namespace ale::editor;
 using namespace ale::graphics;
 using namespace ale::graphics::renderer;
 using namespace glm;
@@ -52,6 +33,7 @@ int main() {
   ale::logger::init();
 
   auto window = Window(1280, 800, "Editor 2");
+  auto imgui = ImguiIntegration(&window, window.get_content_scale());
   auto camera = Camera(ARCBALL, window.get_size().x, window.get_size().y,
                        glm::vec3(3.0f, 5.0f, 7.0f));
 
@@ -93,9 +75,9 @@ int main() {
 
     // Render UI
     {
-      window.start_ui_frame();
+      imgui.start_frame();
       editor_root.draw_and_handle_cmds(window, sm_loader, world, camera);
-      window.end_ui_frame();
+      imgui.end_frame();
     }
 
     window.swap_buffer_and_poll_inputs();

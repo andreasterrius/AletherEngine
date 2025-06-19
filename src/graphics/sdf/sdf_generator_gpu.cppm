@@ -10,13 +10,11 @@ module;
 #include <string>
 #include <unordered_map>
 
-export module sdf_generator_gpu;
-import compute_shader;
-import texture;
-import file_system;
-import transform;
-import mesh;
-import bounding_box;
+export module graphics:sdf.sdf_generator_gpu;
+import data;
+import :texture;
+import :compute_shader;
+import :mesh;
 
 using afs = ale::FileSystem;
 using namespace glm;

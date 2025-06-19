@@ -7,13 +7,10 @@ module;
 #include <glm/glm.hpp>
 #include <vector>
 
-export module sdf_generator_gpu_v2;
-import model;
-import mesh;
-import compute_shader;
-import texture;
-import file_system;
-import transform;
+export module graphics:sdf.sdf_generator_gpu_v2;
+import data;
+import :compute_shader;
+import :model;
 
 using afs = ale::FileSystem;
 using namespace std;

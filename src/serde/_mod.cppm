@@ -4,5 +4,5 @@
 
 export module serde;
 
-export import common;
-export import world;
+export import :common;
+export import :world;

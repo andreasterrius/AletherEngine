@@ -15,12 +15,9 @@ module;
 #include <stdexcept>
 #include <string>
 
-export module window;
+export module graphics:window;
+import input;
 
-import window_event;
-import imgui_integration;
-
-using namespace ale::editor;
 using namespace glm;
 using namespace std;
 
@@ -136,10 +133,10 @@ struct Data {
   std::function<void(int, int, int, int)> key_callback = nullptr;
 };
 
-class Window : public input_handling::WindowEventProducer {
+class Window : public input::WindowEventProducer {
 
   GLFWwindow *raw_window = nullptr;
-  std::unique_ptr<editor::ImguiIntegration> imgui;
+  // std::unique_ptr<editor::ImguiIntegration> imgui;
   static bool first_window_init;
 
 protected:
@@ -184,8 +181,8 @@ public:
     glfwSetScrollCallback(this->raw_window, scroll_callback);
     glfwSetKeyCallback(this->raw_window, key_callback);
 
-    this->imgui =
-        make_unique<ImguiIntegration>(this->raw_window, get_content_scale());
+    // this->imgui =
+    //     make_unique<ImguiIntegration>(this->raw_window, get_content_scale());
   }
 
 public:
@@ -277,18 +274,18 @@ public:
 
 public:
   void start_ui_frame() {
-    if (imgui != nullptr) {
-      imgui->start_frame();
-    }
+    // if (imgui != nullptr) {
+    //   imgui->start_frame();
+    // }
   }
 
   void end_ui_frame() {
-    glDisable(GL_FRAMEBUFFER_SRGB);
-    if (imgui != nullptr) {
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
-      imgui->end_frame();
-    }
-    glEnable(GL_FRAMEBUFFER_SRGB);
+    // glDisable(GL_FRAMEBUFFER_SRGB);
+    // if (imgui != nullptr) {
+    //   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //   imgui->end_frame();
+    // }
+    // glEnable(GL_FRAMEBUFFER_SRGB);
   }
 
   // // TODO: Remove

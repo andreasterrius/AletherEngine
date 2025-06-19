@@ -5,7 +5,7 @@ module;
 #include <nlohmann/json.hpp>
 #include <string>
 
-export module scene_node;
+export module data:scene_node;
 
 export namespace ale::data {
 struct SceneNode {

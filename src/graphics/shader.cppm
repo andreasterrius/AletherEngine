@@ -9,8 +9,8 @@ module;
 #include <vector>
 #include "shader_common.h"
 
-export module shader;
-import file_system;
+export module graphics:shader;
+import data;
 
 using afs = ale::FileSystem;
 

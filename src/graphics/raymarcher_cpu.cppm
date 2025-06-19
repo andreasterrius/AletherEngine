@@ -8,13 +8,12 @@ module;
 #include <string>
 #include <vector>
 
-export module raymarcher_cpu;
-import window;
-import camera;
-import line_renderer;
-import transform;
-import sdf_model;
-import ray;
+export module graphics:raymarcher_cpu;
+import data;
+import :window;
+import :line_renderer;
+import :sdf.sdf_model;
+import :camera;
 
 using namespace glm;
 using namespace ale::graphics;

@@ -8,14 +8,12 @@ module;
 #include <optional>
 #include <vector>
 
-export module gizmo;
-import transform;
-import ray;
-import camera;
-import file_system;
-import shader;
-import model;
-import static_mesh;
+export module graphics:gizmo;
+import data;
+import :shader;
+import :model;
+import :static_mesh;
+import :camera;
 
 using namespace ale::data;
 using namespace ale::graphics;

@@ -33,6 +33,9 @@ set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(external/glm)
 add_subdirectory(external/entt)
 
+set(BUILD_SHARED_LIBS ON)
+add_subdirectory(external/reflect-cpp)
+
 ## according to imgui guide, it is recommended that you follow those steps
 ## and not attempt to build Dear ImGui as a static or shared library!
 # Add source files for Dear ImGui
@@ -97,8 +100,9 @@ function(create_exe name folder_name)
             external/json/include
             external/nativefiledialog-extended/src/include
             external/rapidjson/include
+            external/reflect-cpp/include
     )
-    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT spdlog::spdlog nlohmann_json::nlohmann_json nfd)
+    target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT spdlog::spdlog nlohmann_json::nlohmann_json nfd reflectcpp)
     target_compile_definitions(${name} PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE GLM_ENABLE_EXPERIMENTAL)
 endfunction()
 

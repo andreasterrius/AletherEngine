@@ -5,8 +5,8 @@ module;
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-export module camera;
-import window_event;
+export module graphics:camera;
+import input;
 
 export namespace ale::graphics {
 
@@ -35,7 +35,7 @@ const float ZOOM = 45.0f;
 
 // An abstract camera class that processes input and calculates the
 // corresponding Euler Angles, Vectors and Matrices for use in OpenGL
-class Camera : public input_handling::WindowEventListener {
+class Camera : public input::WindowEventListener {
 public:
   // camera Attributes
   glm::vec3 Position;
@@ -59,7 +59,7 @@ public:
   bool handle_input = true;
 
   // non owning
-  input_handling::WindowEventProducer *event_producer = nullptr;
+  input::WindowEventProducer *event_producer = nullptr;
 
   // constructor with vectors
   Camera(Camera_InputType inputType, int width, int height,
@@ -100,7 +100,7 @@ public:
       event_producer->remove_listener(this);
   }
 
-  void add_listener(input_handling::WindowEventProducer *event_producer) {
+  void add_listener(input::WindowEventProducer *event_producer) {
     this->event_producer = event_producer;
     this->event_producer->add_listener(this);
   }

@@ -8,9 +8,9 @@ module;
 #include <optional>
 #include <string>
 
-export module scene_tree;
+export module editor:scene_tree;
 
-import scene_node;
+import data;
 
 using namespace ale::data;
 

@@ -6,10 +6,9 @@ module;
 #include <string>
 #include <vector>
 
-export module mesh;
-
-import bounding_box;
-import shader;
+export module graphics:mesh;
+import data;
+import :shader;
 
 #define MAX_BONE_INFLUENCE 4
 

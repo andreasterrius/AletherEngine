@@ -22,7 +22,7 @@ import shader;
 import file_system;
 import window;
 import deferred_renderer;
-import stash;
+import data:stash;
 import texture;
 import light;
 

@@ -10,9 +10,9 @@ module;
 #include <string>
 #include <vector>
 
-export module texture;
-import file_system;
-import shader;
+export module graphics:texture;
+import data;
+import :shader;
 
 using afs = ale::FileSystem;
 using namespace glm;

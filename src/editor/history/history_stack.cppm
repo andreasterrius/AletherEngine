@@ -8,13 +8,12 @@ module;
 #include <memory>
 #include <optional>
 
-export module history_stack;
-
-import history;
-
-export namespace ale::editor::history {
+export module editor:history.history_stack;
+import :history.history;
 
 using namespace std;
+
+export namespace ale::editor::history {
 
 class HistoryStack {
 private:

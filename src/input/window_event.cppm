@@ -3,12 +3,13 @@
 //
 module;
 
-#include <utility>
+#include <entt/entt.hpp>
 #include <set>
+#include <utility>
 
-export module window_event;
+export module input:window_event;
 
-export namespace ale::input_handling {
+export namespace ale::input {
 
 class WindowEventListener {
 public:
@@ -34,8 +35,6 @@ public:
   void remove_listener(WindowEventListener *listener) {
     this->listeners.erase(listener);
   }
-  std::set<WindowEventListener *> &get_listeners() {
-    return this->listeners;
-  }
+  std::set<WindowEventListener *> &get_listeners() { return this->listeners; }
 };
-}; // namespace ale
+}; // namespace ale::input

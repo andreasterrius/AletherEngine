@@ -9,10 +9,10 @@ module;
 #include <string>
 #include <vector>
 
-export module model;
-import mesh;
-import shader;
-import bounding_box;
+export module graphics:model;
+import data;
+import :mesh;
+import :shader;
 
 export namespace ale::graphics {
 using namespace std;

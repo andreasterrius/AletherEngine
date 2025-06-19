@@ -4,15 +4,25 @@
 
 module;
 
+// clang-format off
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+// clang-format on
+#include <entt/entt.hpp>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <nfd.hpp>
 
-export module imgui_integration;
+export module editor:imgui_integration;
+import graphics;
+
+using namespace ale::graphics;
 
 export namespace ale::editor {
+
+struct MyImguiStyle {};
+
 class ImguiIntegration {
   bool has_init = false;
 
@@ -24,6 +34,9 @@ public:
   }
 
   void end_frame() {
+    GLboolean srgbWasEnabled = glIsEnabled(GL_FRAMEBUFFER_SRGB);
+    glDisable(GL_FRAMEBUFFER_SRGB);
+
     ImGui::Render();
     auto draw_data = ImGui::GetDrawData();
     if (draw_data != nullptr) {
@@ -40,10 +53,16 @@ public:
 
       glfwMakeContextCurrent(backup_current_context);
     }
+
+    if (srgbWasEnabled) {
+      glEnable(GL_FRAMEBUFFER_SRGB);
+    } else {
+      glDisable(GL_FRAMEBUFFER_SRGB);
+    }
   }
 
 public:
-  ImguiIntegration(GLFWwindow *raw, float content_scale) {
+  ImguiIntegration(Window *window, float content_scale) {
     has_init = true;
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -59,7 +78,7 @@ public:
 
     // Second param install_callback=true will install
     // GLFW callbacks and chain to existing ones.
-    ImGui_ImplGlfw_InitForOpenGL(raw, true);
+    ImGui_ImplGlfw_InitForOpenGL(window->get(), true);
     ImGui_ImplOpenGL3_Init();
     NFD_Init();
 
