@@ -4,7 +4,6 @@
 
 module;
 
-#include <entt/entt.hpp>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <imgui.h>

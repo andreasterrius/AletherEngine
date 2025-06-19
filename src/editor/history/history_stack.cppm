@@ -4,9 +4,8 @@
 module;
 
 #include <deque>
-#include <entt/entt.hpp>
+#include <entt/entity/registry.hpp>
 #include <memory>
-#include <optional>
 
 export module editor:history.history_stack;
 import :history.history;

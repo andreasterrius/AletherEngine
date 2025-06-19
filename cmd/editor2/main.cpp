@@ -29,18 +29,14 @@ using afs = ale::FileSystem;
 
 int main() {
   glfwInit();
-
   ale::logger::init();
-
-  auto window = Window(1280, 800, "Editor 2");
+ auto window = Window(1280, 800, "Editor 2");
   auto imgui = ImguiIntegration(&window, window.get_content_scale());
   auto camera = Camera(ARCBALL, window.get_size().x, window.get_size().y,
                        glm::vec3(3.0f, 5.0f, 7.0f));
-
-  // Stashes
+ // Stashes
   auto texture_stash = make_shared<Stash<Texture>>();
-
-  // Declare a basic scene
+ // Declare a basic scene
   auto deferred_renderer = DeferredRenderer(window.get_size());
   auto texture_renderer = TextureRenderer();
   auto line_renderer = LineRenderer();
@@ -50,18 +46,15 @@ int main() {
   auto editor_root =
       editor::EditorRoot(sm_loader, texture_stash, window.get_size());
   auto world = editor_root.new_world(sm_loader);
-
-  camera.add_listener(&window);
+ camera.add_listener(&window);
   editor_root.add_listener(&window);
-
-  while (!window.get_should_close()) {
+ while (!window.get_should_close()) {
     editor_root.set_tick_data(editor::EditorRoot::TickData{
         .camera = &camera,
         .world = &world,
         .cursor_pos_topleft = window.get_cursor_pos_from_top_left()});
     editor_root.tick();
-
-    // Render Scene
+ // Render Scene
     deferred_renderer.render_first_pass(camera, world);
 
     editor_root.capture_scene(

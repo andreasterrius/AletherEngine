@@ -1,6 +1,11 @@
 //
 // Created by Alether on 6/20/2025.
 //
+module;
+
+// error if these are not included
+#include <entt/entt.hpp>
+#include <optional>
 
 export module editor;
 
