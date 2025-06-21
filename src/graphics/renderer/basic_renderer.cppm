@@ -19,7 +19,7 @@ import :sdf.sdf_model;
 import :sdf.sdf_model_packed;
 import input;
 
-using afs = ale::FileSystem;
+
 using namespace std;
 using namespace glm;
 using namespace ale::data;

@@ -14,9 +14,9 @@ export module graphics:texture;
 import data;
 import :shader;
 
-using afs = ale::FileSystem;
 using namespace glm;
 using namespace std;
+using namespace ale::data;
 
 export namespace ale::graphics {
 class TextureRendererException final : public std::runtime_error {

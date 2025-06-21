@@ -34,7 +34,7 @@ using namespace ale::graphics;
 using namespace ale::graphics::sdf;
 using namespace ale::data;
 using namespace glm;
-using afs = ale::FileSystem;
+
 
 class Raymarcher {
   unsigned int vao, vbo;

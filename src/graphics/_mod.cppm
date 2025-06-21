@@ -21,3 +21,4 @@ export import :sdf.sdf_generator_gpu;
 export import :sdf.sdf_generator_gpu_v2;
 export import :renderer.basic_renderer;
 export import :renderer.deferred_renderer;
+export import :font;

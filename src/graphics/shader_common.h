@@ -5,7 +5,6 @@
 #include <vector>
 
 import data;
-using afs = ale::FileSystem;
 
 struct IncludeDirective {
   std::string filename;

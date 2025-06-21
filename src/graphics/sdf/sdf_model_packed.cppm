@@ -11,7 +11,7 @@ import data;
 import :texture;
 import :sdf.sdf_model;
 
-using afs = ale::FileSystem;
+
 using namespace ale::data;
 using namespace std;
 using namespace glm;

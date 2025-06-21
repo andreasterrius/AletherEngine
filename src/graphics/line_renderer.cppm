@@ -20,7 +20,7 @@ import :ray;
 using namespace ale::graphics;
 using namespace ale::data;
 using namespace glm;
-using afs = ale::FileSystem;
+
 
 export namespace ale::graphics {
 

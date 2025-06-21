@@ -36,7 +36,7 @@ using namespace ale::data;
 using namespace std;
 using namespace ale;
 using namespace glm;
-using afs = ale::FileSystem;
+
 
 int main() {
   glfwInit();

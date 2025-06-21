@@ -12,7 +12,7 @@ import data;
 import :compute_shader;
 import :model;
 
-using afs = ale::FileSystem;
+
 using namespace std;
 using namespace glm;
 

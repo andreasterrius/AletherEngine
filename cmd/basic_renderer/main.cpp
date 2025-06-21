@@ -30,7 +30,7 @@ using namespace ale;
 using namespace ale::graphics;
 using namespace ale::graphics::renderer;
 using namespace ale::data;
-using afs = ale::FileSystem;
+
 
 int main() {
   glfwInit();

@@ -1,0 +1,8 @@
+{
+  "frame_rounding": 5.0,
+  "frame_padding": [6.0, 4.0],
+  "item_spacing": [8.0, 6.0],
+  "window_padding": [10.0, 10.0],
+  "scrollbar_size": 8.0,
+  "default_font_path" : "resources/font/Roboto-Regular.ttf"
+}

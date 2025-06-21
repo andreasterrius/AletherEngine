@@ -19,7 +19,6 @@ using namespace ale::data;
 using namespace ale::graphics;
 using namespace std;
 using namespace glm;
-using afs = ale::FileSystem;
 
 export namespace ale::serde {
 

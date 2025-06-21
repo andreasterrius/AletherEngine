@@ -116,8 +116,6 @@ public:
   }
 
 public:
-  using afs = ale::FileSystem;
-
   EditorRoot(StaticMeshLoader &sm_loader,
              shared_ptr<Stash<Texture>> texture_stash,
              ivec2 initial_window_size) :

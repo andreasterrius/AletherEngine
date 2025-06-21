@@ -1,6 +1,7 @@
 //
 // Created by Alether on 5/18/2025.
 //
+module;
 
 #include <string>
 

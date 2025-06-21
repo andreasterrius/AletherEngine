@@ -10,16 +10,17 @@ module;
 #include <unordered_map>
 
 export module editor:content_browser;
-import :default_resources;
-import data;
 import graphics;
+import data;
+import :default_resources;
 
 using namespace ale::graphics;
+using namespace ale::data;
+using namespace ale::data::afs;
 using namespace std;
 
 export namespace ale::editor {
 class ContentBrowser {
-  using afs = FileSystem;
 
 public:
   const std::string panel_name = "Content Browser";

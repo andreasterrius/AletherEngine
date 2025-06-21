@@ -25,7 +25,7 @@ import :ray;
 using namespace std;
 using namespace ale::data;
 using namespace ale::graphics;
-using afs = ale::FileSystem;
+
 using namespace glm;
 
 export namespace ale::graphics::sdf {

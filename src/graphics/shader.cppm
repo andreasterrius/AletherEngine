@@ -12,7 +12,7 @@ module;
 export module graphics:shader;
 import data;
 
-using afs = ale::FileSystem;
+
 
 export namespace ale::graphics {
 class Shader {

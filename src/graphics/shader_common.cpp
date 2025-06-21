@@ -98,7 +98,7 @@ std::string load_file_with_include(IncludeDirective include_directive) {
       if (match.size() < 2) {
         throw runtime_error("unable to parse include directive for: " + path);
       }
-      include_directive.filename = afs::root(match[1]);
+      include_directive.filename = ale::data::afs::root(match[1]);
 
       if (match.size() == 3) {
         stringstream binding_sstr(match[2]);

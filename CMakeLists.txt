@@ -4,7 +4,6 @@ project(AletherEngine)
 
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 set(CMAKE_CXX_STANDARD 23)
-configure_file(config.in ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
 
 ## Modules support
@@ -32,8 +31,6 @@ add_subdirectory(external/spdlog)
 set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(external/glm)
 add_subdirectory(external/entt)
-
-set(BUILD_SHARED_LIBS ON)
 add_subdirectory(external/reflect-cpp)
 
 ## according to imgui guide, it is recommended that you follow those steps

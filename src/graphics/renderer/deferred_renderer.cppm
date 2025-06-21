@@ -35,7 +35,7 @@ public:
 };
 
 class DeferredRenderer : public WindowEventListener {
-  using afs = ale::FileSystem;
+
 
   struct FirstPassData {
     shared_ptr<SdfModelPacked> sdf_model_packed = nullptr;

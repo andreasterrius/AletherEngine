@@ -37,7 +37,7 @@ using namespace ale::graphics::renderer;
 using namespace ale::graphics::sdf;
 using namespace std;
 using namespace glm;
-using afs = ale::FileSystem;
+
 
 entt::registry new_world(StaticMeshLoader &sm_loader) {
   // Create world

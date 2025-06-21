@@ -18,7 +18,7 @@ import texture;
 using namespace ale;
 using namespace ale::graphics;
 using namespace ale::graphics::sdf;
-using afs = ale::FileSystem;
+
 
 int main() {
   glfwInit();

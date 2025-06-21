@@ -16,7 +16,7 @@ import :texture;
 import :compute_shader;
 import :mesh;
 
-using afs = ale::FileSystem;
+
 using namespace glm;
 using namespace std;
 using namespace ale::data;

@@ -31,7 +31,7 @@ using namespace std;
 using namespace ale;
 using namespace ale::graphics;
 using namespace ale::graphics::renderer;
-using afs = ale::FileSystem;
+
 
 int main() {
   glfwInit();
