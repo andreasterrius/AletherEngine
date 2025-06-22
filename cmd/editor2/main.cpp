@@ -30,7 +30,7 @@ using namespace glm;
 int main() {
   glfwInit();
   ale::logger::init();
-  auto window = Window(1280, 800, "Editor 2e");
+  auto window = Window(1280, 800, "Editor 2");
   auto camera = Camera(ARCBALL, window.get_size().x, window.get_size().y,
                        glm::vec3(3.0f, 5.0f, 7.0f));
 
