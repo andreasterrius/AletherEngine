@@ -49,6 +49,8 @@ public:
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
+    stbi_set_flip_vertically_on_load(true);
+
     int width, height, nrComponents;
     unsigned char *data =
         stbi_load(path.c_str(), &width, &height, &nrComponents, 0);
