@@ -10,10 +10,13 @@ export module graphics:mesh;
 import data;
 import :shader;
 
-#define MAX_BONE_INFLUENCE 4
+using namespace ale::data;
+using namespace glm;
+
 
 export namespace ale::graphics {
-using namespace data;
+
+constexpr int MAX_BONE_INFLUENCE = 4;
 
 struct Vertex {
   alignas(16) glm::vec3 position;
@@ -26,6 +29,11 @@ struct Vertex {
   alignas(16) int m_BoneIDs[MAX_BONE_INFLUENCE] = {0};
   // weights from each bone
   alignas(16) float m_Weights[MAX_BONE_INFLUENCE] = {0};
+};
+
+struct BoneInfo {
+  int id;
+  mat4 offset;
 };
 
 struct PendingTexturePath {
@@ -45,10 +53,10 @@ public:
   // constructor
   Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices,
        PendingTexturePath pending_texture_path, BoundingBox boundingBox) :
+      vertices(vertices),
+      indices(indices),
+      textures(pending_texture_path),
       boundingBox(boundingBox) {
-    this->vertices = vertices;
-    this->indices = indices;
-    this->textures = pending_texture_path;
 
     // now that we have all the required data, set the vertex buffers and its
     // attribute pointers.

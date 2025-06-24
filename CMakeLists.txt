@@ -21,7 +21,6 @@ add_subdirectory(external/assimp)
 add_subdirectory(external/glfw)
 add_subdirectory(external/json)
 add_subdirectory(external/nativefiledialog-extended)
-add_subdirectory(external/rapidjson)
 set(ZSTD_BUILD_SHARED ON)
 add_subdirectory(external/zstd/build/cmake)
 
@@ -96,19 +95,19 @@ function(create_exe name folder_name)
             external/zstd/lib
             external/json/include
             external/nativefiledialog-extended/src/include
-            external/rapidjson/include
             external/reflect-cpp/include
     )
     target_link_libraries(${name} glfw glm::glm assimp::assimp EnTT::EnTT spdlog::spdlog nlohmann_json::nlohmann_json nfd reflectcpp)
     target_compile_definitions(${name} PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE GLM_ENABLE_EXPERIMENTAL)
 endfunction()
 
-#create_exe(RaymarchSdfCpu raymarch_sdf_cpu)
-#create_exe(RaymarchSdf raymarch_sdf)
-#create_exe(SdfGenerator sdf_generator_gpu)
-#create_exe(BasicRenderer basic_renderer)
-#create_exe(HelloImgui hello_imgui)
+create_exe(RaymarchSdfCpu raymarch_sdf_cpu)
+create_exe(RaymarchSdf raymarch_sdf)
+create_exe(SdfGenerator sdf_generator_gpu)
+create_exe(BasicRenderer basic_renderer)
+create_exe(HelloImgui hello_imgui)
 create_exe(Editor2 editor2)
-#create_exe(SdfGeneratorV2 sdf_generator_gpu_v2)
-#create_exe(MeshDistanceField mesh_distance_field_tutorial)
-#create_exe(DeferredRenderer deferred_renderer)
+create_exe(SdfGeneratorV2 sdf_generator_gpu_v2)
+create_exe(MeshDistanceField mesh_distance_field_tutorial)
+create_exe(DeferredRenderer deferred_renderer)
+create_exe(SkeletalMesh skeletal_mesh)

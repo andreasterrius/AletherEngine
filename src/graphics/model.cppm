@@ -7,6 +7,7 @@ module;
 #include <glm/glm.hpp>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 export module graphics:model;
@@ -137,6 +138,11 @@ private:
       } else
         vertex.tex_coords = glm::vec2(0.0f, 0.0f);
 
+      for (int j = 0; j < MAX_BONE_INFLUENCE; ++j) {
+        vertex.m_BoneIDs[j] = -1;
+        vertex.m_Weights[j] = 0.0f;
+      }
+
       vertices.push_back(vertex);
     }
     // now wak through each of the mesh's faces (a face is a mesh its triangle)
@@ -148,34 +154,40 @@ private:
         indices.push_back(face.mIndices[j]);
     }
 
-    // // bones + weights
-    // for (unsigned int i = 0; i < mesh->mNumBones; i++) {
-    //   aiBone *bone = mesh->mBones[i];
-    //   string bone_name = bone->mName.data;
-    //
-    //   int bone_index = 0;
-    //   if (bone_mapping.find(bone_name) == bone_mapping.end()) {
-    //     bone_index = bone_counter++;
-    //     bone_mapping[bone_name] = bone_index;
-    //     bone_offset_matrices.push_back(
-    //         glm::transpose(glm::make_mat4(&bone->mOffsetMatrix.a1)));
-    //   } else {
-    //     bone_index = bone_mapping[bone_name];
-    //   }
-    //
-    //   for (unsigned int j = 0; j < bone->mNumWeights; j++) {
-    //     unsigned int vertex_id = bone->mWeights[j].mVertexId;
-    //     float weight = bone->mWeights[j].mWeight;
-    //
-    //     for (int k = 0; k < 4; ++k) {
-    //       if (vertices[vertex_id].m_Weights[k] == 0.0f) {
-    //         vertices[vertex_id].m_BoneIDs[k] = bone_index;
-    //         vertices[vertex_id].m_Weights[k] = weight;
-    //         break;
-    //       }
-    //     }
-    //   }
-    // }
+    // bones + weights
+    auto bone_mapping = unordered_map<string, BoneInfo>();
+    int bone_counter = 0;
+    for (unsigned int i = 0; i < mesh->mNumBones; i++) {
+      aiBone *bone = mesh->mBones[i];
+      string bone_name = bone->mName.data;
+
+      auto bone_index = -1;
+      if (!bone_mapping.contains(bone_name)) {
+        bone_index = bone_counter++;
+        bone_mapping[bone_name] = BoneInfo{
+            bone_index, AssimpToGLMMat(mesh->mBones[i]->mOffsetMatrix)};
+      } else {
+        bone_index = bone_mapping.at(bone_name).id;
+      }
+      assert(bone_index != -1);
+      auto weights = mesh->mBones[bone_index]->mWeights;
+      auto num_weights = mesh->mBones[bone_index]->mNumWeights;
+
+      for (int j = 0; j < num_weights; ++j) {
+        auto vertex_id = weights[j].mVertexId;
+        auto weight = weights[j].mWeight;
+        assert(vertex_id < vertices.size());
+
+        // find the first empty position or don't assign at all
+        for (int k = 0; k < MAX_BONE_INFLUENCE; ++k) {
+          if (vertices[vertex_id].m_BoneIDs[k] < 0) {
+            vertices[vertex_id].m_BoneIDs[k] = bone_index;
+            vertices[vertex_id].m_Weights[k] = weight;
+            break;
+          }
+        }
+      }
+    }
 
     // process materials
     aiMaterial *mat = scene->mMaterials[mesh->mMaterialIndex];
@@ -203,9 +215,15 @@ private:
     return Mesh(vertices, indices, pending_texture_paths, boundingBox);
   }
 
+  // names
+  mat4 AssimpToGLMMat(aiMatrix4x4 mat) {
+    return mat4(mat.a1, mat.a2, mat.a3, mat.a4, mat.b1, mat.b2, mat.b3, mat.b4,
+                mat.c1, mat.c2, mat.c3, mat.c4, mat.d1, mat.d2, mat.d3, mat.d4);
+  }
+
   // checks all material textures of a given type and loads the textures if
-  // they're not loaded yet. the required info is returned as a Texture struct.
-  // vector<PendingTexturePath>
-  // loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
+  // they're not loaded yet. the required info is returned as a Texture
+  // struct. vector<PendingTexturePath> loadMaterialTextures(aiMaterial *mat,
+  // aiTextureType type, string typeName);
 };
 } // namespace ale::graphics

@@ -6,7 +6,6 @@ module;
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <optional>
-#include <rapidjson/document.h>
 #include <rfl.hpp>
 #include <string>
 #include <vector>

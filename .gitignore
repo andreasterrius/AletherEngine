@@ -12,3 +12,4 @@ resources/external
 .vs
 out/
 vc140.pdb
+temp
